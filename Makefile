@@ -19,4 +19,8 @@ clean: stop_dockers
 	docker system prune -a
 	df -h 
 
+con_db:
+	docker exec -it trans_db_1 bash
+
+
 .PHONY: all re down clean
