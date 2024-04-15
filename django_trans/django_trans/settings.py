@@ -33,7 +33,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
+CSRF_TRUSTED_ORIGINS = ['https://localhost:55582','https://localhost:55582/admin/login/?next=/admin/']
 # Application definition
 
 INSTALLED_APPS = [
@@ -84,10 +84,10 @@ WSGI_APPLICATION = 'django_trans.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'default_db_name'),
-        'USER': os.environ.get('DB_USER', 'default_db_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'default_db_password'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'NAME': os.environ.get('DB_NAME', 'db'),
+        'USER': os.environ.get('DB_USER', 'ast-jean'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '6969'),
+        'HOST': os.environ.get('DB_HOST', 'db_1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     },
     'sqlite': {

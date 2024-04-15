@@ -44,14 +44,12 @@ function initPlayersLocation(socket) {
     });
 }
 
-// Your Socket.IO setup here...
 io.on('connection', (socket) => {
     console.log('A client connected',' PlayerList: ' ,players);
     players.push(new Player(socket.id, 0, 0));
     initPlayersLocation(socket);
 
 
-    // Don't forget to handle disconnection
     socket.on('disconnect', () => {
         console.log('Client disconnected');
         removePlayer(socket.id);
