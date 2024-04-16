@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'django_trans.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'db'),
-        'USER': os.environ.get('DB_USER', 'ast-jean'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '6969'),
-        'HOST': os.environ.get('DB_HOST', 'db_1'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     },
     'sqlite': {
         'ENGINE': 'django.db.backends.sqlite3',
