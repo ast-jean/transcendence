@@ -24,6 +24,9 @@ services:
       - media_volume:/app/media
     command: gunicorn django_trans.wsgi:application --bind 0.0.0.0:8000
     environment:
+      REDIS_URL: "redis://redis:6379/1"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -52,23 +55,20 @@ services:
       networks:
         - transcendence_net
 
-  socketio-server:
-    build: 
-      context: ./socketio-server
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./socketio-server:/usr/src/app
-      - /usr/src/app/node_modules
-    environment:
-      NODE_ENV: development
-    networks:
-      - transcendence_net
+  # redis:
+  #   image: redis:latest
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - transcendence_net
 
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+  redis_data:
 
 networks:
   transcendence_net:
