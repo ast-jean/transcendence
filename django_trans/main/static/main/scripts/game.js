@@ -15,6 +15,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
+
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -22,10 +23,11 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 
 camera.position.z = 15;
-// // Add directional light to the scene for better visualization
-// var light = new THREE.DirectionalLight(0xff00ff);
-// scene.add(light);
-// light.position.set(0, 1, 1).normalize();
+// Add directional light to the scene for better visualization
+
+var light = new THREE.DirectionalLight(0xffffff);
+scene.add(light);
+light.position.set(0, 1, 1).normalize();
 
 
 // Remove all existing player cubes from the scene

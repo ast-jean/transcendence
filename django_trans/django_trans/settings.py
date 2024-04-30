@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "main.apps.MainConfig",
     'django.contrib.admin',
     'django.contrib.auth',
+    'channels',
+    'gameserv',
     'sslserver',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -76,10 +78,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'django_trans.wsgi.application'
-
+ASGI_APPLICATION = 'django_trans.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+import os
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
+        },
+    },
+}
+
+
 
 DATABASES = {
     'default': {

@@ -22,7 +22,7 @@ RUN npm install socket.io-client
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --upgrade pip
-RUN pip install django-sslserver
+# RUN pip install django-sslserver
 
 # Generate a self-signed certificate without passphrase
 RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes \
