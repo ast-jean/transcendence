@@ -1,3 +1,61 @@
-body {
+html, body {
+    font-family: Arial, sans-serif;
+    height: 100%;
+  margin: 0;
+  font-size: 16pt;
+}
+#editor {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+#controls {
+  background: #fd8f8fdc;
+  padding: 5px;
+}
+#game {
+  width: 100%;
+  height: 100%;
+  /* display: block; */
+}
+.gutter {
+    background-color: #a4f97f;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+.gutter.gutter-horizontal {
+    cursor: ew-resize;
+    background-image:  url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==')
+}
+#chat-container {
+    width: 300px;
+    background: #5db381;
+    border: 1px solid #ddd;
+    padding: 10px;
+    /* margin: 20px; */
+}
+
+#chat-box {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-bottom: 10px;
+}
+
+#chat-box ul {
+    list-style: none;
+    padding: 0;
     margin: 0;
+}
+
+#chat-box li {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+#chat-input {
+    width: calc(100% - 75px);
+    padding: 10px;
+    margin-right: 5px;
 }
