@@ -2,23 +2,61 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { socket , players} from './socket.js';
 
-const canvasContainer = document.querySelector('#game');
 var clock = new THREE.Clock();
 var keyState = {};
 // var otherPlayerObjects = {}; // Keep track of other players' objects
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-);
+
+const canvas = document.getElementById('game');
+if (!canvas) {
+    console.error('Failed to find the canvas element');
+} else {
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    // Continue with setting up your scene, camera, etc.
+}
+
+const fov = 75;
+  const aspect = 2;  // the canvas default
+  const near = 0.1;
+  const far = 5;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.z = 2;
 
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+// const renderer = new THREE.WebGLRenderer();
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 document.body.appendChild(renderer.domElement);
+
+
+// const aspectRatio = .2;
+// const camera = new THREE.PerspectiveCamera(
+//     75,       // Field of view
+//     aspectRatio, // Aspect ratio, replaced with the container's aspect ratio
+//     0.1,      // Near clipping plane
+//     1000      // Far clipping plane
+// );
+
+// Resize game window on window resize
+window.addEventListener('resize', onWindowResize, false);
+function onWindowResize(){
+    camera.aspect = document.getElementById('game').clientWidth / document.getElementById('game').clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(document.getElementById('game').clientWidth, document.getElementById('game').clientHeight);
+}
+
+function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
+
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
@@ -40,6 +78,11 @@ function refreshScene(){
 }
 
 export function updatePlayerVisualization() {
+    if (resizeRendererToDisplaySize(renderer)) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+    }
     refreshScene();
     // Loop through players and create cubes with different colors
     // console.log("updatePlayersViz players:", players);
@@ -90,6 +133,8 @@ export function animate() {
     //changes x and y of the mesh.
     movePlayer(delta);
     updatePlayerVisualization();
+
     renderer.render(scene, camera);
 }
 
+animate();
