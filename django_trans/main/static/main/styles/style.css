@@ -1,8 +1,7 @@
 html, body {
-    font-family: Arial, sans-serif;
     height: 100%;
-  margin: 0;
-  font-size: 16pt;
+    margin: 0;
+    font-size: 16pt;
 }
 #editor {
   display: flex;

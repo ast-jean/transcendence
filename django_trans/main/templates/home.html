@@ -70,9 +70,12 @@
 
     <div id="editor">
         <div id="view">
-            <canvas id="game">
-                <script src="{% static 'main/scripts/game.js' %}" type="module"></script>
-            </canvas>
+            <script src="{% static 'main/scripts/game.js' %}" type="module"></script>
+            <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
+            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
+          
+        <canvas id="game" width="500" height="500"></canvas>
         </div>
         <div class="gutter gutter-horizontal"></div>
         <div id="controls">
@@ -89,7 +92,7 @@
       </div>
 
 
-      <!-- <script type="module">
+      <script type="module">
         /* global Split */
         
         // This code is only related to handling the split.
@@ -108,17 +111,8 @@
             };
           },
         });
-        </script> -->
+        </script>
 
-    <!-- <div class="row mt-3"> 
-        <div class="col-md-8"> Game div
-            <div id="game"></div>
-        </div>
-        <div class="col-md-4">
-           
-        </div>
-    </div> 
--->
 </body>
 </html>
 
