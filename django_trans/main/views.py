@@ -4,6 +4,9 @@ from django.shortcuts import render
 def home(request):
     return render(request, "home.html", {})
 
+def ws(request):
+    return render(request, "ws.html", {})
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm

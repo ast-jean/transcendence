@@ -16,9 +16,7 @@
         }
     }
     </script>
-    <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
     <script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
-    <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
 
 </head>
 <body>
@@ -69,18 +67,18 @@
     <button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
 
     <div id="editor">
-        <div id="view">
-            <script src="{% static 'main/scripts/game.js' %}" type="module"></script>
+        <div id="view" class="container">
             <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
+            <script src="{% static 'main/scripts/game.js' %}" type="module"></script>
             <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
             <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
           
-        <canvas id="game" width="500" height="500"></canvas>
+        <div id="gameCont" class="mt-3 three-js-canvas"></div>
         </div>
         <div class="gutter gutter-horizontal"></div>
         <div id="controls">
           <div>
-            <div id="chat-container"> Chat
+            <div id="chat-container" class="mt-3"> Chat
                 <div id="chat-box">
                     <ul id="chat-messages"></ul>
                 </div>
@@ -90,29 +88,6 @@
           </div>
         </div>
       </div>
-
-
-      <script type="module">
-        /* global Split */
-        
-        // This code is only related to handling the split.
-        // Our three.js code has not changed
-        Split(['#view', '#controls'], {  // eslint-disable-line new-cap
-          sizes: [75, 25],
-          minSize: 100,
-          elementStyle: (dimension, size, gutterSize) => {
-            return {
-              'flex-basis': `calc(${size}% - ${gutterSize}px)`,
-            };
-          },
-          gutterStyle: (dimension, gutterSize) => {
-            return {
-              'flex-basis': `${gutterSize}px`,
-            };
-          },
-        });
-        </script>
-
 </body>
 </html>
 

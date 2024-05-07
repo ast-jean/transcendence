@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9
+FROM python:3.12
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -15,13 +15,10 @@ RUN apt-get update && \
 # Update npm to the latest version
 RUN npm install npm@latest -g
 
-# Install any necessary npm packages
-RUN npm install socket.io-client
-
 # Copy the requirements.txt and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 # RUN pip install django-sslserver
 
 # Generate a self-signed certificate without passphrase
