@@ -26,20 +26,21 @@ SECRET_KEY = 'django-insecure-2_a0ds3y7&1xr#vf3u%3-3qm4=_+w704ui1*61lr!4)*&1db98
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'yourdomain.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://localhost:55582','https://localhost:55582/admin/login/?next=/admin/']
+# CSRF_COOKIE_SECURE = True
+# CSRF_TRUSTED_ORIGINS = ['https://localhost:55582','https://localhost:55582/admin/login/?next=/admin/']
 # Application definition
 
 INSTALLED_APPS = [
     "main.apps.MainConfig",
     'django.contrib.admin',
     'django.contrib.auth',
+    'daphne',
     'channels',
     'gameserv',
     'sslserver',
@@ -85,11 +86,8 @@ ASGI_APPLICATION = 'django_trans.asgi.application'
 import os
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
-        },
-    },
+    'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
 }
 
 

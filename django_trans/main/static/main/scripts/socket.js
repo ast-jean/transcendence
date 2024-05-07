@@ -1,61 +1,47 @@
-import { updatePlayerVisualization, animate } from './game.js';
+import { updatePlayerVisualization, animate, players } from './game.js';
 import * as THREE from 'three';
 
-export let socket;
-export let players = [];
+const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
+export const socket = new WebSocket(ws_path);
 
-let colors = [
-    0x00ff00, // Green
-    0xff0000, // Red
-    0x0000ff, // Blue
-    0xffff00, // Yellow
-    0x00ffff, // Cyan
-    0xff00ff, // Magenta
-    0xffa500, // Orange
-    0x800080, // Purple
-    0x008080, // Teal
-    0x808000  // Olive
-];
- let i = 0;
-class Player {
-    constructor(id, x, y) {
-        this.id = id;
-        // this.x = x;
-        // this.y = y;
-        let material = new THREE.MeshBasicMaterial({ color: colors[i++] });
-        material.opacity = 0.5; // Example: set the opacity to 50%
-        material.transparent = true; // Make sure to set transparent to true to enable opacity
-        material.needsUpdate = true;        // Update the material to reflect the changes
-        
-        this.mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1),material);
-        this.mesh.position.x = x;
-        this.mesh.position.y = y;
-        console.log('New player:', this);
-    }
-}
-
-
-
-
-
-
-// Grab references to your DOM elements
-const connectBtn = document.getElementById('connectBtn');
-
-// Connect button click event
-connectBtn.addEventListener('click', () => {
-    if (!socket || !socket.connected) {
-        document.getElementById('ServerStatus').innerHTML = 'Server Status : <span style="color: blue;">Connecting...</span>';
-        // socket = io('http://localhost:3000', { 
-        //     timeout: 5000, 
-        //     withCredentials: true
-        // });
-        console.log("socket when click",socket);
-        setupSocketEventListeners();
-    } else {
-        socket.disconnect();
-    }
+socket.addEventListener('open', function (event) {
+    socket.send(JSON.stringify({ message: 'Hello Server!' }));
 });
+
+socket.addEventListener('message', function (event) {
+    console.log('Message from server ', event.data);
+});
+
+// const form = document.getElementById('messageForm');
+// form.addEventListener('submit', function (event) {
+//     event.preventDefault();
+//     const messageInput = document.getElementById('messageInput');
+//     const message = messageInput.value;
+//     socket.send(JSON.stringify({ message: message }));
+//     messageInput.value = '';
+//     messageInput.focus();
+// });
+
+
+//XXXXXXXXXXXXXXXXXX
+// Grab references to your DOM elements
+// const connectBtn = document.getElementById('connectBtn');
+
+// // Connect button click event
+// connectBtn.addEventListener('click', () => {
+//     if (!socket || !socket.connected) {
+//         document.getElementById('ServerStatus').innerHTML = 'Server Status : <span style="color: blue;">Connecting...</span>';
+//         // socket = io('http://localhost:3000', { 
+//         //     timeout: 5000, 
+//         //     withCredentials: true
+//         // });
+//         console.log("socket when click",socket);
+//         setupSocketEventListeners();
+//     } else {
+//         socket.disconnect();
+//     }
+// });
 
 function removePlayer(playerIdToRemove) {
     players = players.filter(player => player.id !== playerIdToRemove);
@@ -72,21 +58,14 @@ function updatePlayerPosition(id, x, y) {
         players.push(new Player(id, x, y));
     }
 }
-let renderLoopRunning = false;
-players.push(new Player(0,0,0));
 
-if (!renderLoopRunning) {
-    animate();
-    renderLoopRunning = true;
-}
+
 function setupSocketEventListeners()
 {
     // const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
     const ws_path = `ws://${window.location.hostname}/ws/game`;
     // const ws_path = `${ws_scheme}://${window.location.hostname}:55582/ws/game/`;
     socket = new WebSocket(ws_path);
-
-
 
     socket.onopen = function(e) {
         console.log('Successfully connected to the server.');
