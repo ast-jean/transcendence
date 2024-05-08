@@ -70,6 +70,7 @@
         <div id="view" class="container">
             <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
             <script src="{% static 'main/scripts/game.js' %}" type="module"></script>
+            <script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
             <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
             <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
           
@@ -83,7 +84,7 @@
                     <ul id="chat-messages"></ul>
                 </div>
                 <input type="text" id="chat-input" placeholder="Type a message..." />
-                <button onclick="sendMessage()">Send</button>
+                <button id="chat-btn">Send</button>
             </div>
           </div>
         </div>
