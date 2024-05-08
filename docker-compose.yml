@@ -55,15 +55,6 @@ services:
       networks:
         - transcendence_net
 
-  # redis:
-  #   image: redis:latest
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - transcendence_net
-
 volumes:
   postgres_data:
   static_volume:

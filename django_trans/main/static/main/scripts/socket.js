@@ -1,4 +1,5 @@
 import { updatePlayerVisualization, animate, players } from './game.js';
+import { receiveChat } from './chat.js';
 import * as THREE from 'three';
 
 export var socket;
@@ -18,19 +19,26 @@ function setupWebSocket() {
     };
 
     socket.onmessage = function(event) {
-        console.log('Message from server ', event.data);
+        var data = JSON.parse(event.data);
+        console.log(data.cmd);
+
+        // separate json 
+        // {ident, cmd, data}
+
+        //cmd = chat
+
+        if (data.cmd === "chat") {
+            console.log("TRUE");
+            receiveChat(data.ident, data.data);
+        }
+        //cmd = move
+
+        //cmd = connect
+        //cmd = disconnect
+
+
+        // console.log('Message from server ', event.data);
     };
-}
-
-
-
-// socket.addEventListener("open", (event) => {
-//     socket.send(JSON.stringify({ message: 'New client connected' }));
-//     console.log("Aft: ",socket.readyState);
-// });
-
-function isOpen(socket){
-    return socket.readyState;
 }
 
 function removePlayer(playerIdToRemove) {
@@ -48,4 +56,7 @@ function updatePlayerPosition(id, x, y) {
         players.push(new Player(id, x, y));
     }
 }
-setupWebSocket();
+
+
+
+document.addEventListener("DOMContentLoaded", setupWebSocket);
