@@ -19,8 +19,10 @@ html, body {
   width: 100%;
   height: 100%;
 }
+
 #controls {
   background: #fd8f8fdc;
+  /* background: linear-gradient(#fd8f8fdc, rgb(161, 255, 140)); */
   padding: 5px;
 }
 
@@ -35,7 +37,7 @@ html, body {
 }
 #chat-container {
     width: 300px;
-    background: #5db381;
+    background: #0967cc;
     border: 1px solid #ddd;
     padding: 10px;
     /* margin: 20px; */

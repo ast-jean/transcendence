@@ -17,24 +17,28 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 //Receiving message from server
-socket.addEventListener("message", (event) => {
+export function receiveChat(client_id, client_msg){
+    var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
-    li.textContent = event.id + ": " + event.message;
-    // console.log('Message from server" ', event.data);
-});
+    li.textContent = client_id + ": " + client_msg;
+    chatBox.appendChild(li);
+}
+
 
 
 function sendMessage() {
-    var message = input.value.trim();
+    var data = input.value.trim();
     var name = "Me";
-    if (message !== "") {
+    if (data !== "") {
         console.log("sendMsg(): ",socket.readyState);
         var chatBox = document.getElementById('chat-messages');
         var li = document.createElement('li');
-        li.textContent = name + ": " + message;
-        socket.send(JSON.stringify({ message })); //Sending to gameserv/consumers.py 
+        li.textContent = name + ": " + data;
         chatBox.appendChild(li);
         input.value = "";
         chatBox.scrollTop = chatBox.scrollHeight; 
+
+        var cmd = "chat"
+        socket.send(JSON.stringify({ cmd, data })); //Sending to gameserv/consumers.py 
     }
 }
