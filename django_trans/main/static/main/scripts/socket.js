@@ -1,5 +1,5 @@
-import { updatePlayerVisualization, animate, players } from './game.js';
-import { receiveChat } from './chat.js';
+import { receiveMove, animate, players } from './game.js';
+import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 import * as THREE from 'three';
 
 export var socket;
@@ -19,25 +19,21 @@ function setupWebSocket() {
     };
 
     socket.onmessage = function(event) {
+        console.log(event.data);
         var data = JSON.parse(event.data);
-        console.log(data.cmd);
-
-        // separate json 
         // {ident, cmd, data}
-
-        //cmd = chat
-
         if (data.cmd === "chat") {
-            console.log("TRUE");
             receiveChat(data.ident, data.data);
         }
-        //cmd = move
-
-        //cmd = connect
-        //cmd = disconnect
-
-
-        // console.log('Message from server ', event.data);
+        if (data.cmd === "move") {
+            receiveMove(data.ident, data.data);
+        }
+        if (data.cmd === "connect") {
+            receiveConnect(data.ident);
+        }
+        if (data.cmd === "disconnect") {
+            receiveDisconnect(data.ident);
+        }
     };
 }
 
@@ -56,7 +52,5 @@ function updatePlayerPosition(id, x, y) {
         players.push(new Player(id, x, y));
     }
 }
-
-
 
 document.addEventListener("DOMContentLoaded", setupWebSocket);

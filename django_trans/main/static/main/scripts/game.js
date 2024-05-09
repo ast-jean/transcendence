@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socket } from './socket.js';
+import { socket } from './socket.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 var clock = new THREE.Clock();
@@ -66,8 +66,7 @@ class Player {
     constructor(id, x, y) {
         this.id = id;
 
-        let material = new THREE.MeshBasicMaterial({  color: 0x00ffff });
-        // let material = new THREE.MeshBasicMaterial({ color: colors[i++]});
+        let material = new THREE.MeshBasicMaterial({ color: colors[i++]});
         material.opacity = 0.5; 
         material.transparent = true;
         material.needsUpdate = true;
@@ -138,7 +137,8 @@ export function movePlayer(delta) {
     
     // Emit movement data to the server
     const movementData = { x, y };
-    // socket.emit('sendPositionToServer', movementData);
+    let cmd = "move";
+    // socket.send(JSON.stringify({ cmd, movementData })); //Sending to gameserv/consumers.py 
     
     if (x !== 0 || y !== 0 ) //if both 0 = false
     {   
@@ -159,6 +159,12 @@ export function animate() {
     controls.update();
     renderer.render(scene, camera);
 }
+
+export function receiveMove(client_id, client_msg){
+    if (players.find())
+    players.push(new Player(0,0,0));
+}
+
 
 
 animate();
