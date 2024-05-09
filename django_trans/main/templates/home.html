@@ -75,13 +75,27 @@
             <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
           
         <div id="gameCont" class="mt-3 three-js-canvas">
-            <div class="hud">
-                <b>I am a button</b>
-                <br>
-                <small><small>
-                        ( just staying here - do not click me )
-                </small></small>
-        </div>
+           <div class="flex-container hud">
+               <div class="hud-btn">
+                   <b>Play online</b>
+                   <br>
+                   <small><small>
+                       ( 1 vs 1  or 2 vs 2)
+                    </small></small>
+                </div>
+                <div class="hud-btn">
+                    <b>Local play</b>
+                    <br>
+                    <small><small>
+                        ( 1 vs 1 )
+                    </small></small>
+                </div>
+                <div class="hud-btn">
+                    <b>Versus AI</b>
+                    <br>
+                        🤖
+                </div>
+            </div>
         </div>
         </div>
         <div class="gutter gutter-horizontal"></div>
