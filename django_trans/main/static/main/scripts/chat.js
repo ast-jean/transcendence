@@ -23,7 +23,22 @@ export function receiveChat(client_id, client_msg){
     li.textContent = client_id + ": " + client_msg;
     chatBox.appendChild(li);
 }
+//Receiving message from server
+export function receiveConnect(client_id){
+    var chatBox = document.getElementById('chat-messages');
+    var li = document.createElement('li');
 
+    li.textContent = client_id + " has joined.";
+    chatBox.appendChild(li);
+}
+
+export function receiveDisconnect(client_id){
+    var chatBox = document.getElementById('chat-messages');
+    var li = document.createElement('li');
+
+    li.textContent = client_id + " left the game.";
+    chatBox.appendChild(li);
+}
 
 
 function sendMessage() {

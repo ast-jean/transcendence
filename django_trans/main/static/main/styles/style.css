@@ -26,6 +26,26 @@ html, body {
   padding: 5px;
 }
 
+.hud {
+    display: block;
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    background: none;
+    border: none;
+    border-radius: 1em;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 150%;
+    padding: 20px;
+}
+
+.hud:hover {
+    cursor: pointer;
+    border: solid 1px gray;
+    background: rgba( 255, 255, 255, 0.5 );
+}
+
 .gutter {
     background-color: #a4f97f;
     background-repeat: no-repeat;
@@ -38,6 +58,7 @@ html, body {
 #chat-container {
     width: 300px;
     background: #0967cc;
+    border-radius: 5px;
     border: 1px solid #ddd;
     padding: 10px;
     /* margin: 20px; */
@@ -46,6 +67,7 @@ html, body {
 #chat-box {
     height: 200px;
     overflow-y: auto;
+    border-radius: 5px;
     border: 1px solid #ccc;
     background: #fff;
     margin-bottom: 10px;
@@ -65,5 +87,6 @@ html, body {
 #chat-input {
     width: calc(100% - 75px);
     padding: 10px;
+    border-radius: 5px;
     margin-right: 5px;
 }

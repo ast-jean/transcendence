@@ -1,16 +1,19 @@
 # transcendence
 # TODO:
 
-- [ ] Achitecture:
+## Achitecture:
     - [X] Change socketio to channels.
-- [ ] Game:
+## Game:
     - [ ] Modulable Pong matchmaking
         - [ ] Channels client comms used with chat
     - [ ] 1 vs 1 local
     - [ ] Tournament
     - [ ] 3 players+
-- [ ] Player Profiles
+## Player Profiles
     - [ ] Win/Loss
     - [ ] Past games
-- [ ] Chat:
+## Chat:
     - [ ] All communication in chat.
+## Frontend:
+    - [ ] Chat scroll down when receiving message
+    - [ ] On chat focus make arrow default use. (Moveleft and right of the message)
