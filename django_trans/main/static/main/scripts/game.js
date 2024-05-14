@@ -48,10 +48,6 @@ const controls = new OrbitControls(camera, renderer.domElement);
 //     renderer.setSize(width, height);
 // }
 
-
-
-
-
 // function resizeRendererToDisplaySize(renderer) {
 //     const canvas = renderer.domElement;
 //     const width = canvas.clientWidth;
@@ -64,6 +60,14 @@ const controls = new OrbitControls(camera, renderer.domElement);
 // }
 
 export let players = [];
+
+export function removePlayer(playerIdToRemove) {
+    console.log("Removing player");
+    let player = players.find(p => p.id === playerIdToRemove);
+    removeMeshFromScene(player.mesh, scene);
+    players = players.filter(player => player.id !== playerIdToRemove);
+    updatePlayerVisualization();
+}
 
 let colors = [
     0x00ff00, // Green
@@ -78,7 +82,7 @@ let colors = [
     0x808000  // Olive
 ];
  let i = 0;
-class Player {
+export class Player {
     constructor(id, x, y) {
         this.id = id;
 
@@ -117,9 +121,9 @@ export function updatePlayerVisualization() {
     if (players.length > 0) {
             players.forEach(player => {
                     scene.add(player.mesh);
-                });
+            });
     }
-
+    //ADD BALL MOVEMENT HERE STEVEN!!!!
 }
 
 export var delta;
@@ -150,36 +154,99 @@ export function movePlayer(delta) {
     if (keyState['ArrowRight']) x += speed * delta;
     if (keyState['ArrowUp']) y += speed * delta;
     if (keyState['ArrowDown']) y -= speed * delta;
-    
     // Emit movement data to the server
-    const movementData = { x, y };
-    let cmd = "move";
-    // socket.send(JSON.stringify({ cmd, movementData })); //Sending to gameserv/consumers.py 
-    
     if (x !== 0 || y !== 0 ) //if both 0 = false
     {   
+        if (socket && socket.readyState)
+        {
+            let cmd = "move";
+            const movementData = { x, y };
+            socket.send(JSON.stringify({ cmd , movementData })); //Sending to gameserv/consumers.py 
+        }
         players[0].mesh.position.x += x;
         players[0].mesh.position.y += y;
     }
+    updatePlayerVisualization();
 }
 
 export function animate() {
     requestAnimationFrame(animate);
     delta = clock.getDelta();
-    //changes x and y of the mesh.ß
+    //changes x and y of the mesh.
     movePlayer(delta);
-    updatePlayerVisualization();
     camera.position.set(0, 0, 5);
     camera.lookAt(0, 0, 0);
     controls.update();
     renderer.render(scene, camera);
 }
 
-export function receiveMove(client_id, client_msg){
-    if (players.find())
-    players.push(new Player(0,0,0));
+export function receiveMove(id, movementData) {
+    const player = players.find(p => p.id === id);
+    // console.log("Do find() work?:", player, players);
+    // console.log("movementData: ",movementData);
+    if (player) {
+        if (movementData) {
+            if (movementData.x)
+                player.mesh.position.x += movementData.x;
+            if (movementData.y) 
+                player.mesh.position.y += movementData.y;
+        }
+    } else {
+        console.log("Player doesnt exist, creating one");
+        if (!movementData.x)
+            movementData.x = 0;
+        players.push(new Player(id, movementData.x, movementData.y));
+        if (!movementData.y)
+            movementData.y = 0;
+    }
+    updatePlayerVisualization();
 }
 
+export function receiveSync(id, movementData) {
+    const player = players.find(p => p.id === id);
+    // console.log("Do find() work?:", player, players);
+    if (!player) {
+        // console.log("Player doesnt exist, creating one");
+        if (!movementData.x)
+            movementData.x = 0;
+        if (!movementData.y)
+        movementData.y = 0;
+        players.push(new Player(id, movementData.x, movementData.y));
+    }
+    updatePlayerVisualization();
+}
 
+export function sendSync() {
+    let cmd = "sync";
+    let x = players[0].mesh.position.x;
+    let y = players[0].mesh.position.y;
+    const movementData = { x, y };
+    socket.send(JSON.stringify({ cmd , movementData }));
+}
+
+function removeMeshFromScene(mesh, scene) {
+    // Remove mesh from scene
+    scene.remove(mesh);
+    // Dispose geometry
+    if (mesh.geometry) {
+        mesh.geometry.dispose();
+    }
+    // Dispose material
+    if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(material => material.dispose());
+        } else {
+            mesh.material.dispose();
+        }
+    }
+    // Dispose textures
+    if (mesh.material.map) {
+        mesh.material.map.dispose();
+    }
+    // Additional textures if any
+    // if (mesh.material.normalMap) mesh.material.normalMap.dispose();
+    // if (mesh.material.specularMap) mesh.material.specularMap.dispose();
+    // etc...
+}
 
 animate();
