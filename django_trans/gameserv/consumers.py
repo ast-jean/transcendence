@@ -30,7 +30,9 @@ class GameConsumer(AsyncWebsocketConsumer):
 				await self.broadcast_connect(text_data_json)
 			if text_data_json["cmd"] == "disconnect":
 				await self.broadcast_connect(text_data_json)
-
+			if text_data_json["cmd"] == "sync":
+				await self.broadcast_move(text_data_json)
+    
 	async def broadcast_chat(self, data):
 		for client in self.connected_clients:
 			if client.ident != self.ident:
