@@ -19,6 +19,27 @@ renderer.setClearColor(0x000001);
 // renderer.domElement.style.aspectRatio = 'auto 1 / 1';
 container.appendChild(renderer.domElement);
 
+<<<<<<< HEAD
+=======
+var localplay = document.getElementById("localplay_btn");
+localplay.addEventListener("click", localgame);
+
+
+var index = 0;
+function localgame () {
+    //have fun!
+    console.log("in localgame function", index);
+    const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    // sphereMaterial.opacity = 0.5; 
+    // sphereMaterial.transparent = true;
+    const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere2.position.set(index++, 0, 0);
+    scene.add(sphere2);
+    updatePlayerVisualization();
+}
+
+>>>>>>> d371d0efd921c54e05c46437259b19308cfea6f7
 const controls = new OrbitControls(camera, renderer.domElement);
 
 // Resize game window on window resize
@@ -29,10 +50,6 @@ const controls = new OrbitControls(camera, renderer.domElement);
 //     camera.updateProjectionMatrix();
 //     renderer.setSize(width, height);
 // }
-
-
-
-
 
 // function resizeRendererToDisplaySize(renderer) {
 //     const canvas = renderer.domElement;
@@ -46,6 +63,14 @@ const controls = new OrbitControls(camera, renderer.domElement);
 // }
 
 export let players = [];
+
+export function removePlayer(playerIdToRemove) {
+    console.log("Removing player");
+    let player = players.find(p => p.id === playerIdToRemove);
+    removeMeshFromScene(player.mesh, scene);
+    players = players.filter(player => player.id !== playerIdToRemove);
+    updatePlayerVisualization();
+}
 
 let colors = [
     0x00ff00, // Green
@@ -101,6 +126,10 @@ export function updatePlayerVisualization() {
                     scene.add(player.mesh);
             });
     }
+<<<<<<< HEAD
+=======
+    //ADD BALL MOVEMENT HERE STEVEN!!!!
+>>>>>>> d371d0efd921c54e05c46437259b19308cfea6f7
 }
 
 export var delta;
@@ -143,15 +172,14 @@ export function movePlayer(delta) {
         players[0].mesh.position.x += x;
         players[0].mesh.position.y += y;
     }
+    updatePlayerVisualization();
 }
 
 export function animate() {
     requestAnimationFrame(animate);
     delta = clock.getDelta();
-
-    //changes x and y of the mesh.ß
+    //changes x and y of the mesh.
     movePlayer(delta);
-    updatePlayerVisualization();
     camera.position.set(0, 0, 5);
     camera.lookAt(0, 0, 0);
     controls.update();
@@ -160,24 +188,71 @@ export function animate() {
 
 export function receiveMove(id, movementData) {
     const player = players.find(p => p.id === id);
-
+    // console.log("Do find() work?:", player, players);
+    // console.log("movementData: ",movementData);
     if (player) {
         if (movementData) {
-            console.log("change player data:", movementData.x, movementData.y);
             if (movementData.x)
                 player.mesh.position.x += movementData.x;
             if (movementData.y) 
                 player.mesh.position.y += movementData.y;
         }
     } else {
-        console.log("create new player");
+        console.log("Player doesnt exist, creating one");
         if (!movementData.x)
             movementData.x = 0;
         players.push(new Player(id, movementData.x, movementData.y));
         if (!movementData.y)
             movementData.y = 0;
     }
+    updatePlayerVisualization();
 }
 
+export function receiveSync(id, movementData) {
+    const player = players.find(p => p.id === id);
+    // console.log("Do find() work?:", player, players);
+    if (!player) {
+        // console.log("Player doesnt exist, creating one");
+        if (!movementData.x)
+            movementData.x = 0;
+        if (!movementData.y)
+        movementData.y = 0;
+        players.push(new Player(id, movementData.x, movementData.y));
+    }
+    updatePlayerVisualization();
+}
+
+export function sendSync() {
+    let cmd = "sync";
+    let x = players[0].mesh.position.x;
+    let y = players[0].mesh.position.y;
+    const movementData = { x, y };
+    socket.send(JSON.stringify({ cmd , movementData }));
+}
+
+function removeMeshFromScene(mesh, scene) {
+    // Remove mesh from scene
+    scene.remove(mesh);
+    // Dispose geometry
+    if (mesh.geometry) {
+        mesh.geometry.dispose();
+    }
+    // Dispose material
+    if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(material => material.dispose());
+        } else {
+            mesh.material.dispose();
+        }
+    }
+    // Dispose textures
+    if (mesh.material.map) {
+        mesh.material.map.dispose();
+    }
+    // Additional textures if any
+    // if (mesh.material.normalMap) mesh.material.normalMap.dispose();
+    // if (mesh.material.specularMap) mesh.material.specularMap.dispose();
+    // etc...
+}
 
 animate();

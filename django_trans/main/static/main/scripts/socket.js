@@ -1,4 +1,4 @@
-import { receiveMove, animate, players, Player } from './game.js';
+import { receiveMove, receiveSync, sendSync, animate, removePlayer, players, Player } from './game.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
 export var socket;
@@ -18,28 +18,33 @@ function setupWebSocket() {
     };
 
     socket.onmessage = function(event) {
-        console.log(event.data);
+        // console.log(event.data);
         var data = JSON.parse(event.data);
         // {ident, cmd, data}
         if (data.cmd === "chat") {
             receiveChat(data.ident, data.data);
         }
         if (data.cmd === "move") {
-            receiveMove(data.ident, data.data);
+            // console.log("event.data", event.data);
+            receiveMove(data.ident, data.movementData);
+        }
+        if (data.cmd === "sync") {
+            console.log("event.data", event.data);
+            receiveSync(data.ident, data.movementData);
         }
         if (data.cmd === "connect") {
+            // players.push(new Player(data.ident,0,0));
+            sendSync();
             receiveConnect(data.ident);
             players.push(new Player(data.ident,0,0));
         }
         if (data.cmd === "disconnect") {
+            removePlayer(data.ident);
             receiveDisconnect(data.ident);
             removePlayer(data.ident);
         }
     };
 }
 
-function removePlayer(playerIdToRemove) {
-    players = players.filter(player => player.id !== playerIdToRemove);
-}
 
 document.addEventListener("DOMContentLoaded", setupWebSocket);
