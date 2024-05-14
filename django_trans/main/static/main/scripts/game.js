@@ -19,8 +19,6 @@ renderer.setClearColor(0x000001);
 // renderer.domElement.style.aspectRatio = 'auto 1 / 1';
 container.appendChild(renderer.domElement);
 
-<<<<<<< HEAD
-=======
 var localplay = document.getElementById("localplay_btn");
 localplay.addEventListener("click", localgame);
 
@@ -39,7 +37,6 @@ function localgame () {
     updatePlayerVisualization();
 }
 
->>>>>>> d371d0efd921c54e05c46437259b19308cfea6f7
 const controls = new OrbitControls(camera, renderer.domElement);
 
 // Resize game window on window resize
@@ -93,10 +90,10 @@ export class Player {
         material.opacity = 0.5; 
         material.transparent = true;
         material.needsUpdate = true;
-        
         this.mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1), material);
         this.mesh.position.x = x;
         this.mesh.position.y = y;
+        this.velocity = { x: 0, y: 0 };
         console.log('New player:', this);
     }
 }
@@ -126,10 +123,7 @@ export function updatePlayerVisualization() {
                     scene.add(player.mesh);
             });
     }
-<<<<<<< HEAD
-=======
     //ADD BALL MOVEMENT HERE STEVEN!!!!
->>>>>>> d371d0efd921c54e05c46437259b19308cfea6f7
 }
 
 export var delta;
@@ -153,6 +147,7 @@ document.addEventListener('keyup', function(e) {
 
 export function movePlayer(delta) {
     const speed = 10; // Adjust speed as necessary
+    const deceleration = 0.92; // Deceleration factor
     let x = 0;
     let y = 0;
 
@@ -161,6 +156,15 @@ export function movePlayer(delta) {
     if (keyState['ArrowUp']) y += speed * delta;
     if (keyState['ArrowDown']) y -= speed * delta;
     // Emit movement data to the server
+        // Apply deceleration if no key is pressed
+    if (!(keyState['ArrowLeft'] || keyState['ArrowRight'])) {
+        x = players[0].velocity.x * deceleration;
+    }
+    if (!(keyState['ArrowUp'] || keyState['ArrowDown'])) {
+        y = players[0].velocity.y * deceleration;
+    }
+    players[0].velocity.x = x;
+    players[0].velocity.y = y;
     if (x !== 0 || y !== 0 ) //if both 0 = false
     {   
         if (socket && socket.readyState)
