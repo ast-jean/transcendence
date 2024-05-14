@@ -19,8 +19,6 @@ renderer.setClearColor(0x000001);
 // renderer.domElement.style.aspectRatio = 'auto 1 / 1';
 container.appendChild(renderer.domElement);
 
-
-
 const controls = new OrbitControls(camera, renderer.domElement);
 
 // Resize game window on window resize
@@ -62,7 +60,7 @@ let colors = [
     0x808000  // Olive
 ];
  let i = 0;
-class Player {
+export class Player {
     constructor(id, x, y) {
         this.id = id;
 
@@ -101,9 +99,8 @@ export function updatePlayerVisualization() {
     if (players.length > 0) {
             players.forEach(player => {
                     scene.add(player.mesh);
-                });
+            });
     }
-
 }
 
 export var delta;
@@ -134,14 +131,15 @@ export function movePlayer(delta) {
     if (keyState['ArrowRight']) x += speed * delta;
     if (keyState['ArrowUp']) y += speed * delta;
     if (keyState['ArrowDown']) y -= speed * delta;
-    
     // Emit movement data to the server
-    const movementData = { x, y };
-    let cmd = "move";
-    // socket.send(JSON.stringify({ cmd, movementData })); //Sending to gameserv/consumers.py 
-    
     if (x !== 0 || y !== 0 ) //if both 0 = false
     {   
+        if (socket && socket.readyState)
+        {
+            let cmd = "move";
+            const movementData = { x, y };
+            socket.send(JSON.stringify({ cmd , movementData })); //Sending to gameserv/consumers.py 
+        }
         players[0].mesh.position.x += x;
         players[0].mesh.position.y += y;
     }
@@ -160,11 +158,26 @@ export function animate() {
     renderer.render(scene, camera);
 }
 
-export function receiveMove(client_id, client_msg){
-    if (players.find())
-    players.push(new Player(0,0,0));
-}
+export function receiveMove(id, movementData) {
+    const player = players.find(p => p.id === id);
 
+    if (player) {
+        if (movementData) {
+            console.log("change player data:", movementData.x, movementData.y);
+            if (movementData.x)
+                player.mesh.position.x += movementData.x;
+            if (movementData.y) 
+                player.mesh.position.y += movementData.y;
+        }
+    } else {
+        console.log("create new player");
+        if (!movementData.x)
+            movementData.x = 0;
+        players.push(new Player(id, movementData.x, movementData.y));
+        if (!movementData.y)
+            movementData.y = 0;
+    }
+}
 
 
 animate();
