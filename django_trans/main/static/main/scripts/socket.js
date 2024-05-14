@@ -1,6 +1,5 @@
-import { receiveMove, animate, players } from './game.js';
+import { receiveMove, animate, players, Player } from './game.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
-import * as THREE from 'three';
 
 export var socket;
 
@@ -30,27 +29,17 @@ function setupWebSocket() {
         }
         if (data.cmd === "connect") {
             receiveConnect(data.ident);
+            players.push(new Player(data.ident,0,0));
         }
         if (data.cmd === "disconnect") {
             receiveDisconnect(data.ident);
+            removePlayer(data.ident);
         }
     };
 }
 
 function removePlayer(playerIdToRemove) {
     players = players.filter(player => player.id !== playerIdToRemove);
-}
-
-function updatePlayerPosition(id, x, y) {
-    const player = players.find(p => p.id === id);
-    if (player) {
-        console.log("change player data");
-        player.mesh.position.x += x;
-        player.mesh.position.y += y;
-    } else {
-        console.log("create new player");
-        players.push(new Player(id, x, y));
-    }
 }
 
 document.addEventListener("DOMContentLoaded", setupWebSocket);

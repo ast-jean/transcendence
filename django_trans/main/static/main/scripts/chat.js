@@ -35,7 +35,6 @@ export function receiveConnect(client_id){
 export function receiveDisconnect(client_id){
     var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
-
     li.textContent = client_id + " left the game.";
     chatBox.appendChild(li);
 }
