@@ -1,4 +1,5 @@
 html, body {
+    background-color: rgb(67, 67, 67);
     height: 100%;
     margin: 0;
     font-size: 16pt;
@@ -21,7 +22,7 @@ html, body {
 }
 
 #controls {
-  background: #fd8f8fdc;
+  background: #7e0505dc;
   /* background: linear-gradient(#fd8f8fdc, rgb(161, 255, 140)); */
   padding: 5px;
 }
