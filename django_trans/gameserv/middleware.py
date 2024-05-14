@@ -1,6 +1,6 @@
-
 from channels.middleware import BaseMiddleware
 from urllib.parse import urlparse
+
 
 class CorsMiddleware(BaseMiddleware):
     def __init__(self, inner):

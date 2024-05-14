@@ -1,6 +1,8 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import uuid
 import json
+from connectedClients import connectedClient
+
 
 class GameConsumer(AsyncWebsocketConsumer):
 	connected_clients = []
@@ -8,7 +10,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
 	async def connect(self):
 		self.ident = str(uuid.uuid4())
-		GameConsumer.connected_clients.append(self)
+		GameConsumer.connected_clients.append(connectedClient(self.ident, "default name"))
 		await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
 		# print(f"Client {self.ident} has connected.")
 		await self.accept()
