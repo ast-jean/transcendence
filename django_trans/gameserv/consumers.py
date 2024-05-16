@@ -4,7 +4,7 @@ import json
 
 class GameConsumer(AsyncWebsocketConsumer):
 	connected_clients = []
-	# rooms = [] for later use
+	rooms = []
 
 	async def connect(self):
 		self.ident = str(uuid.uuid4())

@@ -4,6 +4,44 @@ html, body {
     margin: 0;
     font-size: 16pt;
 }
+.button_home { 
+    background-image: url( '/static/main/obj/truck.png'); 
+    background-size: cover; 
+    width: 300px; 
+    border-radius: 5px;
+    height: 200px; 
+    font-size: 2rem; 
+} 
+
+.btn-background {
+    width: 200px; /* Adjust the width as needed */
+    height: 100px; /* Adjust the height as needed */
+    color: white; /* Text color */
+    font-size: 16px; /* Text size */
+    text-align: center; /* Center the text */
+    vertical-align: middle; /* Center the text vertically */
+    display: flex;
+    border-radius: 5px;
+    border-color: black;
+    border: 2px;
+    justify-content: center;
+    align-items: center;
+    border: none; /* Remove border */
+    background-size: cover; /* Cover the entire button */
+    background-position: center; /* Center the background image */
+    cursor: pointer; /* Pointer cursor on hover */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Add text shadow for better readability */
+}
+
+#button_pong {
+    background-image: url("/static/main/obj/truck.png");
+}
+
+#button_truckleague {
+    background-image: url("/static/main/obj/truck.png");
+
+}
+
 
 .gameCont {
     display: flex;

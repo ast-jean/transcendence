@@ -6,7 +6,10 @@ from .views import login_view
 
 urlpatterns = [
     path("", views.home, name='home'),
+    path('Pong/', views.pong, name='Pong'),
+    path('truckleague/', views.truckleague, name='Truck'),
     path('login/', login_view, name='login'),
+    path('about/', views.about, name='About'),
 ]
 
 # The static() function is only used during development, and it's typically conditioned on DEBUG being True
