@@ -2,9 +2,14 @@ all:
 	@docker-compose -f ./docker-compose.yml up --build
 up:
 	@docker-compose up --build
-
 down:
 	@docker-compose -f ./docker-compose.yml down
+in_db:
+	docker exec -it trans_db_1 bash
+in_django:
+	docker exec -it trans_django_1 bash
+out:
+	@echo "👨‍❤️‍💋‍👨"
 
 re: stop_dockers all
 
@@ -18,9 +23,5 @@ clean: stop_dockers
 	docker network rm $$(docker network ls -q);\
 	docker system prune -a
 	df -h 
-
-con_db:
-	docker exec -it trans_db_1 bash
-
 
 .PHONY: all re down clean

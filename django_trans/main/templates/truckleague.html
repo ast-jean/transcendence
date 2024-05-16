@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Transcendence | Truck League{% endblock %}
+{% block content %}
+    <div id="editor">
+        <div id="view" class="container">
+            <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
+            <script src="{% static 'main/scripts/truck.js' %}" type="module"></script>
+            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
+          
+        <div id="gameCont" class="mt-3 three-js-canvas">
+           <div class="flex-container hud">
+               <div class="hud-btn">
+                   <b>Play online</b>
+                   <br>
+                   <small><small>
+                       ( 1 vs 1  or 2 vs 2)
+                    </small></small>
+                </div>
+            </div>
+        </div>
+        </div>
+       
+      </div>
+</body>
+{% endblock %}
+

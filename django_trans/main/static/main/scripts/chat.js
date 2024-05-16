@@ -1,4 +1,4 @@
-import { socket } from './socket.js'
+import { socket } from './socket_pong.js'
 
 var input = document.getElementById('chat-input');
 
