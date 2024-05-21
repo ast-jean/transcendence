@@ -7,7 +7,7 @@ down:
 in_db:
 	docker exec -it trans_db_1 bash
 in_django:
-	docker exec -it trans_django_1 bash
+	docker exec -it transcendence_django_1 bash
 out:
 	@echo "👨‍❤️‍💋‍👨"
 

@@ -8,7 +8,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 
 	async def connect(self):
 		self.ident = str(uuid.uuid4())
-		GameConsumer.connected_clients.append(self)
+		GameConsumer_truck.connected_clients.append(self)
 		await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
 		await self.accept()
 

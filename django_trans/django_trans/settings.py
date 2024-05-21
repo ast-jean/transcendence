@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', "*"]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
 # CSRF_COOKIE_SECURE = True
 # CSRF_TRUSTED_ORIGINS = ['https://localhost:55582','https://localhost:55582/admin/login/?next=/admin/']
 # Application definition
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     'channels',
     'gameserv',
     'sslserver',
+    'oauth2_provider',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -65,7 +68,7 @@ ROOT_URLCONF = 'django_trans.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,6 +77,7 @@ TEMPLATES = [
                 'main.context_processors.current_path',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'main.context_processors.user_profile',  
             ],
         },
     },
@@ -85,6 +89,7 @@ ASGI_APPLICATION = 'django_trans.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 import os
+
 CHANNEL_LAYERS = {
     'default': {
     'BACKEND': 'channels.layers.InMemoryChannelLayer',
