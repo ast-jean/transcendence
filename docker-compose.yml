@@ -24,15 +24,14 @@ services:
       - media_volume:/app/media
     command: gunicorn django_trans.wsgi:application --bind 0.0.0.0:8000
     environment:
-      REDIS_URL: "redis://redis:6379/1"
-      REDIS_HOST: "redis"
-      REDIS_PORT: "6379"
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
     ports:
       - "8000:8000"
     depends_on:
