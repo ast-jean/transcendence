@@ -65,6 +65,11 @@ html, body {
   padding: 5px;
 }
 
+.hidden {
+    display: none;
+}
+
+
 .hud-btn { 
     border-radius: 1em;
     text-align: center;
