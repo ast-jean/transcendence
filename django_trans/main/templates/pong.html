@@ -2,35 +2,35 @@
 {% load static %}
 {% block title %}Transcendence | Pong{% endblock %}
 {% block content %}
-    <!-- SERVER STATUS DEBUG 
-        <h4 id="ServerStatus">Server Status : <span style="color: red;">Disconnected</span></h4>
-    <button id="sendBtn">Send Message to Server</button>
-    <button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
-    <script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
-    <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
-    <script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
-    <div id="editor">
-        <div id="view" class="container">
-            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
-            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
-          
+<!-- SERVER STATUS DEBUG 
+    <h4 id="ServerStatus">Server Status : <span style="color: red;">Disconnected</span></h4>
+<button id="sendBtn">Send Message to Server</button>
+<button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
+<script src="{% static 'main/scripts/socket.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
+<div id="editor">
+    <div id="view" class="container">
+        
+        <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+        <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
         <div id="gameCont" class="mt-3 three-js-canvas">
            <div class="flex-container hud">
-               <div class="hud-btn">
+               <div id="onlineplay_btn" class="hud-btn game-button">
                    <b>Play online</b>
                    <br>
                    <small><small>
                        ( 1 vs 1  or 2 vs 2)
                     </small></small>
                 </div>
-                <div id="localplay_btn" class="hud-btn">
+                <div id="localplay_btn" class="hud-btn game-button">
                     <b>Local play</b>
                     <br>
                     <small><small>
                         ( 1 vs 1 )
                     </small></small>
                 </div>
-                <div class="hud-btn">
+                <div id="versusai_btn" class="hud-btn game-button">
                     <b>Versus AI</b>
                     <br>
                         🤖
@@ -56,4 +56,3 @@
       </div>
 </body>
 {% endblock %}
-
