@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Profile | About{% endblock %}
+{% block content %}
+<h1>Profile</h1>
+{% if profile.login %}
+    <img src="{{ profile.image.versions.small }}" alt="{{ profile.login }}">
+    <p>Name: {{ profile.login }}</p>
+    <p>Email: {{ profile.email }}</p>
+{% else %}
+    <p>No profile data available.</p>
+{% endif %}
+{% endblock %}

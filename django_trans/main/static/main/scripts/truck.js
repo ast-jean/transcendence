@@ -114,9 +114,6 @@ renderer.setClearColor(0x000001);
 // renderer.domElement.style.aspectRatio = 'auto 1 / 1';
 container.appendChild(renderer.domElement);
 
-var localplay = document.getElementById("localplay_btn");
-localplay.addEventListener("click", localgame);
-
 
 // Add a basic plane to the scene
 const planeGeometry = new THREE.PlaneGeometry(10, 10);
@@ -127,19 +124,6 @@ plane.position.y = -1; // Position it just below the origin
 scene.add(plane);
 
 
-var index = 0;
-function localgame () {
-    //have fun!
-    console.log("in localgame function", index);
-    const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-    // sphereMaterial.opacity = 0.5; 
-    // sphereMaterial.transparent = true;
-    const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere2.position.set(index++, 0, 0);
-    scene.add(sphere2);
-    updatePlayerVisualization();
-}
 
 // const controls = new OrbitControls(camera, renderer.domElement);
 
