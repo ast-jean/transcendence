@@ -2,14 +2,16 @@ from django.urls import path
 from django.conf import settings  # Add this import
 from django.conf.urls.static import static
 from main import views
-from .views import login_view
 
 urlpatterns = [
     path("", views.home, name='home'),
     path('Pong/', views.pong, name='Pong'),
     path('truckleague/', views.truckleague, name='Truck'),
-    path('login/', login_view, name='login'),
     path('about/', views.about, name='About'),
+    path('login/', views.oauth_login, name='oauth_login'),
+    path('callback/', views.callback, name='callback'),
+    path('profile/', views.profile, name='profile'),
+    path('logout/', views.logout_view, name='logout'),
 ]
 
 # The static() function is only used during development, and it's typically conditioned on DEBUG being True
