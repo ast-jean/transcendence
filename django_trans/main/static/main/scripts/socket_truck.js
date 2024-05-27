@@ -1,4 +1,4 @@
-import { receiveMove, receiveSync, sendSync, animate, removePlayer, players, Player } from './truck.js';
+import { receiveMove, receiveSync, sendSync, removePlayer, players, Player } from './truck.js';
 
 export var socket;
 

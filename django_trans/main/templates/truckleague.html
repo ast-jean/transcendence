@@ -2,6 +2,15 @@
 {% load static %}
 {% block title %}Transcendence | Truck League{% endblock %}
 {% block content %}
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/",
+            "cannon": "https://cdn.skypack.dev/pin/cannon-es@v0.20.0-kjnG3LHQFwthijw6LzLZ/mode=imports/optimized/cannon-es.js"  
+      }
+    }
+    </script>
     <div id="editor">
         <div id="view" class="container">
             <script src="{% static 'main/scripts/socket_truck.js' %}" type="module"></script>
