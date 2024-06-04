@@ -35,14 +35,14 @@ document.querySelectorAll('.game-button').forEach(button => {
     button.addEventListener('click', hideAllButtons);
 });
 
-let ballSpeedX = 5
-let ballSpeedY = 5
+let ballSpeedX = 10
+let ballSpeedY = 10
 
 // Créer les murs
 const wallThickness = 0.5;
 const wallLength = 20;
 const walls = [];
-const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); 
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 }); 
 
 // Mur du fond
 const topWall = new THREE.Mesh(
@@ -170,6 +170,7 @@ export class Player {
         material.opacity = 1;
         material.transparent = true;
         material.needsUpdate = true;
+  
 
         this.mesh = new THREE.Mesh(new THREE.BoxGeometry(5, 0.5, 0.5), material);
         this.mesh.position.x = x;
@@ -184,16 +185,33 @@ export class Player {
 // The parameters are: radius, widthSegments, heightSegments
 const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
 const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-// sphereMaterial.opacity = 0.5; 
-// sphereMaterial.transparent = true;
 const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphere.position.set(0, 0, 0);
 scene.add(sphere);
 
 // If using lights and a material that reacts to light
-const light = new THREE.PointLight(0xffffff, 1, 100);
-light.position.set(5, 5, 5);
-scene.add(light);
+// Augmenter l'intensité des lumières
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(0, 20, 10);
+scene.add(directionalLight);
+
+const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+fillLight.position.set(-10, 10, 10);
+scene.add(fillLight);
+
+// Lumière ambiante pour ajouter une illumination générale
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+// Lumière ponctuelle près de la balle
+const ballLight = new THREE.PointLight(0xffffff, 1.5, 50);
+ballLight.position.set(0, 0, 5);
+scene.add(ballLight);
+
+
+
+
+
 
 export function updatePlayerVisualization() {
     if (players.length > 0) {
@@ -325,28 +343,34 @@ function moveBall(delta) {
 
 
     // Gérer les collisions avec les joueurs
+    const speedIncreaseFactor = 1.1; // Facteur d'augmentation de la vitesse
+
     players.forEach(player => {
         const playerBox = new THREE.Box3().setFromObject(player.mesh);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
-
+    
         if (playerBox.intersectsBox(sphereBox)) {
             let relativeIntersectY = (newPosition.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
             let bounceAngle = relativeIntersectY * (Math.PI / 8);
-
+    
             let speed = ballSpeed.length();
             if (newPosition.x > player.mesh.position.x) {
                 ballSpeed.set(Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             } else {
                 ballSpeed.set(-Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             }
-
+    
             if (Math.abs(ballSpeed.x) < speed * 0.5) {
                 ballSpeed.x = Math.sign(ballSpeed.x) * speed * 0.5;
             }
-
+    
             ballSpeed.normalize().multiplyScalar(speed);
+    
+            // Augmenter la vitesse de la balle
+            ballSpeed.multiplyScalar(speedIncreaseFactor);
         }
     });
+    
 
 
 
@@ -383,7 +407,7 @@ export function animate() {
     // changes x and y of the mesh.
     movePlayer(delta);
     moveBall(delta);
-    camera.position.set(0, -20, 15);
+    camera.position.set(0, -15, 10);
     camera.lookAt(0, 0, 0); 
     controls.update();
     renderer.render(scene, camera);
