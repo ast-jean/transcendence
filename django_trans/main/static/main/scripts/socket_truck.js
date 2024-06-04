@@ -4,7 +4,7 @@ export var socket;
 
 function setupWebSocket() {
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws_path = `${ws_scheme}://${window.location.host}/ws/truck/`;
+    // const ws_path = `${ws_scheme}://${window.location.host}/ws/truck/`;
     socket = new WebSocket(ws_path);
 
     socket.onopen = function() {
