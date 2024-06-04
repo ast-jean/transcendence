@@ -35,8 +35,8 @@ document.querySelectorAll('.game-button').forEach(button => {
     button.addEventListener('click', hideAllButtons);
 });
 
-let ballSpeedX = 15
-let ballSpeedY = 15
+let ballSpeedX = 5
+let ballSpeedY = 5
 
 // Créer les murs
 const wallThickness = 0.5;
@@ -52,7 +52,6 @@ const topWall = new THREE.Mesh(
 topWall.position.set(0, wallLength / 2, 0);
 scene.add(topWall);
 walls.push(topWall);
-console.log("Top wall created at:", topWall.position);
 
 // Mur du bas
 const bottomWall = new THREE.Mesh(
@@ -62,7 +61,6 @@ const bottomWall = new THREE.Mesh(
 bottomWall.position.set(0, -wallLength / 2, 0);
 scene.add(bottomWall);
 walls.push(bottomWall);
-console.log("Bottom wall created at:", bottomWall.position);
 
 // Mur de gauche
 const leftWall = new THREE.Mesh(
@@ -72,7 +70,6 @@ const leftWall = new THREE.Mesh(
 leftWall.position.set(-wallLength / 2, 0, 0);
 scene.add(leftWall);
 walls.push(leftWall);
-console.log("Left wall created at:", leftWall.position);
 
 // Mur de droite
 const rightWall = new THREE.Mesh(
@@ -82,13 +79,11 @@ const rightWall = new THREE.Mesh(
 rightWall.position.set(wallLength / 2, 0, 0);
 scene.add(rightWall);
 walls.push(rightWall);
-console.log("Right wall created at:", rightWall.position);
 
 var index = 0;
 function localgame() {
     // have fun!
     console.log("in localgame function", index);
-    localplay.style.hidden = true;
 
     let player1 = new Player(1, 0, -wallLength / 2 + 1, 0);// près de l'écran
     players.push(player1);
@@ -133,6 +128,25 @@ export function removePlayer(playerIdToRemove) {
     players = players.filter(player => player.id !== playerIdToRemove);
     updatePlayerVisualization();
 }
+
+let player1Score = 0;
+let player2Score = 0;
+
+const player1ScoreElement = document.getElementById('player1Score');
+const player2ScoreElement = document.getElementById('player2Score');
+
+function updateScore(player) {
+    if (player === 1) {
+        player1Score++;
+        player1ScoreElement.textContent = player1Score;
+    } else if (player === 2) {
+        player2Score++;
+        player2ScoreElement.textContent = player2Score;
+    }
+}
+
+
+
 
 let colors = [
     0x00ff00, // Green
@@ -255,34 +269,60 @@ export function movePlayer(delta) {
 
 
 function moveBall(delta) {
-    sphere.position.x += ballSpeedX * delta;
-    sphere.position.y += ballSpeedY * delta;
+    let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
+    let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
 
+    let newPosition = ballPosition.clone().add(ballSpeed.clone().multiplyScalar(delta));
+
+    function handleCollision(axis, wallBox) {
+        ballSpeed[axis] *= -1;
+        if (axis === 'x') {
+            if (ballSpeed.x > 0) {
+                newPosition.x = wallBox.max.x + sphere.geometry.parameters.radius + 0.01;
+            } else {
+                newPosition.x = wallBox.min.x - sphere.geometry.parameters.radius - 0.01;
+            }
+        } else if (axis === 'y') {
+            if (ballSpeed.y > 0) {
+                newPosition.y = wallBox.max.y + sphere.geometry.parameters.radius + 0.01;
+            } else {
+                newPosition.y = wallBox.min.y - sphere.geometry.parameters.radius + 0.01;
+            }
+        }
+    }
+    
     // Gérer les collisions avec les murs
+    let scored = false;
     walls.forEach(wall => {
         const wallBox = new THREE.Box3().setFromObject(wall);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
         if (wallBox.intersectsBox(sphereBox)) {
-            if (wall === topWall || wall === bottomWall) {
-                ballSpeedY = -ballSpeedY;
-                // Ajuste légèrement la position de la balle pour éviter une collision wack
-                if (wall === topWall) {
-                    sphere.position.y = wallBox.min.y - sphere.geometry.parameters.radius - 0.01;
-                } else {
-                    sphere.position.y = wallBox.max.y + sphere.geometry.parameters.radius + 0.01;
-                }
+            if (wall === topWall)
+            {
+                updateScore(1);
+                scored = true;
+            }
+            else if (wall === bottomWall) {
+                updateScore(2);
+                scored = true;
+                
             } else if (wall === leftWall || wall === rightWall) {
-                ballSpeedX = -ballSpeedX;
-                // Ajuster légèrement la position de la balle pour éviter une collision wack
-                if (wall === leftWall) {
-                    sphere.position.x = wallBox.max.x + sphere.geometry.parameters.radius + 0.01;
-                } else {
-                    sphere.position.x = wallBox.min.x - sphere.geometry.parameters.radius - 0.01;
-                }
+                handleCollision('x', wallBox);
             }
         }
+        if (!scored) {
+            sphere.position.set(newPosition.x, newPosition.y);
+        } else {
+            // Réinitialiser la position de la balle après un point
+            sphere.position.set(0, 0, 0);
+            ballSpeed.set(5 * (Math.random() > 0.5 ? 1 : -1), 5 * (Math.random() > 0.5 ? 1 : -1));
+            ballSpeedX = ballSpeed.x;
+            ballSpeedY = ballSpeed.y;
+        }
+
     });
+
 
     // Gérer les collisions avec les joueurs
     players.forEach(player => {
@@ -290,27 +330,45 @@ function moveBall(delta) {
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
         if (playerBox.intersectsBox(sphereBox)) {
-            // Vérifie la direction du mouvement de la balle pour ajuster correctement
-            if (Math.abs(sphere.position.y - player.mesh.position.y) < player.mesh.geometry.parameters.height / 2) {
-                // Collision sur les côtés horizontaux du joueur
-                ballSpeedX = -ballSpeedX;
-                if (ballSpeedX > 0) {
-                    sphere.position.x = playerBox.max.x + sphere.geometry.parameters.radius + 0.01;
-                } else {
-                    sphere.position.x = playerBox.min.x - sphere.geometry.parameters.radius - 0.01;
-                }
+            let relativeIntersectY = (newPosition.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
+            let bounceAngle = relativeIntersectY * (Math.PI / 8);
+
+            let speed = ballSpeed.length();
+            if (newPosition.x > player.mesh.position.x) {
+                ballSpeed.set(Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             } else {
-                // Collision sur les côtés verticaux du joueur
-                ballSpeedY = -ballSpeedY;
-                if (ballSpeedY > 0) {
-                    sphere.position.y = playerBox.max.y + sphere.geometry.parameters.radius + 0.01;
-                } else {
-                    sphere.position.y = playerBox.min.y - sphere.geometry.parameters.radius - 0.01;
-                }
+                ballSpeed.set(-Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             }
+
+            if (Math.abs(ballSpeed.x) < speed * 0.5) {
+                ballSpeed.x = Math.sign(ballSpeed.x) * speed * 0.5;
+            }
+
+            ballSpeed.normalize().multiplyScalar(speed);
         }
     });
+
+
+
+
+    ballSpeedX = ballSpeed.x;
+    ballSpeedY = ballSpeed.y;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
