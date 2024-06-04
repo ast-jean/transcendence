@@ -290,23 +290,41 @@ function moveBall(delta) {
             }
         }
     }
-
+    
     // Gérer les collisions avec les murs
+    let scored = false;
     walls.forEach(wall => {
         const wallBox = new THREE.Box3().setFromObject(wall);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
         if (wallBox.intersectsBox(sphereBox)) {
-            if (wall === topWall || wall === bottomWall) {
-                handleCollision('y', wallBox);
+            if (wall === topWall)
+            {
+                updateScore(1);
+                scored = true;
+            }
+            else if (wall === bottomWall) {
+                updateScore(2);
+                scored = true;
+                
             } else if (wall === leftWall || wall === rightWall) {
                 handleCollision('x', wallBox);
             }
         }
+        if (!scored) {
+            sphere.position.set(newPosition.x, newPosition.y);
+        } else {
+            // Réinitialiser la position de la balle après un point
+            sphere.position.set(0, 0, 0);
+            ballSpeed.set(5 * (Math.random() > 0.5 ? 1 : -1), 5 * (Math.random() > 0.5 ? 1 : -1));
+            ballSpeedX = ballSpeed.x;
+            ballSpeedY = ballSpeed.y;
+        }
+
     });
 
+
     // Gérer les collisions avec les joueurs
-    let scored = false;
     players.forEach(player => {
         const playerBox = new THREE.Box3().setFromObject(player.mesh);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
@@ -330,24 +348,8 @@ function moveBall(delta) {
         }
     });
 
-    // Gérer les collisions avec les murs de but
-    if (newPosition.y > topWall.position.y) {
-        updateScore(1); // Le joueur 1 marque un point
-        scored = true;
-    } else if (newPosition.y < bottomWall.position.y) {
-        updateScore(2); // Le joueur 2 marque un point
-        scored = true;
-    }
 
-    if (!scored) {s
-        sphere.position.set(newPosition.x, newPosition.y);
-    } else {
-        // Réinitialiser la position de la balle après un point
-        sphere.position.set(0, 0, 0);
-        ballSpeed.set(5 * (Math.random() > 0.5 ? 1 : -1), 5 * (Math.random() > 0.5 ? 1 : -1));
-        ballSpeedX = ballSpeed.x;
-        ballSpeedY = ballSpeed.y;
-    }
+
 
     ballSpeedX = ballSpeed.x;
     ballSpeedY = ballSpeed.y;
