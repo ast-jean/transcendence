@@ -16,7 +16,9 @@ class TruckSimulation {
     constructor() {
         this.keyState = {};
         this.players = []; 
-        this.localplayer;
+        this.jumpStartTime = null; // Variable to track jump start time
+        this.jumpDuration = 0.25; // Duration of the jump in seconds
+        this.jumpStartVelocity = new CANNON.Vec3(); // Store initial velocity
         this.initEventListeners();
         this.handleKeyStates();
         this.initThree(); 
@@ -29,7 +31,8 @@ class TruckSimulation {
         this.debugRenderer = new CannonDebugRenderer(this.scene, this.world);
         this.animate = this.animate.bind(this);
         this.animate();
-        this.initlocalplayer = false;
+        // this.initlocalplayer = false;
+        // this.localplayer;
     }
 
 
@@ -106,9 +109,7 @@ class TruckSimulation {
     }
 
     resetMomentum(body) {
-        // Reset linear velocity
         body.velocity.set(0, 0, 0);
-        // Reset angular velocity
         body.angularVelocity.set(0, 0, 0);
     }
     
@@ -258,7 +259,7 @@ class TruckSimulation {
         cornerWallMesh4.quaternion.copy(cornerWallBody4.quaternion);
         this.scene.add(cornerWallMesh4);
     }
-    
+
     addRoof() {
         // Define roof material
         const roofMaterial = new CANNON.Material('roofMaterial');
@@ -341,7 +342,30 @@ class TruckSimulation {
             player.update();
         });
 
-        console.log(score);
+    if (this.jumpStartTime) {
+        const elapsed = (performance.now() - this.jumpStartTime) / 1000;
+        if (elapsed < this.jumpDuration) {
+            const t = elapsed / this.jumpDuration;
+            const newPos = new CANNON.Vec3();
+            newPos.x = this.jumpStartPos.x + (this.jumpTargetPos.x - this.jumpStartPos.x) * t;
+            newPos.y = this.jumpStartPos.y + (this.jumpTargetPos.y - this.jumpStartPos.y) * t;
+            newPos.z = this.jumpStartPos.z + (this.jumpTargetPos.z - this.jumpStartPos.z) * t;
+            this.players[0].chassisBody.position.copy(newPos);
+        } else {
+            const velocityChange = new CANNON.Vec3(
+                this.jumpTargetPos.x - this.jumpStartPos.x,
+                this.jumpTargetPos.y - this.jumpStartPos.y,
+                this.jumpTargetPos.z - this.jumpStartPos.z
+            ).scale(1 / this.jumpDuration);
+            const newVelocity = this.jumpStartVelocity.clone().vadd(velocityChange);
+            this.players[0].chassisBody.position.copy(this.jumpTargetPos);
+            this.players[0].chassisBody.velocity.copy(newVelocity); // Apply the new momentum
+            this.jumpStartTime = null; // Reset jump
+        }
+    }
+
+
+
         if (this.ballBody.position.y < -40) {
             score.team1 =+ 1;
             this.resetScene();
@@ -393,87 +417,7 @@ class TruckSimulation {
             }
         }, true);
     }
-    
-    // handleKeyStates() {
-    //     const maxSteerVal = Math.PI / 4; // Increase this value to allow sharper turns
-    //     const maxForce = 2500; // Adjust this value to control the engine power
-    //     const steeringLerpFactor = 0.1; // Adjust this value to control the smoothness of the steering
 
-    //     if (this.players[0]){
-    //             if (this.keyState['ArrowUp']) {
-    //                 console.log("Up");
-    //                 this.players[0].vehicle.applyEngineForce(-maxForce, 0);
-    //                 this.players[0].vehicle.applyEngineForce(-maxForce, 1);
-    //             } else if (this.keyState['ArrowDown']) {
-    //                 console.log("Down");
-    //                 this.players[0].vehicle.applyEngineForce(maxForce/2, 0);
-    //                 this.players[0].vehicle.applyEngineForce(maxForce/2, 1);
-    //             } else {
-    //                 this.players[0].vehicle.applyEngineForce(0, 0);
-    //                 this.players[0].vehicle.applyEngineForce(0, 1);
-    //             }
-            
-    //             let targetSteeringValue = 0;
-    //             if (this.keyState['ArrowLeft']) {
-    //                 console.log("Left");
-    //                 targetSteeringValue = maxSteerVal;
-    //             } else if (this.keyState['ArrowRight']) {
-    //                 console.log("Right");
-    //                 targetSteeringValue = -maxSteerVal;
-    //             }
-            
-    //             [0, 1].forEach(index => {
-    //                 const currentSteeringValue = this.players[0].vehicle.wheelInfos[index].steering;
-    //                 const newSteeringValue = THREE.MathUtils.lerp(currentSteeringValue, targetSteeringValue, steeringLerpFactor);
-    //                 this.players[0].vehicle.setSteeringValue(newSteeringValue, index);
-    //             });
-            
-    //             if (this.keyState['Space']) {
-    //                 const chassisBody = this.players[0].chassisBody;
-                
-    //                 // Calculate the forward direction vector (local y-axis)
-    //                 const forwardDirection = new CANNON.Vec3(0, 1, 0);
-    //                 chassisBody.quaternion.vmult(forwardDirection, forwardDirection); // Transform to world direction
-                
-    //                 // Scale the direction vector by the desired force value
-    //                 const impulse = forwardDirection.scale(50); // Adjust the force value as needed
-                
-    //                 // Calculate the point of application at the back of the chassis
-    //                 const backOffset = new CANNON.Vec3(0, -2, 0); // Adjust offset to match the back of your chassis
-    //                 const pointOfApplication = chassisBody.position.vadd(backOffset);
-                
-    //                 // Apply the impulse in the forward direction at the back of the chassis
-    //                 chassisBody.applyImpulse(impulse, pointOfApplication);
-    //             }
-            
-    //             if (this.keyState['KeyR'] && !this.resetPerformed) {
-    //                 const player = this.players[0];
-
-    //                 // Get the current orientation
-    //                 const currentQuaternion = player.chassisBody.quaternion;
-                
-    //                 // Extract the current forward and right vectors
-    //                 const forward = new CANNON.Vec3(1, 0, 0);
-    //                 currentQuaternion.vmult(forward, forward);
-                
-    //                 const right = new CANNON.Vec3(0, 1, 0);
-    //                 currentQuaternion.vmult(right, right);
-                
-    //                 // Compute the new up vector
-    //                 const up = new CANNON.Vec3(0, 0, 1);
-                
-    //                 // Create a new quaternion based on the forward and up vectors
-    //                 const newQuaternion = new CANNON.Quaternion();
-    //                 newQuaternion.setFromVectors(forward, right, up);
-                
-    //                 // Set the new orientation to the chassis body and truck mesh
-    //                 player.chassisBody.quaternion.copy(newQuaternion);
-    //                 player.chassisMesh.quaternion.copy(player.chassisBody.quaternion);
-    //                 this.resetMomentum(player.chassisBody);
-
-    //                 this.resetPerformed = true;
-    //             }}
-    // }
 
 // //-----------------------------------------------------------------------
 
@@ -486,11 +430,11 @@ handleKeyStates() {
     {
             if (this.keyState['ArrowUp'])
             {
-                console.log("Up");
+                // console.log("Up");
                 this.players[0].vehicle.applyEngineForce(-maxForce, 0);
                 this.players[0].vehicle.applyEngineForce(-maxForce, 1);
             } else if (this.keyState['ArrowDown']) {
-                console.log("Down");
+                // console.log("Down");
                 this.players[0].vehicle.applyEngineForce(maxForce/2, 0);
                 this.players[0].vehicle.applyEngineForce(maxForce/2, 1);
             } else {
@@ -500,10 +444,10 @@ handleKeyStates() {
         
             let targetSteeringValue = 0;
             if (this.keyState['ArrowLeft']) {
-                console.log("Left");
+                // console.log("Left");
                 targetSteeringValue = maxSteerVal;
             } else if (this.keyState['ArrowRight']) {
-                console.log("Right");
+                // console.log("Right");
                 targetSteeringValue = -maxSteerVal;
             }
         
@@ -513,48 +457,49 @@ handleKeyStates() {
                 this.players[0].vehicle.setSteeringValue(newSteeringValue, index);
             });
         
-            if (this.keyState['Space']) {
-                const jumpForce = new CANNON.Vec3(0, 0, 500); // Adjust the force value as needed
-                this.players[0].chassisBody.applyImpulse(jumpForce, this.players[0].chassisBody.position);
-                this.resetMomentum(this.players[0].chassisBody);
-            }
-        
-            if (this.keyState['KeyR'] && !this.resetPerformed) {
+            if (this.keyState['Space'] && this.players.length > 0) {
                 const player = this.players[0];
-
-                // Get the current orientation
-                const currentQuaternion = player.chassisBody.quaternion;
-            
-                // Extract the current forward and right vectors
-                const forward = new CANNON.Vec3(1, 0, 0);
-                currentQuaternion.vmult(forward, forward);
-            
-                const right = new CANNON.Vec3(0, 1, 0);
-                currentQuaternion.vmult(right, right);
-            
-                // Compute the new up vector
-                const up = new CANNON.Vec3(0, 0, 1);
-            
-                // Create a new quaternion based on the forward and up vectors
-                const newQuaternion = new CANNON.Quaternion();
-                newQuaternion.setFromVectors(forward, right, up);
-            
-                // Set the new orientation to the chassis body and truck mesh
-                player.chassisBody.quaternion.copy(newQuaternion);
-                player.chassisMesh.quaternion.copy(player.chassisBody.quaternion);
-                this.resetMomentum(player.chassisBody);
-
-                this.resetPerformed = true;
+                if (player.isGrounded && !this.jumpStartTime) {
+                    this.jumpStartTime = performance.now();
+                    this.jumpStartPos = player.chassisBody.position.clone();
+                    this.jumpStartVelocity.copy(player.chassisBody.velocity);
+                    this.jumpTargetPos = this.jumpStartPos.clone();
+                    this.jumpTargetPos.z += 2; // Adjust the jump height as needed
+                }
             }
+            if (this.keyState['KeyR'] && !this.resetPerformed) {
+                if (this.players.length > 0) {
+                    const player = this.players[0];
+                    if (player && player.chassisBody) {
+                        // Extract the forward vector from the current quaternion
+                        const forward = new CANNON.Vec3(1, 0, 0);
+                        player.chassisBody.quaternion.vmult(forward, forward);
+        
+                        // Calculate the yaw angle (angle around the z-axis)
+                        const yaw = Math.atan2(forward.y, forward.x);
+        
+                        // Create a new quaternion for the upright orientation with the same yaw
+                        const uprightQuaternion = new CANNON.Quaternion();
+                        uprightQuaternion.setFromEuler(0, 0, yaw, "YZX");
+        
+                        // Set the new orientation to the chassis body and truck mesh
+                        player.chassisBody.quaternion.copy(uprightQuaternion);
+                        if (player.chassisMesh) {
+                            player.chassisMesh.quaternion.copy(player.chassisBody.quaternion);
+                        }
+        
+                        this.resetMomentum(player.chassisBody);
+        
+                        this.resetPerformed = true;
+                    }
+                }
             }
+        }
+
 }
 // //-----------------------------------------------------------------------
 
-
-
-
-
-    getDirectionVectors(chassisBody) {
+getDirectionVectors(chassisBody) {
         // Forward direction (local z-axis)
         const forward = new CANNON.Vec3(0, 1, 0);
         chassisBody.quaternion.vmult(forward, forward);
@@ -569,8 +514,6 @@ handleKeyStates() {
     
         return { forward, right, up };
     }
-
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -585,6 +528,7 @@ export class Player {
         this.scene = scene;
         this.defaultMaterial = this.world.defaultContactMaterial;
         this.highFrictionMaterial = new CANNON.Material('highFrictionMaterial');
+        this.isGrounded = false;
         // Create chassis shape and body
         const chassisShape = new CANNON.Box(new CANNON.Vec3(0.85, 2.08, 0.5));
         // const centerOfMassOffset = new CANNON.Vec3(0, 0, -0.5);
@@ -611,7 +555,6 @@ export class Player {
             indexForwardAxis: 1
         });
 
-        // Add wheels and vehicle setup
         const wheelOptions = {
             radius: 0.45,
             directionLocal: new CANNON.Vec3(0, 0, -1),
@@ -626,7 +569,7 @@ export class Player {
             chassisConnectionPointLocal: new CANNON.Vec3(1, 0, 0),
             customSlidingRotationalSpeed: -30,
             useCustomSlidingRotationalSpeed: true,
-            material: this.highFrictionMaterial 
+            material: this.highFrictionMaterial
         };
 
         this.vehicle = new CANNON.RaycastVehicle({
@@ -672,6 +615,20 @@ export class Player {
         this.chassisBody.angularVelocity.scale(dragFactor, this.chassisBody.angularVelocity);
     }
 
+    checkGroundContact() {
+        this.isGrounded = false; // Reset grounded state
+
+        // Iterate through each wheel
+        for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
+            const wheel = this.vehicle.wheelInfos[i];
+            if (wheel.suspensionLength < wheel.suspensionRestLength) {
+                this.isGrounded = true;
+                break;
+            }
+        }
+    }
+
+
     loadTruckModel() {
         const mtlLoader = new MTLLoader();
         mtlLoader.load('/static/main/obj/truck.mtl', (materials) => {
@@ -700,7 +657,6 @@ export class Player {
             this.truckMesh.position.add(offset);
         }
         
-
         this.vehicle.wheelInfos.forEach((wheel, index) => {
             this.vehicle.updateWheelTransform(index);
             const t = wheel.worldTransform;
@@ -711,7 +667,9 @@ export class Player {
             rotationEuler.z += Math.PI / 2; // Adjust this value as needed
             this.wheelMeshes[index].quaternion.setFromEuler(rotationEuler);
         });
+        // Update vehicle state to ensure wheel contact info is current
         this.applyDrag();
+        this.checkGroundContact();
     }
 }
 
