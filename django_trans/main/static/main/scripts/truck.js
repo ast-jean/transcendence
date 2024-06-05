@@ -311,23 +311,23 @@ class TruckSimulation {
     }
 
     update() {
-        // if (this.players[0]) {
-        //     const player = this.players[0];
-        //     const chassisBody = player.chassisBody;
-        //     // Camera offset relative to the vehicle
-        //     const relativeCameraOffset = new THREE.Vector3(0, 10, 5);
-        //     // Apply the vehicle's orientation to the offset
-        //     const cameraOffset = relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
-        //         chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
-        //     )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
-        //     // Smoothly move the camera to the new position
-        //     this.camera.position.lerp(cameraOffset, 0.1);
-        //     // Make the camera look at the vehicle
-        //     this.camera.lookAt(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));
-        //     // Sync chassis body position and quaternion with the vehicle (if needed)
-        //     player.chassisBody.position.copy(chassisBody.position);
-        //     player.chassisBody.quaternion.copy(chassisBody.quaternion);
-        // }
+        if (this.players[0]) {
+            const player = this.players[0];
+            const chassisBody = player.chassisBody;
+            // Camera offset relative to the vehicle
+            const relativeCameraOffset = new THREE.Vector3(0, 10, 5);
+            // Apply the vehicle's orientation to the offset
+            const cameraOffset = relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
+                chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
+            )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
+            // Smoothly move the camera to the new position
+            this.camera.position.lerp(cameraOffset, 0.1);
+            // Make the camera look at the vehicle
+            this.camera.lookAt(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));
+            // Sync chassis body position and quaternion with the vehicle (if needed)
+            player.chassisBody.position.copy(chassisBody.position);
+            player.chassisBody.quaternion.copy(chassisBody.quaternion);
+        }
         
         // Update ball mesh to follow the physics body
         if (this.ballMesh && this.ballBody) {
