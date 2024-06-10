@@ -514,17 +514,18 @@ handleKeyStates() {
     const rotationSpeed = 0.02;
     if (this.players[0])
     {
+        const player = this.players[0];
             if (this.keyState['ArrowUp'])
             {
-                this.players[0].vehicle.applyEngineForce(-maxForce, 0);
-                this.players[0].vehicle.applyEngineForce(-maxForce, 1);
+                player.vehicle.applyEngineForce(-maxForce, 0);
+                player.vehicle.applyEngineForce(-maxForce, 1);
 
             } else if (this.keyState['ArrowDown']) {
-                this.players[0].vehicle.applyEngineForce(maxForce/2, 0);
-                this.players[0].vehicle.applyEngineForce(maxForce/2, 1);
+                player.vehicle.applyEngineForce(maxForce/2, 0);
+                player.vehicle.applyEngineForce(maxForce/2, 1);
             } else {
-                this.players[0].vehicle.applyEngineForce(0, 0);
-                this.players[0].vehicle.applyEngineForce(0, 1);
+                player.vehicle.applyEngineForce(0, 0);
+                player.vehicle.applyEngineForce(0, 1);
             }
         
             let targetSteeringValue = 0;
@@ -535,13 +536,32 @@ handleKeyStates() {
             }
         
             [0, 1].forEach(index => {
-                const currentSteeringValue = this.players[0].vehicle.wheelInfos[index].steering;
+                const currentSteeringValue = player.vehicle.wheelInfos[index].steering;
                 const newSteeringValue = THREE.MathUtils.lerp(currentSteeringValue, targetSteeringValue, steeringLerpFactor);
-                this.players[0].vehicle.setSteeringValue(newSteeringValue, index);
+                player.vehicle.setSteeringValue(newSteeringValue, index);
             });
-        
+            // Steering and forward/backward movement
+            // if (this.keyState['ArrowUp']) {
+            //     const rotationQuaternion = new CANNON.Quaternion();
+            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -this.rotationSpeed);
+            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            // }
+            // if (this.keyState['ArrowDown']) {
+            //     const rotationQuaternion = new CANNON.Quaternion();
+            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), this.rotationSpeed);
+            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            // }
+            // if (this.keyState['ArrowLeft']) {
+            //     const rotationQuaternion = new CANNON.Quaternion();
+            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), this.rotationSpeed);
+            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            // }
+            // if (this.keyState['ArrowRight']) {
+            //     const rotationQuaternion = new CANNON.Quaternion();
+            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -this.rotationSpeed);
+            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            // }
             if (this.keyState['Space'] && this.players.length > 0) {
-                const player = this.players[0];
                 if (player.isGrounded && !this.jumpStartTime) {
                     this.jumpStartTime = performance.now();
                     this.jumpStartPos = player.chassisBody.position.clone();
@@ -552,7 +572,6 @@ handleKeyStates() {
             }
             if (this.keyState['KeyR'] && !this.resetPerformed) {
                 if (this.players.length > 0) {
-                    const player = this.players[0];
                     if (player && player.chassisBody) {
                         const forward = new CANNON.Vec3(0, -1, 0);
                         player.chassisBody.quaternion.vmult(forward, forward);
@@ -568,7 +587,6 @@ handleKeyStates() {
                     }
                 }
             }
-            const player = this.players[0];
             if (this.keyState['ShiftLeft'] && player.boostLevel > 0.1) {
                 player.applyBoost();
                 this.relativeCameraOffset = new THREE.Vector3(0, 12, 5);
