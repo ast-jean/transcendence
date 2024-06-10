@@ -8,7 +8,7 @@
             "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/",
             "cannon": "https://cdn.skypack.dev/pin/cannon-es@v0.20.0-kjnG3LHQFwthijw6LzLZ/mode=imports/optimized/cannon-es.js"  
-      }
+        }
     }
     </script>
     <div id="editor">
@@ -31,6 +31,9 @@
                     <p class="text-white bg-dark">Score</p> </br>
                     <p class="text-success bg-dark score_text_team1">0 </p> : <p class="text-danger bg-dark score_text_team2">0</p>
                  </div>
+                 <div id="boost-indicator" style="position: fixed; top: 10px; left: 10px; width: 200px; height: 20px; background-color: grey;">
+                    <div id="boost-bar" style="height: 100%; width: 100%; background-color: green;"></div>
+                </div>
             </div>
         </div>
         </div>
