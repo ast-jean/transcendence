@@ -34,12 +34,30 @@ html, body {
 }
 
 #button_pong {
-    background-image: url("/static/main/obj/truck.png");
+    background-image: url("/static/main/obj/pong.png");
 }
 
 #button_truckleague {
     background-image: url("/static/main/obj/truck.png");
 
+}
+
+#boost-indicator {
+    border-radius: 5px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 20px;
+    background-color: grey;
+}
+
+#boost-bar {
+    border-radius: 5px;
+    height: 100%;
+    width: 100%;
+    background-color: green;
+    background: linear-gradient(90deg, rgb(210, 233, 2) 0%, rgba(0,180,22,1) 100%);
 }
 
 
