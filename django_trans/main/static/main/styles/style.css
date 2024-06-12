@@ -1,4 +1,5 @@
-html, body {
+html, body 
+{
     background-color: rgb(67, 67, 67);
     height: 100%;
     margin: 0;
@@ -14,8 +15,8 @@ html, body {
 } 
 
 .btn-background {
-    width: 200px; /* Adjust the width as needed */
-    height: 100px; /* Adjust the height as needed */
+    width: 500px; /* Adjust the width as needed */
+    height: 300px; /* Adjust the height as needed */
     color: white; /* Text color */
     font-size: 16px; /* Text size */
     text-align: center; /* Center the text */
@@ -60,7 +61,7 @@ html, body {
 }
 
 #controls {
-  background: #7e0505dc;
+  background: #ffffff00;
   /* background: linear-gradient(#fd8f8fdc, rgb(161, 255, 140)); */
   padding: 5px;
 }
@@ -148,4 +149,37 @@ html, body {
     padding: 10px;
     border-radius: 5px;
     margin-right: 5px;
+}
+
+/* FOR COLORFUL BACKGROUND */
+body {
+	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* FOR GAMES BUTTONS */
+.pulse:hover, 
+.pulse:focus
+{
+	animation: pulse 1s;
+	box-shadow: 0 0 0 2em transparent;
+}
+
+@keyframes pulse 
+{
+	0% { box-shadow: 0 0 0 0 var(--hover); }
 }

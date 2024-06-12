@@ -14,56 +14,58 @@
         "imports": {
             "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/" 
-      }
+        }
     }
-    </script>
+</script>
 <div id="editor">
     <div id="view" class="container">
-        
         <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
         <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
         <div id="gameCont" class="mt-3 three-js-canvas" style="position: relative;">
-           <div class="flex-container hud">
-               <div id="onlineplay_btn" class="hud-btn game-button">
-                   <b>Play online</b>
-                   <br>
-                   <small><small>
-                       ( 1 vs 1  or 2 vs 2)
-                    </small></small>
-                </div>
-                <div id="localplay_btn" class="hud-btn game-button">
-                    <b>Local play</b>
+            <div class="flex-container hud">
+                <div id="onlineplay_btn" class="hud-btn game-button">
+                    <b>Play online</b>
                     <br>
                     <small><small>
-                        ( 1 vs 1 )
-                    </small></small>
-                </div>
-                <div id="versusai_btn" class="hud-btn game-button">
-                    <b>Versus AI</b>
-                    <br>
-                        🤖
-                </div>
-            </div>
-            <div id="scoreboard" style="position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; font-family: Arial, sans-serif;">
-                <span id="player1Score">0</span> - <span id="player2Score">0</span>
-            </div>
-        </div>
-    </div>
-    <div class="gutter gutter-horizontal"></div>
-    <div id="controls">
-      <div>
-        <div id="chat-container" class="mt-3">
-            <div id="chat-box">
-                <ul id="chat-messages"></ul>
-            </div>
-            <input type="text" id="chat-input" placeholder="Type a message..." />
-            <button id="chat-btn" class="btn btn-dark" ><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="20px" height="30px" viewBox="0 0 220.682 220.682" xml:space="preserve">
-                <g>  <polygon points="92.695,38.924 164.113,110.341 92.695,181.758 120.979,210.043 220.682,110.341 120.979,10.639  "/>
-                    <polygon points="28.284,210.043 127.986,110.341 28.284,10.639 0,38.924 71.417,110.341 0,181.758  "/> </g>
-                </svg></button>
-        </div>
-      </div>
-    </div>
-</div>
-</body>
+                        ( 1 vs 1  or 2 vs 2)
+                     </small></small>
+                 </div>
+                 <div id="localplay_btn" class="hud-btn game-button">
+                     <b>Local play</b>
+                     <br>
+                     <small><small>
+                         ( 1 vs 1 )
+                     </small></small>
+                 </div>
+                 <div id="versusai_btn" class="hud-btn game-button">
+                     <b>Versus AI</b>
+                     <br>
+                         🤖
+                 </div>
+             </div>
+             <div id="scoreboard" style="position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; font-family: Arial, sans-serif;">
+                 <span id="player1Score">0</span> - <span id="player2Score">0</span>
+             </div>
+         </div>
+     </div>
+     <div class="gutter gutter-horizontal"></div>
+     <div id="controls">
+       <div>
+         <div id="chat-container" class="mt-3">
+             <div id="chat-box">
+                 <ul id="chat-messages"></ul>
+             </div>
+             <input type="text" id="chat-input" placeholder="Type a message..." />
+             <button id="chat-btn" class="btn btn-dark">
+                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="20px" height="30px" viewBox="0 0 220.682 220.682" xml:space="preserve">
+                     <g>
+                         <polygon points="92.695,38.924 164.113,110.341 92.695,181.758 120.979,210.043 220.682,110.341 120.979,10.639" />
+                         <polygon points="28.284,210.043 127.986,110.341 28.284,10.639 0,38.924 71.417,110.341 0,181.758" />
+                     </g>
+                 </svg>
+             </button>
+         </div>
+       </div>
+     </div>
+ </div>
 {% endblock %}
