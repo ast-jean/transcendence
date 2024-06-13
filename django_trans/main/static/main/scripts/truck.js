@@ -1,7 +1,13 @@
 import * as THREE from 'three';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+// import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+// import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { socket } from './socket_truck.js'
+
+
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -11,6 +17,7 @@ import CannonDebugRenderer from './CannonDebugRenderer.js';
 let score = {team1: 0, team2: 0}
 let team1 = [];
 let team2 = [];
+let teamColor = 0xff0000;
 
 class TruckSimulation {
     constructor() {
@@ -25,6 +32,7 @@ class TruckSimulation {
         this.initCannon();
         this.addStaticPlane();
         this.walls = [];
+        this.addStadium();
         this.addWalls();
         this.addRoof();
         this.addBall();
@@ -111,11 +119,11 @@ class TruckSimulation {
         planeBody.quaternion.setFromEuler(0, 0, -Math.PI / 2);
         this.world.addBody(planeBody);
 
-        // Create the Three.js plane mesh for visualization
-        const planeGeometry = new THREE.PlaneGeometry(200, 200);
-        const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x888888, side: THREE.DoubleSide });
-        const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-        this.scene.add(planeMesh);
+        // // Create the Three.js plane mesh for visualization
+        // const planeGeometry = new THREE.PlaneGeometry(200, 200);
+        // const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x888888, side: THREE.DoubleSide });
+        // const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+        // this.scene.add(planeMesh);
     }
 
     updateScore(){
@@ -136,63 +144,92 @@ class TruckSimulation {
         body.angularVelocity.set(0, 0, 0);
     }
     
-    addWalls() {
-        // Define wall material
-        const wallMaterial = new CANNON.Material('wallMaterial');
+
+    addStadium() {
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load('/static/main/obj/stadium.mtl', (materials) => {
+            materials.preload();
     
-        // Create wall shapes and bodies in Cannon.js
+            // Load the OBJ file and set its materials
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('/static/main/obj/stadium.obj', (object) => {
+                // Adjust the scale and position of the loaded object
+                object.scale.set(0.55, 0.55, 0.55);
+                object.position.set(0, 0, 0);
+                // Add the object to the scene
+                this.scene.add(object);
+    
+                // Link the loaded object with the ball body
+            });
+    });
+    }
+
+    addWalls() {
+
         const wallShape1Left = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
-        const wallBody1Left = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody1Left = new CANNON.Body({ mass: 0 });
         wallBody1Left.addShape(wallShape1Left);
-        wallBody1Left.position.set(-17, -37.5, 0);
+        wallBody1Left.position.set(-17, -36.2, 0);
         this.world.addBody(wallBody1Left);
         
 
         const wallShape1Right = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
-        const wallBody1Right = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody1Right = new CANNON.Body({ mass: 0 });
         wallBody1Right.addShape(wallShape1Right);
-        wallBody1Right.position.set(17, -37.5, 0);
+        wallBody1Right.position.set(17, -36.2, 0);
         this.world.addBody(wallBody1Right);
+
+        const wallShapeBack = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
+        const wallBodyBack = new CANNON.Body({ mass: 0 });
+        wallBodyBack.addShape(wallShapeBack);
+        wallBodyBack.position.set(0, -42, 0);
+        this.world.addBody(wallBodyBack);
         
 
         const wallShape1Top = new CANNON.Box(new CANNON.Vec3(10, 1, 1));
-        const wallBody1Top = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody1Top = new CANNON.Body({ mass: 0 });
         wallBody1Top.addShape(wallShape1Top);
-        wallBody1Top.position.set(0, -37.5, 9);
+        wallBody1Top.position.set(0, -36.2, 9);
         this.world.addBody(wallBody1Top);
         
 
 
         const wallShape2Left = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
-        const wallBody2Left = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody2Left = new CANNON.Body({ mass: 0 });
         wallBody2Left.addShape(wallShape2Left);
-        wallBody2Left.position.set(-17, 37.5, 0);
+        wallBody2Left.position.set(-17, 36.2, 0);
         this.world.addBody(wallBody2Left);
         
     
         const wallShape2Right = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
-        const wallBody2Right = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody2Right = new CANNON.Body({ mass: 0 });
         wallBody2Right.addShape(wallShape2Right);
-        wallBody2Right.position.set(17, 37.5, 0);
+        wallBody2Right.position.set(17, 36.2, 0);
         this.world.addBody(wallBody2Right);
         
+        const wallShapeBack2 = new CANNON.Box(new CANNON.Vec3(10, 1, 10));
+        const wallBodyBack2 = new CANNON.Body({ mass: 0 });
+        wallBodyBack2.addShape(wallShapeBack2);
+        wallBodyBack2.position.set(0, 42, 0);
+        this.world.addBody(wallBodyBack2);
     
         const wallShape2Top = new CANNON.Box(new CANNON.Vec3(10, 1, 1));
-        const wallBody2Top = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody2Top = new CANNON.Body({ mass: 0 });
         wallBody2Top.addShape(wallShape2Top);
-        wallBody2Top.position.set(0, 37.5, 9);
+        wallBody2Top.position.set(0, 36.2, 9);
         this.world.addBody(wallBody2Top);
         
 
         const wallShape3 = new CANNON.Box(new CANNON.Vec3(1, 50, 10));
-        const wallBody3 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody3 = new CANNON.Body({ mass: 0 });
         wallBody3.addShape(wallShape3);
         wallBody3.position.set(-25, 0, 0);
         this.world.addBody(wallBody3);
         
     
         const wallShape4 = new CANNON.Box(new CANNON.Vec3(1, 50, 10));
-        const wallBody4 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const wallBody4 = new CANNON.Body({ mass: 0 });
         wallBody4.addShape(wallShape4);
         wallBody4.position.set(25, 0, 0);
         this.world.addBody(wallBody4);
@@ -201,96 +238,100 @@ class TruckSimulation {
         // Add corner walls
         const cornerWallShape = new CANNON.Box(new CANNON.Vec3(1, 10, 10));
     
-        const cornerWallBody1 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const cornerWallBody1 = new CANNON.Body({ mass: 0 });
         cornerWallBody1.addShape(cornerWallShape);
         cornerWallBody1.position.set(-25, -30, 0);
         cornerWallBody1.quaternion.setFromEuler(0, 0, Math.PI / 4); // 45 degrees
         this.world.addBody(cornerWallBody1);
         
     
-        const cornerWallBody2 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const cornerWallBody2 = new CANNON.Body({ mass: 0 });
         cornerWallBody2.addShape(cornerWallShape);
         cornerWallBody2.position.set(25, -30, 0);
         cornerWallBody2.quaternion.setFromEuler(0, 0, -Math.PI / 4); // -45 degrees
         this.world.addBody(cornerWallBody2);
         
     
-        const cornerWallBody3 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const cornerWallBody3 = new CANNON.Body({ mass: 0 });
         cornerWallBody3.addShape(cornerWallShape);
         cornerWallBody3.position.set(-25, 30, 0);
         cornerWallBody3.quaternion.setFromEuler(0, 0, -Math.PI / 4); // -45 degrees
         this.world.addBody(cornerWallBody3);
         
-    
-        const cornerWallBody4 = new CANNON.Body({ mass: 0, material: wallMaterial });
+        const cornerWallBody4 = new CANNON.Body({ mass: 0 });
         cornerWallBody4.addShape(cornerWallShape);
         cornerWallBody4.position.set(25, 30, 0);
-        cornerWallBody4.quaternion.setFromEuler(0, 0, Math.PI / 4); // 45 degrees
+        cornerWallBody4.quaternion.setFromEuler(0, 0, Math.PI / 4); // -45 degrees
         this.world.addBody(cornerWallBody4);
         
     
         // Create Three.js materials for visualization
-        const wallMaterial1 = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
-        const wallMaterial2 = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green
-        const wallMaterial3 = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
-        const wallMaterial4 = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow
-        const cornerWallMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Purple
+        const wallMaterial1 = new THREE.MeshToonMaterial({ color: 0x4B3239 }); // Red
+        const wallMaterial2 = new THREE.MeshToonMaterial({ color: 0x0637A2 }); // Green
+        const wallMaterial3 = new THREE.MeshToonMaterial({ color: 0x9E0606 }); // Blue
+        // const wallMaterial4 = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow
+        // const cornerWallMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Purple
     
+
         // Create corresponding Three.js meshes for visualization
         const wallGeometry1 = new THREE.BoxGeometry(20, 2, 20);
         const wallGeometryTop = new THREE.BoxGeometry(20, 2, 2);
 
-        const wallMesh1Left = new THREE.Mesh(wallGeometry1, wallMaterial1);
+        const wallMesh1Left = new THREE.Mesh(wallGeometry1, wallMaterial3);
         wallMesh1Left.position.copy(wallBody1Left.position);
         this.scene.add(wallMesh1Left);
     
-        const wallMesh1Right = new THREE.Mesh(wallGeometry1, wallMaterial1);
+        const wallMesh1Right = new THREE.Mesh(wallGeometry1, wallMaterial3);
         wallMesh1Right.position.copy(wallBody1Right.position);
         this.scene.add(wallMesh1Right);
     
-        const wallMesh1Top = new THREE.Mesh(wallGeometryTop, wallMaterial1);
+        const wallMesh1Top = new THREE.Mesh(wallGeometryTop, wallMaterial3);
         wallMesh1Top.position.copy(wallBody1Top.position);
         this.scene.add(wallMesh1Top);
 
         const wallMesh2Left = new THREE.Mesh(wallGeometry1, wallMaterial2);
+        let euler = new THREE.Euler(0, 0, Math.PI / 2, 'XYZ');
+        wallMesh2Left.quaternion.setFromEuler(euler);
         wallMesh2Left.position.copy(wallBody2Left.position);
         this.scene.add(wallMesh2Left);
     
         const wallMesh2Right = new THREE.Mesh(wallGeometry1, wallMaterial2);
+        wallMesh2Right.quaternion.setFromEuler(euler);
         wallMesh2Right.position.copy(wallBody2Right.position);
         this.scene.add(wallMesh2Right);
     
         const wallMesh2Top = new THREE.Mesh(wallGeometryTop, wallMaterial2);
+        wallMesh2Top.quaternion.setFromEuler(euler);
         wallMesh2Top.position.copy(wallBody2Top.position);
         this.scene.add(wallMesh2Top);
 
         const wallGeometry3 = new THREE.BoxGeometry(2, 100, 20);
-        const wallMesh3 = new THREE.Mesh(wallGeometry3, wallMaterial3);
+        const wallMesh3 = new THREE.Mesh(wallGeometry3, wallMaterial1);
         wallMesh3.position.copy(wallBody3.position);
         this.scene.add(wallMesh3);
     
-        const wallMesh4 = new THREE.Mesh(wallGeometry3, wallMaterial4);
+        const wallMesh4 = new THREE.Mesh(wallGeometry3, wallMaterial1);
         wallMesh4.position.copy(wallBody4.position);
         this.scene.add(wallMesh4);
 
         // Create corner wall meshes
         const cornerWallGeometry = new THREE.BoxGeometry(2, 20, 20);
-        const cornerWallMesh1 = new THREE.Mesh(cornerWallGeometry, cornerWallMaterial);
+        const cornerWallMesh1 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh1.position.copy(cornerWallBody1.position);
         cornerWallMesh1.quaternion.copy(cornerWallBody1.quaternion);
         this.scene.add(cornerWallMesh1);
     
-        const cornerWallMesh2 = new THREE.Mesh(cornerWallGeometry, cornerWallMaterial);
+        const cornerWallMesh2 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh2.position.copy(cornerWallBody2.position);
         cornerWallMesh2.quaternion.copy(cornerWallBody2.quaternion);
         this.scene.add(cornerWallMesh2);
     
-        const cornerWallMesh3 = new THREE.Mesh(cornerWallGeometry, cornerWallMaterial);
+        const cornerWallMesh3 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh3.position.copy(cornerWallBody3.position);
         cornerWallMesh3.quaternion.copy(cornerWallBody3.quaternion);
         this.scene.add(cornerWallMesh3);
     
-        const cornerWallMesh4 = new THREE.Mesh(cornerWallGeometry, cornerWallMaterial);
+        const cornerWallMesh4 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh4.position.copy(cornerWallBody4.position);
         cornerWallMesh4.quaternion.copy(cornerWallBody4.quaternion);
         this.scene.add(cornerWallMesh4);
@@ -307,24 +348,19 @@ class TruckSimulation {
         this.walls.push({ body: cornerWallBody2, mesh: cornerWallMesh2 });
         this.walls.push({ body: cornerWallBody3, mesh: cornerWallMesh3 });
         this.walls.push({ body: cornerWallBody4, mesh: cornerWallMesh4 });
+
     }
 
     addRoof() {
-        // Define roof material
         const roofMaterial = new CANNON.Material('roofMaterial');
-    
-        // Create roof shape and body
         const roofShape = new CANNON.Box(new CANNON.Vec3(50, 50, 1)); // Dimensions of the roof
         const roofBody = new CANNON.Body({ mass: 0, material: roofMaterial });
         roofBody.addShape(roofShape);
         roofBody.position.set(0, 0, 11); // Position the roof above the scene
-    
-        // Add the roof body to the world
         this.world.addBody(roofBody);
     }
 
     addBall() {
-        // Create a bouncy ball
         const ballRadius = 1; // Adjust the radius as needed
         const ballShape = new CANNON.Sphere(ballRadius);
         const ballMaterial = new CANNON.Material();
@@ -336,15 +372,20 @@ class TruckSimulation {
     
         ballBody.position.set(0, 5, 3); // Position the ball above the ground
         this.world.addBody(ballBody);
-    
-        // Add the ball mesh for visualization
-        const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
-        const ballMaterialVisual = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const ballMesh = new THREE.Mesh(ballGeometry, ballMaterialVisual);
-        this.scene.add(ballMesh);
-    
-        this.ballMesh = ballMesh;
-        this.ballBody = ballBody;
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load('/static/main/obj/ball.mtl', (materials) => {
+        materials.preload();
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load('/static/main/obj/ball.obj', (object) => {
+            object.scale.set(ballRadius, ballRadius, ballRadius);
+            object.position.set(0, 5, 3);
+            this.scene.add(object);
+            this.ballMesh = object;
+        });
+});
+
+this.ballBody = ballBody;
     }
 
     addPlayer(x, y, z) {
@@ -404,21 +445,28 @@ class TruckSimulation {
     }
 
     update() {
-        if (this.players[0]) {
-            const player = this.players[0];
-            const chassisBody = player.chassisBody;
-            // Apply the vehicle's orientation to the offset
-            const cameraOffset = this.relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
-                chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
-            )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
-            // Smoothly move the camera to the new position
-            this.camera.position.lerp(cameraOffset, 0.1);
+       // Loop through each wall entry and update the mesh to match the body's position and quaternion
+       this.walls.forEach(wall => {
+        wall.mesh.position.copy(wall.body.position);
+        wall.mesh.quaternion.copy(wall.body.quaternion);
+        wall.mesh.scale.set(1, 1, 1);
+    });
+
+        // if (this.players[0]) {
+        //     const player = this.players[0];
+        //     const chassisBody = player.chassisBody;
+        //     // Apply the vehicle's orientation to the offset
+        //     const cameraOffset = this.relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
+        //         chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
+        //     )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
+        //     // Smoothly move the camera to the new position
+        //     this.camera.position.lerp(cameraOffset, 0.1);
             
-            // Sync chassis body position and quaternion with the vehicle (if needed)
-            player.chassisBody.position.copy(chassisBody.position);
-            player.chassisBody.quaternion.copy(chassisBody.quaternion);
-        }
-        this.updateCameraPosition();
+        //     // Sync chassis body position and quaternion with the vehicle (if needed)
+        //     player.chassisBody.position.copy(chassisBody.position);
+        //     player.chassisBody.quaternion.copy(chassisBody.quaternion);
+        // }
+        // this.updateCameraPosition();
         // Update ball mesh to follow the physics body
         if (this.ballMesh && this.ballBody) {
             this.ballMesh.position.copy(this.ballBody.position);
@@ -644,11 +692,11 @@ export class Player {
 
         const chassisShape = new CANNON.Box(new CANNON.Vec3(0.85, 2.08, 0.5));
         this.chassisBody = new CANNON.Body({ mass: 300, material: material });
-        const chassisOffset = new CANNON.Vec3(0, -0.09, 0); // Position relative to chassis
+        const chassisOffset = new CANNON.Vec3(0, -0.09, -0.1); // Position relative to chassis
         this.chassisBody.addShape(chassisShape, chassisOffset);
     
         const cockpitShape = new CANNON.Box(new CANNON.Vec3(0.80, 0.8, 0.40)); // Adjust dimensions as needed
-        const cockpitOffset = new CANNON.Vec3(0, 0, 0.85); // Position relative to chassis
+        const cockpitOffset = new CANNON.Vec3(0, 0, 0.65); // Position relative to chassis
         this.chassisBody.addShape(cockpitShape, cockpitOffset);
  
         this.chassisBody.position.set(x, y, z);
@@ -701,7 +749,7 @@ export class Player {
             this.highFrictionMaterial,
             this.defaultMaterial,
             {
-                friction: 1.0, // Increase friction
+                friction: 5.0, // Increase friction
                 restitution: 0.0
             }
         );
@@ -710,27 +758,23 @@ export class Player {
         this.wheelMeshes = [];
         this.vehicle.wheelInfos.forEach((wheel) => {
             const wheelGeometry = new THREE.CylinderGeometry(wheel.radius, wheel.radius, 0.25, 20);
-            const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+            const wheelMaterial = new THREE.MeshToonMaterial({ color: 0x888888 });
             const wheelMesh = new THREE.Mesh(wheelGeometry, wheelMaterial);
             this.scene.add(wheelMesh);
             this.wheelMeshes.push(wheelMesh);
         });
     }
 
-        // Function to apply boost to the vehicle
     applyBoost() {
         const boostForceMagnitude = 100; // Adjust the boost force value as needed
         const localForward = new CANNON.Vec3(0, -1, 0); // Assuming forward direction is along the Y-axis
         const worldForward = this.chassisBody.quaternion.vmult(localForward);
-        console.log("this.chassisBody.quaternion.vmult(localForward)", this.chassisBody.quaternion.vmult(localForward));
         const boostImpulse = worldForward.scale(boostForceMagnitude);
         this.vehicle.chassisBody.applyImpulse(boostImpulse, worldForward);
-        console.log("this.vehicle.chassisBody.position",this.vehicle.chassisBody.position);
-
     }
 
     applyDrag() {
-        const dragFactor = 0.99; // Adjust this factor to control the deceleration rate
+        const dragFactor = 0.995; // Adjust this factor to control the deceleration rate
         this.chassisBody.velocity.scale(dragFactor, this.chassisBody.velocity);
         this.chassisBody.angularVelocity.scale(dragFactor, this.chassisBody.angularVelocity);
     }
@@ -750,18 +794,38 @@ export class Player {
 
 
     loadTruckModel() {
-        const mtlLoader = new MTLLoader();
-        mtlLoader.load('/static/main/obj/truck.mtl', (materials) => {
-            materials.preload();
-            const objLoader = new OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.load('/static/main/obj/truck.obj', (mesh) => {
-                this.truckMesh = mesh;
-                this.truckMesh.scale.set(0.5, 0.5, 0.5);
-                this.scene.add(this.truckMesh);
+        const loader = new GLTFLoader();
+        loader.load('/static/main/obj/truck.glb', (gltf) => {
+            gltf.scene.traverse((child) => {
+                if (child.isMesh && child.name === "chassis") {
+                    // Replace the material with MeshBasicMaterial
+                    child.material = new THREE.MeshToonMaterial({
+                        color: new THREE.Color(teamColor), // Example: Red color
+                        wireframe: false // Set to true if you want a wireframe appearance
+                    });
+                }
             });
+            this.truckMesh = gltf.scene;
+            this.truckMesh.scale.set(0.5, 0.5, 0.5);
+            this.scene.add(this.truckMesh);
+        }, undefined, (error) => {
+            console.error('An error happened while loading the model:', error);
         });
     }
+
+    // loadTruckModel() {
+    //     const mtlLoader = new MTLLoader();
+    //     mtlLoader.load('/static/main/obj/truck.mtl', (materials) => {
+    //         materials.preload();
+    //         const objLoader = new OBJLoader();
+    //         objLoader.setMaterials(materials);
+    //         objLoader.load('/static/main/obj/truck.obj', (mesh) => {
+    //             this.truckMesh = mesh;
+    //             this.truckMesh.scale.set(0.5, 0.5, 0.5);
+    //             this.scene.add(this.truckMesh);
+    //         });
+    //     });
+    // }
 
     updateBoost() {
         if (this.isBoosting && this.boostLevel > 0) {
