@@ -7,6 +7,8 @@ var clock = new THREE.Clock();
 let ballSpeedX = 0;
 let ballSpeedY = 0;
 let useAIForPlayer2 = false;
+let isGameOver = false;
+
 
 const container = document.getElementById('gameCont');
 const width = container.clientWidth;
@@ -90,13 +92,14 @@ function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            ballSpeedX = 10;
-            ballSpeedY = 10;
+            ballSpeedX = 10; // Initialiser la vitesse de la balle
+            ballSpeedY = 10; // Initialiser la vitesse de la balle
         } else {
             countdownContainer.textContent = countdown;
         }
     }, 1000);
 }
+
 
 const wallThickness = 0.5;
 const wallLength = 20;
@@ -241,8 +244,7 @@ function checkEndGame() {
 }
 
 function endGame() {
-    
-    resetGame();
+    isGameOver = true;
 
     const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
     const endGameMessage = document.createElement('div');
@@ -271,23 +273,29 @@ function endGame() {
     document.getElementById('menu-btn').addEventListener('click', () => {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
+
         showAllButtons();
         resetGame();
         controls.enabled = false;
     });
 }
 
+
+
 function resetGame() {
     player1Score = 0;
     player2Score = 0;
     ballSpeedX = 0;
-    ballSpeedY = 0;
+    ballSpeedY = 0;        
+    isGameOver = false;
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
         player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
     });
     updateScoreDisplay();
 }
+
+
 
 function showAllButtons() {
     const buttons = document.querySelectorAll('.game-button');
@@ -375,6 +383,8 @@ export function movePlayer(delta) {
 }
 
 function moveBall(delta) {
+    if (isGameOver) return; // Ne pas déplacer la balle si le jeu est terminé
+
     let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
     let newPosition = ballPosition.clone().add(ballSpeed.clone().multiplyScalar(delta));
@@ -450,6 +460,7 @@ function moveBall(delta) {
     ballSpeedX = ballSpeed.x;
     ballSpeedY = ballSpeed.y;
 }
+
 
 
 
