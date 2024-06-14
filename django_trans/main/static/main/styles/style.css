@@ -43,6 +43,15 @@ html, body
 
 }
 
+#scoreboard div {
+    margin-bottom: 10px;
+}
+
+#scoreboard div div {
+    margin-bottom: 5px;
+}
+
+
 
 .gameCont {
     display: flex;
