@@ -9,9 +9,9 @@ ENV POSTGRES_DB=${DB_NAME} \
 # Create a volume for persistent data storage
 VOLUME /var/lib/postgresql/data
 
-COPY postgresql.conf /etc/postgresql/16/main/
+COPY ./conf/postgresql.conf /etc/postgresql/16/main/
 
-COPY ./pg_hba.conf /etc/postgresql/16/main/
+COPY ./conf/pg_hba.conf /etc/postgresql/16/main/
 
 RUN chown -R postgres:postgres /etc/postgresql/16/main/
 
