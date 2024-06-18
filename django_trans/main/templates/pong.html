@@ -22,20 +22,16 @@
         <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
         <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
         <div id="gameCont" class="mt-3 three-js-canvas" style="position: relative;">
-            <div class="flex-container hud">
+            <div class="flex-container-hud">
                 <div id="onlineplay_btn" class="hud-btn game-button">
                     <b>Play online</b>
                     <br>
-                    <small><small>
-                        ( 1 vs 1  or 2 vs 2)
-                     </small></small>
+                    <small>(1vs1 / 2vs2)</small>
                  </div>
                  <div id="localplay_btn" class="hud-btn game-button">
                      <b>Local play</b>
                      <br>
-                     <small><small>
-                         ( 1 vs 1 )
-                     </small></small>
+                     <small>(1vs1)</small>
                  </div>
                  <div id="versusai_btn" class="hud-btn game-button">
                      <b>Versus AI</b>
@@ -43,10 +39,10 @@
                          🤖
                  </div>
              </div>
-             <div id="scoreboard" style="position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; font-family: Arial, sans-serif;">
+             <div id="scoreboard">
                  <span id="player1Score">0</span> - <span id="player2Score">0</span>
              </div>
-         </div>
+        </div>
      </div>
      <div class="gutter gutter-horizontal"></div>
      <div id="controls">
