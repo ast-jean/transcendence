@@ -19,10 +19,8 @@
     </script>
 <div id="editor">
     <div id="view" class="container">
-        
-        <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
-        <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
         <div id="gameCont" class="mt-3 three-js-canvas" style="position: relative;">
+            <button id="randomize-colors-btn" class="game-button randomize-colors-btn">Randomize Colors</button>
            <div class="flex-container hud">
                <div id="onlineplay_btn" class="hud-btn game-button">
                    <b>Play online</b>
@@ -45,7 +43,18 @@
                 </div>
             </div>
             <div id="scoreboard" style="position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; font-family: Arial, sans-serif;">
-                <span id="player1Score">0</span> - <span id="player2Score">0</span>
+                <div>
+                    <div>Player 1:</div>
+                    <div id="player1Score"></div>
+                </div>
+                <div>
+                    <div>Player 2:</div>
+                    <div id="player2Score"></div>
+                </div>
+            </div>
+            <div id="end-game-buttons" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <button id="replay-btn" class="btn btn-primary">Replay</button>
+                <button id="menu-btn" class="btn btn-secondary">Menu</button>
             </div>
         </div>
     </div>
