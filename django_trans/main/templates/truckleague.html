@@ -17,16 +17,47 @@
             <script src="{% static 'main/scripts/truck.js' %}" type="module"></script>
             <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
             <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
-          
+
+            <div class="loader">
+                <div class="loader-inner">
+                  <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                  </div>
+                  <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                  </div>
+                  <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                  </div>
+                  <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                  </div>
+                  <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                  </div>
+                </div>
+              </div>
         <div id="gameCont" class="mt-3 three-js-canvas">
            <div class="flex-container hud">
-               <div class="hud-btn">
+               <div class="hud-btn" id="play-online">
                    <b>Play online</b>
                    <br>
                    <small><small>
                        ( 1 vs 1  or 2 vs 2)
                     </small></small>
                 </div>
+                <div>
+                    <input type="color" id="team1" name="team1" value="#0036FF" />
+                    <label for="team1">Your team</label>
+                  </div>
+                  
+                  <div>
+                    <input type="color" id="team2" name="team2" value="#ff0036" />
+                    <label for="team2">Other team</label>
+                  </div>
+                  
+
+
                 <div class="dark">
                     <p class="text-white bg-dark">Score</p> </br>
                     <p class="text-success bg-dark score_text_team1">0 </p> : <p class="text-danger bg-dark score_text_team2">0</p>
@@ -35,9 +66,7 @@
                     <div id="boost-bar" style="height: 100%; width: 100%; background-color: green;"></div>
                 </div>
             </div>
-        </div>
-        </div>
-       
+        </div>       
       </div>
 </body>
 {% endblock %}

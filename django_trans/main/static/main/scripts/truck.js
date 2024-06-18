@@ -17,45 +17,81 @@ import CannonDebugRenderer from './CannonDebugRenderer.js';
 let score = {team1: 0, team2: 0}
 let team1 = [];
 let team2 = [];
-let teamColor = 0xff0000;
+let gameStarted = false; //toggle to cam to spectate
+
+export let players = [];
+
+const team1ColorPicker = document.getElementById('team1');
+const team2ColorPicker = document.getElementById('team2');
+
+function showLoader() {
+    console.log("Start Loading");
+    document.querySelector('.loader').style.display = 'block';
+}
+
+function hideLoader() {
+    console.log("Stop Loading");
+    document.querySelector('.loader').style.display = 'none';
+}
+
+let debug = false;
 
 class TruckSimulation {
     constructor() {
+        showLoader();
         this.keyState = {};
-        this.players = []; 
+        this.toggleCam = false;
         this.jumpStartTime = null; // Variable to track jump start time
         this.jumpDuration = 0.25; // Duration of the jump in seconds
         this.jumpStartVelocity = new CANNON.Vec3(); // Store initial velocity
-        this.initEventListeners();
+        this.team1Color = team1ColorPicker.value;
+        this.team2Color = team2ColorPicker.value;
         this.handleKeyStates();
+        this.manager = new THREE.LoadingManager();
+        this.initloadingManager();
+        
+        this.scene = new THREE.Scene();  
         this.initThree(); 
         this.initCannon();
-        this.addStaticPlane();
         this.walls = [];
-        this.addStadium();
         this.addWalls();
+        this.addStaticPlane();
+        this.addStadium();
         this.addRoof();
         this.addBall();
-        this.keyState = {};
-
+        team1.push(this.addPlayer(2, 3, 5, "team1"));
+        team2.push(this.addPlayer(2, 25, 5, "team2"));
+        this.updateColor = this.updateColor.bind(this);
+        this.initEventListeners();
+        
+        
+        
+        this.animate = this.animate.bind(this);
         this.relativeCameraOffset = new THREE.Vector3(0, 10, 5);
         this.boostActive = false;
+        this.resetPerformed = false;
+        if (debug === true)
+            this.debugRenderer = new CannonDebugRenderer(this.scene, this.world);
 
-        this.resetPerformed = false; 
-        this.debugRenderer = new CannonDebugRenderer(this.scene, this.world);
-        this.animate = this.animate.bind(this);
-        this.animate();
-        // this.initlocalplayer = false;
-        // this.localplayer;
     }
 
-    initThree() {
-        // Three.js initialization code...
-        this.scene = new THREE.Scene();
-        
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    animate() {
+        requestAnimationFrame(this.animate);
+        this.world.step(1 / 60);
+        this.update();
+    }
+
+    initloadingManager(){
+        this.manager.onLoad = () => {
+            hideLoader(); // Hide loader only when all assets are loaded
+            this.animate(); // Start animation after everything is loaded
+        };
+        this.textureLoader = new THREE.TextureLoader(this.manager);  
+    }
+
+    initThree() {      
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
         this.scene.add(ambientLight);
-        
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(10, 10, 10);
         this.scene.add(directionalLight);
@@ -63,9 +99,8 @@ class TruckSimulation {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById('gameCont').appendChild(this.renderer.domElement);
-       
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, -10, 10);
+        this.camera.position.set(5, -5, 3);
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
         this.camera.up.set(0, 0, 1); 
         const controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -86,8 +121,6 @@ class TruckSimulation {
             }
         );
         this.world.addContactMaterial(this.world.defaultContactMaterial);
-
-        this.addPlayer(0,10,0); //initial emplacement
     }
 
     updateBoost() {
@@ -118,12 +151,6 @@ class TruckSimulation {
         planeBody.position.set(0, 0, 0);
         planeBody.quaternion.setFromEuler(0, 0, -Math.PI / 2);
         this.world.addBody(planeBody);
-
-        // // Create the Three.js plane mesh for visualization
-        // const planeGeometry = new THREE.PlaneGeometry(200, 200);
-        // const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x888888, side: THREE.DoubleSide });
-        // const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-        // this.scene.add(planeMesh);
     }
 
     updateScore(){
@@ -146,12 +173,12 @@ class TruckSimulation {
     
 
     addStadium() {
-        const mtlLoader = new MTLLoader();
+        const mtlLoader = new MTLLoader(this.manager);
         mtlLoader.load('/static/main/obj/stadium.mtl', (materials) => {
             materials.preload();
     
             // Load the OBJ file and set its materials
-            const objLoader = new OBJLoader();
+            const objLoader = new OBJLoader(this.manager);
             objLoader.setMaterials(materials);
             objLoader.load('/static/main/obj/stadium.obj', (object) => {
                 // Adjust the scale and position of the loaded object
@@ -233,9 +260,7 @@ class TruckSimulation {
         wallBody4.addShape(wallShape4);
         wallBody4.position.set(25, 0, 0);
         this.world.addBody(wallBody4);
-        
-    
-        // Add corner walls
+            
         const cornerWallShape = new CANNON.Box(new CANNON.Vec3(1, 10, 10));
     
         const cornerWallBody1 = new CANNON.Body({ mass: 0 });
@@ -249,8 +274,7 @@ class TruckSimulation {
         cornerWallBody2.addShape(cornerWallShape);
         cornerWallBody2.position.set(25, -30, 0);
         cornerWallBody2.quaternion.setFromEuler(0, 0, -Math.PI / 4); // -45 degrees
-        this.world.addBody(cornerWallBody2);
-        
+        this.world.addBody(cornerWallBody2);    
     
         const cornerWallBody3 = new CANNON.Body({ mass: 0 });
         cornerWallBody3.addShape(cornerWallShape);
@@ -266,12 +290,12 @@ class TruckSimulation {
         
     
         // Create Three.js materials for visualization
-        const wallMaterial1 = new THREE.MeshToonMaterial({ color: 0x4B3239 }); // Red
-        const wallMaterial2 = new THREE.MeshToonMaterial({ color: 0x0637A2 }); // Green
-        const wallMaterial3 = new THREE.MeshToonMaterial({ color: 0x9E0606 }); // Blue
+        const wallMaterial1 = new THREE.MeshToonMaterial({ color: 0x4B3239 });
+        const wallMaterial2 = new THREE.MeshToonMaterial({ color: this.team2Color });
+        const wallMaterial3 = new THREE.MeshToonMaterial({ color: this.team1Color });
         // const wallMaterial4 = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow
         // const cornerWallMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Purple
-    
+
 
         // Create corresponding Three.js meshes for visualization
         const wallGeometry1 = new THREE.BoxGeometry(20, 2, 20);
@@ -279,76 +303,91 @@ class TruckSimulation {
 
         const wallMesh1Left = new THREE.Mesh(wallGeometry1, wallMaterial3);
         wallMesh1Left.position.copy(wallBody1Left.position);
-        this.scene.add(wallMesh1Left);
-    
+        this.walls.push({ body: wallBody1Left, mesh: wallMesh1Left });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh1Left);
+
         const wallMesh1Right = new THREE.Mesh(wallGeometry1, wallMaterial3);
         wallMesh1Right.position.copy(wallBody1Right.position);
-        this.scene.add(wallMesh1Right);
+        this.walls.push({ body: wallBody1Right, mesh: wallMesh1Right });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh1Right);
     
         const wallMesh1Top = new THREE.Mesh(wallGeometryTop, wallMaterial3);
         wallMesh1Top.position.copy(wallBody1Top.position);
-        this.scene.add(wallMesh1Top);
+        this.walls.push({ body: wallBody1Top, mesh: wallMesh1Top });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh1Top);
 
         const wallMesh2Left = new THREE.Mesh(wallGeometry1, wallMaterial2);
         let euler = new THREE.Euler(0, 0, Math.PI / 2, 'XYZ');
         wallMesh2Left.quaternion.setFromEuler(euler);
         wallMesh2Left.position.copy(wallBody2Left.position);
-        this.scene.add(wallMesh2Left);
+        this.walls.push({ body: wallBody2Left, mesh: wallMesh2Left });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh2Left);
     
         const wallMesh2Right = new THREE.Mesh(wallGeometry1, wallMaterial2);
         wallMesh2Right.quaternion.setFromEuler(euler);
         wallMesh2Right.position.copy(wallBody2Right.position);
-        this.scene.add(wallMesh2Right);
+        this.walls.push({ body: wallBody2Right, mesh: wallMesh2Right });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh2Right);
     
         const wallMesh2Top = new THREE.Mesh(wallGeometryTop, wallMaterial2);
         wallMesh2Top.quaternion.setFromEuler(euler);
         wallMesh2Top.position.copy(wallBody2Top.position);
-        this.scene.add(wallMesh2Top);
+        this.walls.push({ body: wallBody2Top, mesh: wallMesh2Top });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh2Top);
+
+        
+        
+
 
         const wallGeometry3 = new THREE.BoxGeometry(2, 100, 20);
         const wallMesh3 = new THREE.Mesh(wallGeometry3, wallMaterial1);
         wallMesh3.position.copy(wallBody3.position);
-        this.scene.add(wallMesh3);
+        this.walls.push({ body: wallBody3, mesh: wallMesh3 });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh3);
     
         const wallMesh4 = new THREE.Mesh(wallGeometry3, wallMaterial1);
         wallMesh4.position.copy(wallBody4.position);
-        this.scene.add(wallMesh4);
+        this.walls.push({ body: wallBody4, mesh: wallMesh4 });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(wallMesh4);
 
         // Create corner wall meshes
         const cornerWallGeometry = new THREE.BoxGeometry(2, 20, 20);
         const cornerWallMesh1 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh1.position.copy(cornerWallBody1.position);
         cornerWallMesh1.quaternion.copy(cornerWallBody1.quaternion);
-        this.scene.add(cornerWallMesh1);
+        this.walls.push({ body: cornerWallBody1, mesh: cornerWallMesh1 });
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(cornerWallMesh1);
     
         const cornerWallMesh2 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh2.position.copy(cornerWallBody2.position);
         cornerWallMesh2.quaternion.copy(cornerWallBody2.quaternion);
-        this.scene.add(cornerWallMesh2);
+        this.walls.push({ body: cornerWallBody2, mesh: cornerWallMesh2 });
+        // this.scene.add(cornerWallMesh2);
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
     
         const cornerWallMesh3 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh3.position.copy(cornerWallBody3.position);
         cornerWallMesh3.quaternion.copy(cornerWallBody3.quaternion);
-        this.scene.add(cornerWallMesh3);
+        this.walls.push({ body: cornerWallBody3, mesh: cornerWallMesh3 });
+        // this.scene.add(cornerWallMesh3);
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
     
+
         const cornerWallMesh4 = new THREE.Mesh(cornerWallGeometry, wallMaterial1);
         cornerWallMesh4.position.copy(cornerWallBody4.position);
         cornerWallMesh4.quaternion.copy(cornerWallBody4.quaternion);
-        this.scene.add(cornerWallMesh4);
-
-        this.walls.push({ body: wallBody1Left, mesh: wallMesh1Left });
-        this.walls.push({ body: wallBody1Right, mesh: wallMesh1Right });
-        this.walls.push({ body: wallBody1Top, mesh: wallMesh1Top });
-        this.walls.push({ body: wallBody2Left, mesh: wallMesh2Left });
-        this.walls.push({ body: wallBody2Right, mesh: wallMesh2Right });
-        this.walls.push({ body: wallBody2Top, mesh: wallMesh2Top });
-        this.walls.push({ body: wallBody3, mesh: wallMesh3 });
-        this.walls.push({ body: wallBody4, mesh: wallMesh4 });
-        this.walls.push({ body: cornerWallBody1, mesh: cornerWallMesh1 });
-        this.walls.push({ body: cornerWallBody2, mesh: cornerWallMesh2 });
-        this.walls.push({ body: cornerWallBody3, mesh: cornerWallMesh3 });
         this.walls.push({ body: cornerWallBody4, mesh: cornerWallMesh4 });
-
+        this.scene.add(this.walls[this.walls.length - 1].mesh);
+        // this.scene.add(cornerWallMesh4);
     }
 
     addRoof() {
@@ -370,38 +409,42 @@ class TruckSimulation {
             material: ballMaterial
         });
     
-        ballBody.position.set(0, 5, 3); // Position the ball above the ground
+        ballBody.position.set(-1, 0, 3); // Position the ball above the ground
         this.world.addBody(ballBody);
-        const mtlLoader = new MTLLoader();
+        const mtlLoader = new MTLLoader(this.manager);
         mtlLoader.load('/static/main/obj/ball.mtl', (materials) => {
-        materials.preload();
-        const objLoader = new OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.load('/static/main/obj/ball.obj', (object) => {
-            object.scale.set(ballRadius, ballRadius, ballRadius);
-            object.position.set(0, 5, 3);
-            this.scene.add(object);
-            this.ballMesh = object;
+            materials.preload();
+            const objLoader = new OBJLoader(this.manager);
+            objLoader.setMaterials(materials);
+            objLoader.load('/static/main/obj/ball.obj', (object) => {
+                object.scale.set(ballRadius, ballRadius, ballRadius);
+                object.position.set(0, 0, 3);
+                this.scene.add(object);
+                this.ballMesh = object;
+            });
         });
-});
-
-this.ballBody = ballBody;
+        this.ballBody = ballBody;
     }
 
-    addPlayer(x, y, z) {
-        const player = new Player(this.world, this.scene, x, y, z, this.carMaterial);
-        this.players.push(player);
+    addPlayer(x, y, z, team) {
+        let player; 
+        if (team === "team1") {
+            player = new Player(this.world, this.scene, x, y, z, this.team1Color);
+        } else if (team === "team2") {
+            player = new Player(this.world, this.scene, x, y, z, this.team2Color);
+        }
+        players.push(player);
         return player;
     }
 
     movePlayer(index, force, steering) {
-        const player = this.players[index];
+        const player = players[index];
         player.setEngineForce(force);
         player.setSteeringValue(steering);
     }
 
     updateCameraPosition() {
-        const player = this.players[0];
+        const player = players[0];
         if (!player) {
             console.warn('No player available');
             return;
@@ -436,121 +479,182 @@ this.ballBody = ballBody;
         } else {
             this.camera.position.lerp(desiredCameraPosition, 0.1);
         }
-    
-        this.camera.lookAt(playerPosition);
+
+        if (this.toggleCam === false) {
+            this.camera.lookAt(playerPosition);
+        } else {
+            this.camera.lookAt(this.ballMesh.position);
+        }
     
         if (this.camera.position.z < 2) {
             this.camera.position.z = 2;
         }
     }
 
+    updateColor() {
+        this.team1Color = team1ColorPicker.value;
+        this.team2Color = team2ColorPicker.value;
+
+        if (team1.length !== 0) {
+            team1.forEach(player => {
+                if (player)
+                player.truckMesh.children.forEach((child) => {
+                    if (child.name === "chassis") {
+                        // Replace the material with MeshBasicMaterial
+                        child.material = new THREE.MeshToonMaterial({
+                            color: new THREE.Color(this.team1Color), // Example: Red color
+                        });
+                    }
+                }); // Assuming a structure where each player has a mesh with a material
+            });
+        }
+
+        if (team2.length !== 0) {
+            team2.forEach(player => {
+                if (player)
+                player.truckMesh.children.forEach((child) => {
+                    if (child.name === "chassis") {
+                        // Replace the material with MeshBasicMaterial
+                        child.material = new THREE.MeshToonMaterial({
+                            color: new THREE.Color(this.team2Color), // Example: Red color
+                        });
+                    }
+                }); // Assuming a structure where each player has a mesh with a material
+            });
+        }
+
+        console.log(this);
+        if (this.walls && this.walls.length > 0) {
+            console.log("In wall change colors?");
+            this.walls.slice(0, 3).forEach(wall => {
+                console.log(wall);
+                wall.mesh.material  = new THREE.MeshToonMaterial({
+                    color: new THREE.Color(this.team1Color),
+                });
+            });
+           this.walls.slice(3, 6).forEach(wall => {
+                    wall.mesh.material  = new THREE.MeshToonMaterial({
+                    color: new THREE.Color(this.team2Color), // Example: Red color
+                }); // Apply color to the next three walls
+            });
+        }
+        else {
+            console.log("no Walls");
+        }
+    }
+
     update() {
-       // Loop through each wall entry and update the mesh to match the body's position and quaternion
-       this.walls.forEach(wall => {
-        wall.mesh.position.copy(wall.body.position);
-        wall.mesh.quaternion.copy(wall.body.quaternion);
-        wall.mesh.scale.set(1, 1, 1);
-    });
-
-        // if (this.players[0]) {
-        //     const player = this.players[0];
-        //     const chassisBody = player.chassisBody;
-        //     // Apply the vehicle's orientation to the offset
-        //     const cameraOffset = this.relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
-        //         chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
-        //     )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
-        //     // Smoothly move the camera to the new position
-        //     this.camera.position.lerp(cameraOffset, 0.1);
+        // Loop through each wall entry and update the mesh to match the body's position and quaternion
+        this.walls.forEach(wall => {
+            wall.mesh.position.copy(wall.body.position);
+            wall.mesh.quaternion.copy(wall.body.quaternion);
+            wall.mesh.scale.set(1, 1, 1);
+        });
+        
+        if (gameStarted === true)
+        {
+            if (players[0]) {
+                const player = players[0];
+                const chassisBody = player.chassisBody;
+                // Apply the vehicle's orientation to the offset
+                const cameraOffset = this.relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
+                    chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
+                    )).add(new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z));    
+                    // Smoothly move the camera to the new position
+                    this.camera.position.lerp(cameraOffset, 0.1);
+                    
+                    // Sync chassis body position and quaternion with the vehicle (if needed)
+                    player.chassisBody.position.copy(chassisBody.position);
+                    player.chassisBody.quaternion.copy(chassisBody.quaternion);
+                }
+                this.updateCameraPosition();
+            }
             
-        //     // Sync chassis body position and quaternion with the vehicle (if needed)
-        //     player.chassisBody.position.copy(chassisBody.position);
-        //     player.chassisBody.quaternion.copy(chassisBody.quaternion);
-        // }
-        // this.updateCameraPosition();
-        // Update ball mesh to follow the physics body
-        if (this.ballMesh && this.ballBody) {
-            this.ballMesh.position.copy(this.ballBody.position);
-            this.ballMesh.quaternion.copy(this.ballBody.quaternion);
+            if (this.ballMesh && this.ballBody) {
+                this.ballMesh.position.copy(this.ballBody.position);
+                this.ballMesh.quaternion.copy(this.ballBody.quaternion);
+            }
+            players.forEach(player => {
+                player.update();
+            });
+            
+            if (this.jumpStartTime) {
+                const elapsed = (performance.now() - this.jumpStartTime) / 1000;
+                if (elapsed < this.jumpDuration) {
+                    const t = elapsed / this.jumpDuration;
+                    const newPos = new CANNON.Vec3();
+                    newPos.x = this.jumpStartPos.x + (this.jumpTargetPos.x - this.jumpStartPos.x) * t;
+                    newPos.y = this.jumpStartPos.y + (this.jumpTargetPos.y - this.jumpStartPos.y) * t;
+                    newPos.z = this.jumpStartPos.z + (this.jumpTargetPos.z - this.jumpStartPos.z) * t;
+                    players[0].chassisBody.position.copy(newPos);
+                } else {
+                    const velocityChange = new CANNON.Vec3(
+                        this.jumpTargetPos.x - this.jumpStartPos.x,
+                        this.jumpTargetPos.y - this.jumpStartPos.y,
+                        this.jumpTargetPos.z - this.jumpStartPos.z
+                        ).scale(1 / this.jumpDuration);
+                        const newVelocity = this.jumpStartVelocity.clone().vadd(velocityChange);
+                        players[0].chassisBody.position.copy(this.jumpTargetPos);
+                        players[0].chassisBody.velocity.copy(newVelocity); // Apply the new momentum
+                        this.jumpStartTime = null; // Reset jump
+                    }
+                    
+                }
+                
+                
+                if (this.ballBody.position.y < -40) {
+                    score.team1 =+ 1;
+                    this.resetScene();
+                }
+                if (this.ballBody.position.y > 40) {
+                    score.team2 =+ 1;
+                    this.resetScene();
+                }
+                this.updateScore();
+                this.handleKeyStates();
+                if (debug === true)
+                    this.debugRenderer.update();
+            this.renderer.render(this.scene, this.camera);
         }
-        this.players.forEach(player => {
-            player.update();
-        });
-
-    if (this.jumpStartTime) {
-        const elapsed = (performance.now() - this.jumpStartTime) / 1000;
-        if (elapsed < this.jumpDuration) {
-            const t = elapsed / this.jumpDuration;
-            const newPos = new CANNON.Vec3();
-            newPos.x = this.jumpStartPos.x + (this.jumpTargetPos.x - this.jumpStartPos.x) * t;
-            newPos.y = this.jumpStartPos.y + (this.jumpTargetPos.y - this.jumpStartPos.y) * t;
-            newPos.z = this.jumpStartPos.z + (this.jumpTargetPos.z - this.jumpStartPos.z) * t;
-            this.players[0].chassisBody.position.copy(newPos);
-        } else {
-            const velocityChange = new CANNON.Vec3(
-                this.jumpTargetPos.x - this.jumpStartPos.x,
-                this.jumpTargetPos.y - this.jumpStartPos.y,
-                this.jumpTargetPos.z - this.jumpStartPos.z
-            ).scale(1 / this.jumpDuration);
-            const newVelocity = this.jumpStartVelocity.clone().vadd(velocityChange);
-            this.players[0].chassisBody.position.copy(this.jumpTargetPos);
-            this.players[0].chassisBody.velocity.copy(newVelocity); // Apply the new momentum
-            this.jumpStartTime = null; // Reset jump
+        
+        resetScene(){
+            this.ballBody.position.set(0, 0, 5);
+            this.resetMomentum(this.ballBody);
+            players.forEach(player => {
+                this.resetMomentum(player.truckMesh);
+                
+            });
+            this.updateScore();
         }
-
-    }
-
-    
-    if (this.ballBody.position.y < -40) {
-        score.team1 =+ 1;
-        this.resetScene();
-    }
-    if (this.ballBody.position.y > 40) {
-        score.team2 =+ 1;
-        this.resetScene();
-    }
-        this.updateScore();
-        this.handleKeyStates();
-        this.debugRenderer.update();
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    resetScene(){
-        this.ballBody.position.set(0, 0, 5);
-        this.resetMomentum(this.ballBody);
-        this.players.forEach(player => {
-            this.resetMomentum(player.truckMesh);
-
-        });
-        this.updateScore();
-    }
-
-    animate() {
-        // requestAnimationFrame(this.animate.bind(this));
-        requestAnimationFrame(this.animate);
-        this.world.step(1 / 60);
-        this.update();
-    }
-
-    initEventListeners() {
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'ShiftLeft'].includes(e.code)) {
+        
+        initEventListeners() {            
+            document.getElementById('team1').addEventListener('change', this.updateColor);
+            document.getElementById('team2').addEventListener('change', this.updateColor);
+            document.addEventListener('keydown', (e) => {
+                if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'ShiftLeft'].includes(e.code)) {
+                    this.keyState[e.code] = true;
+                    e.preventDefault();
+            }
+            if ([ 'KeyR' ].includes(e.code)) {
                 this.keyState[e.code] = true;
-                e.preventDefault();
             }
             if ([ 'KeyR' ].includes(e.code)) {
                 this.keyState[e.code] = true;
             } 
-        }, true);
-        document.addEventListener('keyup', (e) => {
-            if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'ShiftLeft'].includes(e.code)) {
-                this.keyState[e.code] = false;
-                e.preventDefault();
-            }
-            if (e.code === 'KeyR') {
-                this.resetPerformed = false; 
-            }
-        }, true);
-    }
+            }, true);
+            document.addEventListener('keyup', (e) => {
+                if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'ShiftLeft'].includes(e.code)) {
+                    this.keyState[e.code] = false;
+                    e.preventDefault();
+                }
+                if (e.code === 'KeyR') {
+                    this.resetPerformed = false; 
+                }
+                if (e.code === 'KeyX') {
+                    this.toggleCam = !this.toggleCam;
+                }
+            }, true);
+        }
 
 
 // //-----------------------------------------------------------------------
@@ -560,9 +664,9 @@ handleKeyStates() {
     const maxForce = 2500; // Adjust this value to control the engine power
     const steeringLerpFactor = 0.1; // Adjust this value to control the smoothness of the steering
     const rotationSpeed = 0.02;
-    if (this.players[0])
+    if (players[0])
     {
-        const player = this.players[0];
+        const player = players[0];
             if (this.keyState['ArrowUp'])
             {
                 player.vehicle.applyEngineForce(-maxForce, 0);
@@ -609,7 +713,7 @@ handleKeyStates() {
             //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -this.rotationSpeed);
             //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
             // }
-            if (this.keyState['Space'] && this.players.length > 0) {
+            if (this.keyState['Space'] && players.length > 0) {
                 if (player.isGrounded && !this.jumpStartTime) {
                     this.jumpStartTime = performance.now();
                     this.jumpStartPos = player.chassisBody.position.clone();
@@ -619,7 +723,7 @@ handleKeyStates() {
                 }
             }
             if (this.keyState['KeyR'] && !this.resetPerformed) {
-                if (this.players.length > 0) {
+                if (players.length > 0) {
                     if (player && player.chassisBody) {
                         const forward = new CANNON.Vec3(0, -1, 0);
                         player.chassisBody.quaternion.vmult(forward, forward);
@@ -645,7 +749,6 @@ handleKeyStates() {
             } else {
                 player.isBoosting = false;
                 this.relativeCameraOffset = new THREE.Vector3(0, 10, 5);
-
             }
         }
 
@@ -669,17 +772,11 @@ getDirectionVectors(chassisBody) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    new TruckSimulation();
-});
-
-export let players = [];
-
 export class Player {
-    constructor(world, scene, x, y, z, material) {
+    constructor(world, scene, x, y, z, teamColor) {
         this.world = world;
         this.scene = scene;
-        
+        this.teamColor = teamColor;
         this.boostLevel = 100; // Initialize boost level to 100%
         this.maxBoostLevel = 100;
         this.boostUsageRate = 2; // Boost level decreases by 1% per frame when boosting
@@ -691,7 +788,7 @@ export class Player {
         this.isGrounded = false;
 
         const chassisShape = new CANNON.Box(new CANNON.Vec3(0.85, 2.08, 0.5));
-        this.chassisBody = new CANNON.Body({ mass: 300, material: material });
+        this.chassisBody = new CANNON.Body({ mass: 300 });
         const chassisOffset = new CANNON.Vec3(0, -0.09, -0.1); // Position relative to chassis
         this.chassisBody.addShape(chassisShape, chassisOffset);
     
@@ -781,7 +878,6 @@ export class Player {
 
     checkGroundContact() {
         this.isGrounded = false; // Reset grounded state
-
         // Iterate through each wheel
         for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
             const wheel = this.vehicle.wheelInfos[i];
@@ -792,16 +888,15 @@ export class Player {
         }
     }
 
-
     loadTruckModel() {
-        const loader = new GLTFLoader();
+        const loader = new GLTFLoader(this.manager);
         loader.load('/static/main/obj/truck.glb', (gltf) => {
             gltf.scene.traverse((child) => {
                 if (child.isMesh && child.name === "chassis") {
                     // Replace the material with MeshBasicMaterial
                     child.material = new THREE.MeshToonMaterial({
-                        color: new THREE.Color(teamColor), // Example: Red color
-                        wireframe: false // Set to true if you want a wireframe appearance
+                        color: new THREE.Color(this.teamColor),
+                        wireframe: false
                     });
                 }
             });
@@ -812,20 +907,6 @@ export class Player {
             console.error('An error happened while loading the model:', error);
         });
     }
-
-    // loadTruckModel() {
-    //     const mtlLoader = new MTLLoader();
-    //     mtlLoader.load('/static/main/obj/truck.mtl', (materials) => {
-    //         materials.preload();
-    //         const objLoader = new OBJLoader();
-    //         objLoader.setMaterials(materials);
-    //         objLoader.load('/static/main/obj/truck.obj', (mesh) => {
-    //             this.truckMesh = mesh;
-    //             this.truckMesh.scale.set(0.5, 0.5, 0.5);
-    //             this.scene.add(this.truckMesh);
-    //         });
-    //     });
-    // }
 
     updateBoost() {
         if (this.isBoosting && this.boostLevel > 0) {
@@ -906,62 +987,6 @@ export function removePlayer(playerIdToRemove) {
     updatePlayerVisualization();
 }
 
-// // export function updatePlayerVisualization() {
-// //     // if (players.length > 0) {
-// //     //         players.forEach(player => {
-// //     //                 scene.add(player.mesh);
-// //     //         });
-// //     // }
-// // }
-// 
-// // export var delta;
-// 
-// 
-// 
-// // export function movePlayer(delta) {
-// //     const speed = 10; // Adjust speed as necessary
-// //     const deceleration = 0.92; // Deceleration factor
-// //     let x = 0;
-// //     let z = 0;
-// 
-// //     if (keyState['ArrowLeft']) {
-// 
-// //     }
-// //     if (keyState['ArrowRight']) {
-// 
-// //     }
-// //     if (keyState['ArrowUp']) {
-//         
-// //     } if (keyState['ArrowDown']) {
-// 
-// //     }
-// //     // Emit movement data to the server
-// //         // Apply deceleration if no key is pressed
-// //     // if (!(keyState['ArrowLeft'] || keyState['ArrowRight'])) {
-// //     //     x = players[0].velocity.x * deceleration;
-// //     // }
-// //     // if (!(keyState['ArrowUp'] || keyState['ArrowDown'])) {
-// //     //     z = players[0].velocity.z * deceleration;
-// //     // // }
-// //     // players[0].velocity.x = x;
-// //     // players[0].velocity.z = z;
-// 
-// 
-// //     // //Send new position to server players[]
-// //     // if (x !== 0 || z !== 0 ) //if both 0 = false
-// //     // {   
-// //     //     if (socket && socket.readyState)
-// //     //     {
-// //     //         let cmd = "move";
-// //     //         const movementData = { x, z };
-// //     //         socket.send(JSON.stringify({ cmd , movementData })); //Sending to gameserv/consumers.py 
-// //     //     }
-// //     //     players[0].mesh.position.x += x;
-// //     //     players[0].mesh.position.z += z;
-// //     // }
-// //     updatePlayerVisualization();
-// // }
-
 export function receiveMove(id, movementData) {
     const player = players.find(p => p.id === id);
     // console.log("Do find() work?:", player, players);
@@ -986,9 +1011,7 @@ export function receiveMove(id, movementData) {
 
 export function receiveSync(id, movementData) {
     const player = players.find(p => p.id === id);
-    // console.log("Do find() work?:", player, players);
     if (!player) {
-        // console.log("Player doesnt exist, creating one");
         if (!movementData.x)
             movementData.x = 0;
         if (!movementData.z)
@@ -1005,3 +1028,16 @@ export function sendSync() {
     const movementData = { x, z };
     socket.send(JSON.stringify({ cmd , movementData }));
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    new TruckSimulation();
+    const playOnlineBtn = document.getElementById('play-online');
+    playOnlineBtn.addEventListener('click', playOnline);
+
+    
+});
+
+function playOnline() {
+
+}
+
