@@ -11,6 +11,7 @@ VOLUME /var/lib/postgresql/data
 
 COPY postgresql.conf /etc/postgresql/16/main/
 
+
 RUN apt get-update
 RUN apt-get install -y procps
 # Expose the PostgreSQL port
