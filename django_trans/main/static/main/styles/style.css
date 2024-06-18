@@ -50,14 +50,30 @@ html, body
 #scoreboard div div {
     margin-bottom: 5px;
 }
+/* 
+#gameCont 
+{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+} */
 
-
+.flex-container-hud 
+{
+	display: flex;
+	flex-direction: column; 
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	z-index: auto;
+}
 
 .gameCont {
     display: flex;
     justify-content: space-between; /* This will push your chatbox to the right */
     height: 100vh; /* Adjust height as needed */
-}
+} 
 
 .three-js-canvas {
     flex-grow: 1; /* Takes up the remaining space */
@@ -81,19 +97,42 @@ html, body
 
 
 .hud-btn { 
-    border-radius: 1em;
-    text-align: center;
-    font-family: sans-serif;
-    font-size: 150%;    
-    flex:1;
-    background: rgba(255, 255, 255, 0.88);/*not a highlight. Its a lowdark*/ 
-    padding: 20px;
-    margin: 5px;
-    border: solid 1px rgb(215, 215, 215);
+	background: whitesmoke;
+	border: 2px solid;
+	font: inherit;
+	line-height: 1;
+	margin: 0.5em;
+	padding: 1em 2em;
 }
 
 
-.hud-btn:hover {
+.hud-btn:hover,
+.hud-btn:focus
+{
+	box-shadow: inset 6.5em 0 0 0 var(--hover);
+}
+
+
+#onlineplay_btn
+{
+	color: #ee7752;
+}
+
+#localplay_btn
+{
+	color: #23d5ab;
+}
+
+#versusai_btn
+{
+	color: #0967cc;
+}
+
+#t_onlineplay_btn
+{
+	color: #a4f97f;
+}
+/* {
     background: none;
     cursor: pointer;
     border: none;
@@ -106,7 +145,7 @@ html, body
     padding: 20px;
     margin: 5px;
     border: solid 1px gray;
-}
+} */
 
 .hud {
     display: block;
@@ -124,6 +163,17 @@ html, body
     cursor: ew-resize;
     background-image:  url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==')
 }
+
+#scoreboard
+{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	color: white;
+	font-size: 24px;
+	font-family: Arial, sans-serif;
+}
+
 #chat-container {
     width: 300px;
     background: #0967cc;
@@ -140,6 +190,7 @@ html, body
     border: 1px solid #ccc;
     background: #fff;
     margin-bottom: 10px;
+	
 }
 
 #chat-box ul {
