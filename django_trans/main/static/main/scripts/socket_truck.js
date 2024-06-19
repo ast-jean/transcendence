@@ -35,7 +35,7 @@ function setupWebSocket() {
             // players.push(new Player(data.ident,0,0));
             sendSync();
             receiveConnect(data.ident);
-            players.push(new Player(data.ident,0,0));
+            // players.push(new Player(data.ident,0,0));
         }
         if (data.cmd === "disconnect") {
             removePlayer(data.ident);
