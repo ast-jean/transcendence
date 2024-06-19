@@ -50,30 +50,24 @@ html, body
 #scoreboard div div {
     margin-bottom: 5px;
 }
-/* 
+
 #gameCont 
 {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 100%;
-} */
+	padding-top: 15px;
+}
 
-.flex-container-hud 
+.play_btns
 {
-	display: flex;
+	/* position: relative;
+	display: flex; 
 	flex-direction: column; 
 	justify-content: center;
 	align-items: center;
-	text-align: center;
-	z-index: auto;
+	text-align: center;*/
+	width: auto;
+	margin: 0 auto; 
+	z-index: 99;
 }
-
-.gameCont {
-    display: flex;
-    justify-content: space-between; /* This will push your chatbox to the right */
-    height: 100vh; /* Adjust height as needed */
-} 
 
 .three-js-canvas {
     flex-grow: 1; /* Takes up the remaining space */
@@ -132,20 +126,6 @@ html, body
 {
 	color: #a4f97f;
 }
-/* {
-    background: none;
-    cursor: pointer;
-    border: none;
-    flex:1;
-    border-radius: 1em;
-    text-align: center;
-    font-family: sans-serif;
-    font-size: 175%;
-    background: rgba(200, 255, 250, 0.652);
-    padding: 20px;
-    margin: 5px;
-    border: solid 1px gray;
-} */
 
 .hud {
     display: block;
@@ -184,7 +164,7 @@ html, body
 }
 
 #chat-box {
-    height: 200px;
+    height:400px;
     overflow-y: auto;
     border-radius: 5px;
     border: 1px solid #ccc;
