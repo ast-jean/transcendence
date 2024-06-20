@@ -158,13 +158,6 @@ function localgame(useAI) {
     updatePlayerVisualization();
 }
 
-
-function onWindowResize() {
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-}
-
 let colors = [
     0x00ff00, // Vert
     0x0000ff, // Bleu
@@ -551,8 +544,10 @@ function animate() {
     }
 
     camera.position.set(0, -15, 10);
-    camera.lookAt(0, 0, 0); 
+    camera.lookAt(0, 0, 0);  //could be in init
     controls.update();
+	resizeRendererToDisplaySize(renderer);
+
     renderer.render(scene, camera);
 }
 
@@ -650,6 +645,62 @@ function randomizeColors() {
 }
 
 
+
+// Attach resize event listener to the window
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+    // Assuming 'camera' and 'renderer' are accessible in this scope
+    // Update the camera's aspect ratio and the size of the renderer
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);  // false to prevent CSS sizing which can cause issues
+}
+
+// This function could be called in your animation loop to handle resizing
+function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight; // Corrected to use clientHeight for height
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+        renderer.setSize(width, height, false);  // Ensures pixel ratio is considered
+        camera.aspect = width / height;          // Ensure the aspect ratio is updated
+        camera.updateProjectionMatrix();
+    }
+    return needResize;
+}
+
+
+
+
+
+
+
+// // Resize game window on window resize
+// window.addEventListener('resize', onWindowResize, false);
+
+// function onWindowResize() {
+// 	camera.aspect = width / height;
+// 	camera.updateProjectionMatrix();
+// 	renderer.setSize(width, height);
+// }
+
+// function resizeRendererToDisplaySize(renderer) {
+// 	const canvas = renderer.domElement;
+// 	const width = canvas.clientWidth;
+// 	const height = canvas.clientWidth;
+// 	const needResize = canvas.width !== width || canvas.height !== height;
+// 	if (needResize) {
+// 	    renderer.setSize(width, height, false);
+// 	}
+// 	return needResize;
+// } 
 
 
 
