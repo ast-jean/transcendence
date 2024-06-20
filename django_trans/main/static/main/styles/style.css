@@ -43,35 +43,50 @@ html, body
 
 }
 
-#scoreboard div {
-    margin-bottom: 10px;
-}
-
-#scoreboard div div {
-    margin-bottom: 5px;
+/* !!! Padding will need to be changed once game window is flexible!!! */
+#scoreboard  {
+	padding-top: 45px;
+    padding-left: 20px;
+	
 }
 
 #gameCont 
 {
-	padding-top: 15px;
-	height: 300px;
+	align-items: center;
+	padding-top: 40px;
+	height: 600px;
 }
 
-.play_btns
+/* #gameCont {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 100%; 
+}*/
+
+.play_btns {
+	padding-left: 25%;
+	/* padding-top: 7%; */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; 
+	align-items: center;
+	text-align: center;
+	position: relative;
+} 
+
+/* .play_btns
 {
-	/* position: relative;
 	display: flex; 
 	flex-direction: column; 
-	justify-content: center;
-	align-items: center;
-	text-align: center;*/
-	width: auto;
+	width: inherit;
 	margin: 0 auto; 
 	z-index: 99;
-}
+} */
 
 .three-js-canvas {
-    flex-grow: 1; /* Takes up the remaining space */
+	flex-grow: 1; /* Takes up the remaining space */
 }
 
 #editor {
@@ -83,7 +98,8 @@ html, body
 #controls {
   background: #ffffff00;
   /* background: linear-gradient(#fd8f8fdc, rgb(161, 255, 140)); */
-  padding: 5px;
+  padding-top: 28px;
+  /* height: 539.46px; */
 }
 
 .hidden {
@@ -171,10 +187,11 @@ html, body
     border: 1px solid #ddd;
     padding: 10px;
     /* margin: 20px; */
+	height: 539.46px;
 }
 
 #chat-box {
-    height:400px;
+    height:450px;
     overflow-y: auto;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -183,11 +200,11 @@ html, body
 	
 }
 
-#chat-box ul {
+/* #chat-box ul {
     list-style: none;
     padding: 0;
     margin: 0;
-}
+} */
 
 #chat-box li {
     padding: 8px;
@@ -203,7 +220,7 @@ html, body
 
 /* FOR COLORFUL BACKGROUND */
 body {
-	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background: linear-gradient(-45deg, #6c52ee, #e73c7e, #23a6d5, #23d5ab);
 	background-size: 400% 400%;
 	animation: gradient 15s ease infinite;
 	height: 100vh;
