@@ -39,12 +39,13 @@
               </div>
         <div id="gameCont" class="mt-3 three-js-canvas">
            <div class="flex-container hud">
-                 <div class="hud-btn" id="create-room">
-                    <b>Create Room</b>
-                    <br>
-                    <small><small>
-                        ( 1 vs 1  or 2 vs 2)
-                     </small></small>
+                 <div class="hud-btn" id="create-room-2">
+                    <b>Create Room</b><br>
+                    <small>1 vs 1</small>
+                 </div>
+                 <div class="hud-btn" id="create-room-4">
+                    <b>Create Room</b><br>
+                    <small>2 vs 2</small>
                  </div>
                  <form id="searchRoom">
                     <input type="text" placeholder="enter room id #" name="searchRoom">
@@ -60,7 +61,9 @@
                     <label for="team2">Other team</label>
                   </div>
                   
-
+                  <div id="roomIdDiv">
+                    <p id="roomId" class="text-white bg-dark">Room: </p>
+                 </div>
 
                 <div class="dark">
                     <p class="text-white bg-dark">Score</p> </br>
