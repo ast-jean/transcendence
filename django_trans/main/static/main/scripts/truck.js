@@ -38,7 +38,7 @@ class TruckSimulation {
         this.keyState = {};
         this.toggleCam = false;
         this.jumpStartTime = null; // Variable to track jump start time
-        this.jumpDuration = 0.15; // Duration of the jump in seconds
+        this.jumpDuration = 0.5; // Duration of the jump in seconds
         this.jumpStartVelocity = new CANNON.Vec3(); // Store initial velocity
         this.team1Color = team1ColorPicker.value;
         this.team2Color = team2ColorPicker.value;
@@ -129,7 +129,6 @@ class TruckSimulation {
                 this.boostLevel = this.maxBoostLevel;
             }
         }
-
         // Update the boost indicator
         const boostBar = document.getElementById('boost-bar');
         if (boostBar) {
@@ -180,8 +179,6 @@ class TruckSimulation {
                 object.position.set(0, 0, 0);
                 // Add the object to the scene
                 this.scene.add(object);
-    
-                // Link the loaded object with the ball body
             });
     });
     }
