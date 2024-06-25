@@ -15,8 +15,8 @@ html, body
 } 
 
 .btn-background {
-    width: 500px; /* Adjust the width as needed */
-    height: 300px; /* Adjust the height as needed */
+    width: 800px; /* Adjust the width as needed */
+    height: 500px; /* Adjust the height as needed */
     color: white; /* Text color */
     font-size: 16px; /* Text size */
     text-align: center; /* Center the text */
