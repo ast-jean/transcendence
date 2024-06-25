@@ -11,6 +11,7 @@ VOLUME /var/lib/postgresql/data
 
 COPY ./conf/postgresql.conf /conf/
 
+
 COPY ./conf/pg_hba.conf /conf/
 
 COPY ./scripts/init.sh /docker-entrypoint-initdb.d/
@@ -29,6 +30,7 @@ RUN chmod 777 /var/lib/postgresql/data/
 #RUN chown -R postgres:postgres /var/lib/postgresql/16/main/
 
 RUN apt-get update
+
 RUN apt-get install -y procps
 #RUN apt-get install -y postgresql-client
 # Expose the PostgreSQL port
