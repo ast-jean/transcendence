@@ -61,6 +61,7 @@ export function sendRoomSearch(roomId) {
 }
 
 function getRoomCreateCmd(roomId) {
+    document.getElementById
     document.getElementById("roomId").textContent = "Room:" + roomId;
 }
 
@@ -79,13 +80,19 @@ function handleSubmit(event) {
 
 function createRoom2()  {
     let cmd = "roomCreate2";
-    console.log("In room create ");
+    console.log("In room create 2");
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
     socket.send(JSON.stringify({ cmd }));
 }
 
 function createRoom4()  {
     let cmd = "roomCreate4";
-    console.log("In room create ");
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
+    console.log("In room create 4");
     socket.send(JSON.stringify({ cmd }));
 }
 

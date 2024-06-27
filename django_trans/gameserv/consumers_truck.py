@@ -39,14 +39,12 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 		if len(text_data) > 0:
 			text_data_json = json.loads(text_data)
 			text_data_json.update({"ident": "user_%s" % self.ident}) #adds the player id
-			# if text_data_json["cmd"] == "chat":
-			# 	await self.broadcast_chat(text_data_json)
 			if text_data_json["cmd"] == "move":
 				await self.broadcast_move(text_data_json)
 			if text_data_json["cmd"] == "connect":
 				await self.broadcast_connect(text_data_json)
 			if text_data_json["cmd"] == "disconnect":
-				await self.broadcast_connect(text_data_json)
+				await self.broadcast_disconnect(text_data_json)
 			if text_data_json["cmd"] == "sync":
 				await self.broadcast_move(text_data_json)
 			if text_data_json["cmd"] == "roomSearch":
@@ -55,11 +53,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				await self.createRoom2()
 			if text_data_json["cmd"] == "roomCreate4":
 				await self.createRoom4()
-	# async def broadcast_chat(self, data):
-	# 	for client in self.connected_clients:
-	# 		if client.ident != self.ident:
-	# 			await client.send(json.dumps(data))
-
 
 	def generate_room_id(self):
 		print("id generator")
@@ -70,8 +63,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			room_id = random.randint(lower_bound, upper_bound)	
 		self.existing_room_ids.append(room_id)
 		return room_id
-
-
 
 	async def create_room(self, num_players):
 		print(f"Creating new room for {num_players} players.")
@@ -91,16 +82,18 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 		except Exception as e:
 			print(f"Error creating room: {str(e)}")
 
-
-
 	async def createRoom2(self):
 		print("Creating new room")
 		try:
 			room_Id = self.generate_room_id()
 			data = {
 				"cmd": "roomCreated",
-				"roomId": room_Id
+				"roomId": room_Id,
+				"playerIn": 0,
+				"playerTotal": 2,
+				"status": "waiting"
 			}
+			self.add_room(room_Id, 2)
 			for client in self.connected_clients:
 				if client.ident == self.ident:
 					await self.find_and_add_client(room_Id, self.ident)
@@ -114,8 +107,12 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			room_Id = self.generate_room_id()
 			data = {
 				"cmd": "roomCreated",
-				"roomId": room_Id
+				"roomId": room_Id,
+				"playerIn": 0,
+				"playerTotal": 4,
+				"status": "waiting"
 			}
+			self.add_room(room_Id, 4)
 			for client in self.connected_clients:
 				if client.ident == self.ident:
 					await self.find_and_add_client(room_Id, self.ident)
@@ -126,6 +123,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 	async def searchRoom(self, data):
 		print(f"Client {self.ident} is searching for room {data['roomId']}")
 		found_room = await self.find_room(data['roomId'])
+		print(self.rooms)
 		if found_room != None:
 			print(f"Room found: { found_room }")
 			await self.find_and_add_client(data['roomId'], data['ident'])
@@ -143,7 +141,37 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			if client.ident != self.ident:
 				await client.send(json.dumps(data))
 
+	async def broadcast_gameStart(self, data):
+		for client in self.connected_clients:
+			if client.ident != self.ident:
+				await client.send(json.dumps(data))
+
 	async def broadcast_connect(self, data):
 		for client in self.connected_clients:
 			if client.ident != self.ident:
 				await client.send(json.dumps(data))
+
+	async def broadcast_disconnect(self, data):
+		for client in self.connected_clients:
+			if client.ident != self.ident:
+				await client.send(json.dumps(data))
+				
+	async def add_room(self, room_id, player_total):
+		room = {
+			"roomId": room_id,
+			"playerIn": 0,
+			"playerTotal": player_total,
+			"status": "waiting"
+		}
+		self.rooms.append(room)
+		print(f"Room {room_id} created and added to the list.")
+		
+	def update_room(self, room_id, new_player_in=None, new_status=None):
+		for room in self.rooms:
+			if room["roomId"] == room_id:
+				if new_player_in is not None:
+					room["playerIn"] = new_player_in
+				if new_status is not None:
+					room["status"] = new_status
+					
+				print(f"Updated room {room_id}: Players - {room['playerIn']}, Status - {room['status']}")
