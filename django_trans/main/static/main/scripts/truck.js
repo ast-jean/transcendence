@@ -653,26 +653,27 @@ handleKeyStates() {
                 const newSteeringValue = THREE.MathUtils.lerp(currentSteeringValue, targetSteeringValue, steeringLerpFactor);
                 player.vehicle.setSteeringValue(newSteeringValue, index);
             });
-            // Steering and forward/backward movement
-            // if (this.keyState['ArrowUp']) {
-            //     const rotationQuaternion = new CANNON.Quaternion();
-            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -this.rotationSpeed);
-            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
-            // }
-            // if (this.keyState['ArrowDown']) {
-            //     const rotationQuaternion = new CANNON.Quaternion();
-            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), this.rotationSpeed);
-            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
-            // }
-            // if (this.keyState['ArrowLeft']) {
-            //     const rotationQuaternion = new CANNON.Quaternion();
-            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), this.rotationSpeed);
-            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
-            // }
-            // if (this.keyState['ArrowRight']) {
-            //     const rotationQuaternion = new CANNON.Quaternion();
-            //     rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -this.rotationSpeed);
-            //     player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            // if (!player.isGrounded) {
+            //            if (this.keyState['ArrowUp']) {
+            //             const rotationQuaternion = new CANNON.Quaternion();
+            //             rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -this.rotationSpeed);
+            //             player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            //         }
+            //         if (this.keyState['ArrowDown']) {
+            //             const rotationQuaternion = new CANNON.Quaternion();
+            //             rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), this.rotationSpeed);
+            //             player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            //         }
+            //         if (this.keyState['ArrowLeft']) {
+            //             const rotationQuaternion = new CANNON.Quaternion();
+            //             rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), this.rotationSpeed);
+            //             player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            //         }
+            //         if (this.keyState['ArrowRight']) {
+            //             const rotationQuaternion = new CANNON.Quaternion();
+            //             rotationQuaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -this.rotationSpeed);
+            //             player.chassisBody.quaternion = player.chassisBody.quaternion.mult(rotationQuaternion);
+            //         }
             // }
             if (this.keyState['Space'] && players.length > 0) {
                 if (player.isGrounded && !this.jumpStartTime) {
@@ -987,7 +988,6 @@ export function sendSync() {
     const movementData = { x, z };
     socket.send(JSON.stringify({ cmd , movementData }));
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     new TruckSimulation();

@@ -89,7 +89,8 @@ html, body
 }
 
 
-.hud-btn { 
+.hud-btn {
+    display: block;
     border-radius: 1em;
     text-align: center;
     font-family: sans-serif;
@@ -327,4 +328,14 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.midMsg {
+    display: none;
+    position: 'absolute';
+    top: '50%';
+    left: '50%';
+    transform: 'translate(-50%, -50%)';
+    /* fontSize: '3em'; */
+    color: '#fff';
 }
