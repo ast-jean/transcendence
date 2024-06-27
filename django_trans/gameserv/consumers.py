@@ -11,7 +11,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 		self.ident = str(uuid.uuid4())
 		GameConsumer.connected_clients.append(self)
 		await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
-		# print(f"Client {self.ident} has connected.")
+		print(f"Client {self.ident} has connected.")
 		await self.accept()
 
 	async def disconnect(self, close_code):
@@ -20,6 +20,19 @@ class GameConsumer(AsyncWebsocketConsumer):
 		print(f"Client {self.ident} has disconnected.")
 
 	async def receive(self, text_data):
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print("SHEEEEEEEESH")
+		print(text_data)
 		if len(text_data) > 0:
 			text_data_json = json.loads(text_data)
 			text_data_json.update({"ident": "user_%s" % self.ident}) #adds the player id
@@ -30,7 +43,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 			if text_data_json["cmd"] == "connect":
 				await self.broadcast_connect(text_data_json)
 			if text_data_json["cmd"] == "disconnect":
-				await self.broadcast_connect(text_data_json)
+				await self.broadcast_disconnect(text_data_json)
 			if text_data_json["cmd"] == "sync":
 				await self.broadcast_move(text_data_json)
 
