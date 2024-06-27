@@ -393,6 +393,7 @@ export function movePlayer(delta) {
         if (socket && socket.readyState === WebSocket.OPEN) {
             let cmd = "move";
             const movementData = { x: x1, y: 0 };
+            console.log(movementData);
             socket.send(JSON.stringify({ cmd, movementData }));
         }
     }
@@ -570,10 +571,10 @@ export function receiveSync(id, movementData) {
     let player = players.find(p => p.id === id);
     if (!player) {
         console.log("Creating new player in receiveSync");
-        // if (!movementData.x) movementData.x = 0;
-        // if (!movementData.y) movementData.y = 0;
-        // player = new Player(id, movementData.x, movementData.y, 0);
-        // players.push(player);
+        if (!movementData.x) movementData.x = 0;
+        if (!movementData.y) movementData.y = 0;
+        player = new Player(id, movementData.x, movementData.y, 0);
+        players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
