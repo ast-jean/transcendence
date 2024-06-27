@@ -8,6 +8,8 @@ let ballSpeedY = 0;
 let useAIForPlayer2 = false;
 let isGameOver = false;
 
+console.log("loading pong.js file.");
+
 const container = document.getElementById('gameCont');
 const width = container.clientWidth;
 const height = container.clientWidth * 0.666;
@@ -207,7 +209,6 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
 }
-
 let colors = [
     0x00ff00, 0x0000ff, 0xff0000, 0xffff00,
     0x00ffff, 0xff00ff, 0xffa500, 0x800080,
@@ -308,7 +309,6 @@ function endGame() {
     document.getElementById('menu-btn').addEventListener('click', () => {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
-
         showAllButtons();
         resetGame();
         controls.enabled = false;
@@ -557,8 +557,10 @@ function animate() {
     }
 
     camera.position.set(0, -15, 10);
-    camera.lookAt(0, 0, 0); 
+    camera.lookAt(0, 0, 0);  //could be in init
     controls.update();
+	resizeRendererToDisplaySize(renderer);
+
     renderer.render(scene, camera);
 }
 
@@ -659,6 +661,22 @@ function randomizeColors() {
         ballColor: randomColor()
     });
 }
+
+// This function could be called in your animation loop to handle resizing
+function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight; // Corrected to use clientHeight for height
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+        renderer.setSize(width, height, false);  // Ensures pixel ratio is considered
+        camera.aspect = width / height;          // Ensure the aspect ratio is updated
+        camera.updateProjectionMatrix();
+    }
+    return needResize;
+}
+
+
 
 animate();
 updateScoreDisplay();
