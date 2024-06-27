@@ -55,7 +55,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				await self.createRoom4()
 
 	def generate_room_id(self):
-		print("id generator")
 		lower_bound=1000
 		upper_bound=9999
 		room_id = random.randint(lower_bound, upper_bound)
@@ -63,25 +62,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			room_id = random.randint(lower_bound, upper_bound)	
 		self.existing_room_ids.append(room_id)
 		return room_id
-
-	async def create_room(self, num_players):
-		print(f"Creating new room for {num_players} players.")
-		try:
-			room_id = self.generate_room_id()
-			data = {
-				"cmd": "roomCreated",
-				"roomId": room_id,
-				"numPlayers": num_players  # Include the number of players in the data if needed
-			}
-			# Assuming 'connected_clients' is a list of client objects with an 'ident' attribute
-			for client in self.connected_clients:
-				if client.ident == self.ident:
-					await self.find_and_add_client(room_id, self.ident)
-					await client.send(json.dumps(data))
-					break  # Stop the loop once the initiating client is processed
-		except Exception as e:
-			print(f"Error creating room: {str(e)}")
-
+	
 	async def createRoom2(self):
 		print("Creating new room")
 		try:
@@ -89,6 +70,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			data = {
 				"cmd": "roomCreated",
 				"roomId": room_Id,
+				"players": [], 
 				"playerIn": 0,
 				"playerTotal": 2,
 				"status": "waiting"
@@ -113,6 +95,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				"status": "waiting"
 			}
 			self.add_room(room_Id, 4)
+			print(f"Create Room, {self.rooms}")
 			for client in self.connected_clients:
 				if client.ident == self.ident:
 					await self.find_and_add_client(room_Id, self.ident)
@@ -156,7 +139,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			if client.ident != self.ident:
 				await client.send(json.dumps(data))
 				
-	async def add_room(self, room_id, player_total):
+	def add_room(self, room_id, player_total):
 		room = {
 			"roomId": room_id,
 			"playerIn": 0,

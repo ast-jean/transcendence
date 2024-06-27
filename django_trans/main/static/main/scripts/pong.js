@@ -391,6 +391,7 @@ export function movePlayer(delta) {
             players[0].mesh.position.x = newX;
         }
         if (socket && socket.readyState === WebSocket.OPEN) {
+            console.log("Send move to Server");
             let cmd = "move";
             const movementData = { x: x1, y: 0 };
             socket.send(JSON.stringify({ cmd, movementData }));
