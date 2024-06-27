@@ -130,19 +130,17 @@ html, body
 }
 
 
-<<<<<<< HEAD
-.hud-btn {
+/* .hud-btn {
     display: block;
     border-radius: 1em;
     text-align: center;
     font-family: sans-serif;
     font-size: 150%;    
     flex:1;
-    background: rgba(255, 255, 255, 0.88);/*not a highlight. Its a lowdark*/ 
+    background: rgba(255, 255, 255, 0.88);
     padding: 20px;
     margin: 5px;
-    border: solid 1px rgb(215, 215, 215);
-=======
+    border: solid 1px rgb(215, 215, 215); */
 .hud-btn { 
 	background: whitesmoke;
 	border: 2px solid;
@@ -150,7 +148,6 @@ html, body
 	line-height: 1;
 	margin: 0.5em;
 	padding: 1em 2em;
->>>>>>> main
 }
 
 
