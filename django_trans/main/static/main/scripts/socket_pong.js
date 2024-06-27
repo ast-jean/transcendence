@@ -1,4 +1,6 @@
+
 import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength} from './pong.js';
+
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
 export var socket;
