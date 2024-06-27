@@ -15,8 +15,8 @@ html, body
 } 
 
 .btn-background {
-    width: 500px; /* Adjust the width as needed */
-    height: 300px; /* Adjust the height as needed */
+    width: 800px; /* Adjust the width as needed */
+    height: 500px; /* Adjust the height as needed */
     color: white; /* Text color */
     font-size: 16px; /* Text size */
     text-align: center; /* Center the text */
@@ -43,6 +43,11 @@ html, body
 
 }
 
+/* !!! Padding will need to be changed once game window is flexible!!! */
+#scoreboard  {
+	padding-top: 45px;
+    padding-left: 20px;
+}
 #boost-indicator {
     border-radius: 5px;
     position: fixed;
@@ -68,8 +73,43 @@ html, body
     height: 100vh; /* Adjust height as needed */
 }
 
+#gameCont 
+{
+	align-items: center;
+	padding-top: 40px;
+	height: 600px;
+}
+
+/* #gameCont {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 100%; 
+}*/
+
+.play_btns {
+	padding-left: 25%;
+	/* padding-top: 7%; */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; 
+	align-items: center;
+	text-align: center;
+	position: relative;
+} 
+
+/* .play_btns
+{
+	display: flex; 
+	flex-direction: column; 
+	width: inherit;
+	margin: 0 auto; 
+	z-index: 99;
+} */
+
 .three-js-canvas {
-    flex-grow: 1; /* Takes up the remaining space */
+	flex-grow: 1; /* Takes up the remaining space */
 }
 
 #editor {
@@ -81,7 +121,8 @@ html, body
 #controls {
   background: #ffffff00;
   /* background: linear-gradient(#fd8f8fdc, rgb(161, 255, 140)); */
-  padding: 5px;
+  padding-top: 28px;
+  /* height: 539.46px; */
 }
 
 .hidden {
@@ -89,6 +130,7 @@ html, body
 }
 
 
+<<<<<<< HEAD
 .hud-btn {
     display: block;
     border-radius: 1em;
@@ -100,22 +142,52 @@ html, body
     padding: 20px;
     margin: 5px;
     border: solid 1px rgb(215, 215, 215);
+=======
+.hud-btn { 
+	background: whitesmoke;
+	border: 2px solid;
+	font: inherit;
+	line-height: 1;
+	margin: 0.5em;
+	padding: 1em 2em;
+>>>>>>> main
 }
 
 
-.hud-btn:hover {
-    background: none;
-    cursor: pointer;
-    border: none;
-    flex:1;
-    border-radius: 1em;
-    text-align: center;
-    font-family: sans-serif;
-    font-size: 175%;
-    background: rgba(200, 255, 250, 0.652);
-    padding: 20px;
-    margin: 5px;
-    border: solid 1px gray;
+.hud-btn:hover,
+.hud-btn:focus
+{
+	box-shadow: inset 6.5em 0 0 0 var(--hover);
+}
+
+#randomize-colors-btn
+{
+	margin: 0 auto;
+}
+
+#play_btns
+{
+	margin: 0 auto;
+}
+
+#onlineplay_btn
+{
+	color: #ee7752;
+}
+
+#localplay_btn
+{
+	color: #23d5ab;
+}
+
+#versusai_btn
+{
+	color: #0967cc;
+}
+
+#t_onlineplay_btn
+{
+	color: #a4f97f;
 }
 
 .hud {
@@ -134,6 +206,17 @@ html, body
     cursor: ew-resize;
     background-image:  url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==')
 }
+
+#scoreboard
+{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	color: white;
+	font-size: 24px;
+	font-family: Arial, sans-serif;
+}
+
 #chat-container {
     width: 300px;
     background: #0967cc;
@@ -141,22 +224,24 @@ html, body
     border: 1px solid #ddd;
     padding: 10px;
     /* margin: 20px; */
+	height: 539.46px;
 }
 
 #chat-box {
-    height: 200px;
+    height:450px;
     overflow-y: auto;
     border-radius: 5px;
     border: 1px solid #ccc;
     background: #fff;
     margin-bottom: 10px;
+	
 }
 
-#chat-box ul {
+/* #chat-box ul {
     list-style: none;
     padding: 0;
     margin: 0;
-}
+} */
 
 #chat-box li {
     padding: 8px;
@@ -172,7 +257,7 @@ html, body
 
 /* FOR COLORFUL BACKGROUND */
 body {
-	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background: linear-gradient(-45deg, #6c52ee, #e73c7e, #23a6d5, #23d5ab);
 	background-size: 400% 400%;
 	animation: gradient 15s ease infinite;
 	height: 100vh;
@@ -330,6 +415,7 @@ body {
   }
 }
 
+<<<<<<< HEAD
 .midMsg {
     display: none;
     position: 'absolute';
@@ -339,3 +425,6 @@ body {
     /* fontSize: '3em'; */
     color: '#fff';
 }
+=======
+
+>>>>>>> main
