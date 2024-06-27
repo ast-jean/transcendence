@@ -40,6 +40,8 @@ function setupWebSocket() {
         if (data.cmd === "connect") {
             sendSync();
             receiveConnect(data.ident);
+
+
             console.log("in connect functions");
         }
         if (data.cmd === "disconnect") {
