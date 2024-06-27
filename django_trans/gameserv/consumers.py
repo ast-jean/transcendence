@@ -1,4 +1,6 @@
 
+from channels.generic.websocket import AsyncWebsocketConsumer
+import uuid
 import json
 
 class GameConsumer(AsyncWebsocketConsumer):
@@ -51,8 +53,6 @@ class GameConsumer(AsyncWebsocketConsumer):
 
 
 
-# from channels.generic.websocket import AsyncWebsocketConsumer
-# import uuid
 # import json
 
 # class GameConsumer(AsyncWebsocketConsumer):
