@@ -36,43 +36,50 @@
                     <div class="loader-line"></div>
                   </div>
                 </div>
-              </div>
-        <div id="truckGameCont" class="three-js-canvas">
-           <div class="flex-container hud">
-                 <div class="hud-btn" id="create-room-2">
-                    <b>Create Room</b><br>
-                    <small>1 vs 1</small>
-                 </div>
-                 <div class="hud-btn" id="create-room-4">
-                    <b>Create Room</b><br>
-                    <small>2 vs 2</small>
-                 </div>
-                 <form class="menu" id="searchRoom">
-                    <input type="text" placeholder="enter room id #" name="searchRoom">
-                    <button type="hud-btn submit">Submit</button>
-                  </form>
-                <div class="menu">
-                    <input type="color" id="team1" name="team1" value="#0036FF" />
-                    <label for="team1">Your team</label>
-                </div>
-                  <div class="menu">
-                    <input type="color" id="team2" name="team2" value="#ff0036" />
-                    <label for="team2">Other team</label>
-                  </div>
-                  <div id="roomIdDiv">
-                    <p id="roomId" class="text-white bg-dark">Room: </p>
-                 </div>
-                <div class="dark">
-                    <p class="text-white bg-dark">Score</p> </br>
-                    <p class="text-success bg-dark score_text_team1">0 </p> : <p class="text-danger bg-dark score_text_team2">0</p>
-                 </div>
-                <div class="midMsg">
-                    <p class="playercount text-white">Waiting for player: </p>
-                </div>
-                </div>
             </div>
-        </div>       
-      </div>
-</body>
+			<div id="truckGameCont">
+				<div class="flex-container hud">
+					<div class="hud-btn" id="create-room-2">
+						<b>Create Room</b><br>
+						<small>1 vs 1</small>
+					</div>
+					<div class="hud-btn" id="create-room-4">
+						<b>Create Room</b><br>
+						<small>2 vs 2</small>
+					</div>
+					<form class="menu" id="searchRoom">
+						<input type="text" placeholder="enter room id #" name="searchRoom">
+						<button type="hud-btn submit">Submit</button>
+					</form>
+					<div class="menu">
+						<input type="color" id="team1" name="team1" value="#0036FF" />
+						<label for="team1">Your team</label>
+					</div>
+					<div class="menu">
+						<input type="color" id="team2" name="team2" value="#ff0036" />
+						<label for="team2">Other team</label>
+					</div>
+					<div id="roomIdDiv">
+						<p id="roomId" class="text-white bg-dark">Room: </p>
+					</div>
+					<div id="truckScoreboard">
+						<p id="truckScoreMsg"  class="text-white bg-dark">Score</p> </br>
+						<p id="truckTeam1Score"  class="text-success bg-dark score_text_team1">0 </p> : 
+						<p id="truckTeam2Score"  class="text-danger bg-dark score_text_team2">0</p>
+					</div>
+					<div class="midMsg">
+						<p class="playercount text-white">Waiting for player: </p>
+					</div>
+				</div>
+			</div>
+    	</div>       
+	</div>
 {% endblock %}
 
+
+<!--
+TO ADD:
+- Display player controls
+- Scoreboard in the center of game
+- 
+-->

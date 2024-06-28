@@ -11,7 +11,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 	async def find_room(self, room_id):
 		for room in self.rooms:
 			print(f"Do {room['roomId']} = {room_id}?")
-			if room['roomId'] == room_id:
+			if str(room['roomId']) == str(room_id):
 				return room
 		return None
 
@@ -64,7 +64,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 		return room_id
 	
 	async def createRoom2(self):
-		print("Creating new room")
+		print("Creating new room 2 ")
 		try:
 			room_Id = self.generate_room_id()
 			data = {
@@ -79,13 +79,13 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			for client in self.connected_clients:
 				if client.ident == self.ident:
 					print("-------------end-----------")
-					await self.find_and_add_client(room_Id, self.ident)
+					# await self.find_and_add_client(room_Id, self.ident)
 					await client.send(json.dumps(data))
 		except Exception as e:
 			print(f"Error creating room: {str(e)}")
 
 	async def createRoom4(self):
-		print("Creating new room")
+		print("Creating new room 4")
 		try:
 			room_Id = self.generate_room_id()
 			data = {
@@ -96,12 +96,12 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				"playerTotal": 4,
 				"status": "waiting"
 			}
-			self.add_room(room_Id, 4)
+			await self.add_room(room_Id, 4)
 			print(f"Create Room, {self.rooms}")
 			for client in self.connected_clients:
 				if client.ident == self.ident:
-					await self.find_and_add_client(room_Id, self.ident)
-					print(f"Client, {self.ident}")
+			# 		await self.find_and_add_client(room_Id, self.ident)
+			# 		print(f"Client, {self.ident}")
 					await client.send(json.dumps(data))
 		except Exception as e:
 			print(f"Error creating room: {str(e)}")
@@ -120,7 +120,8 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			print(f"Room found: { found_room }")
 			await self.find_and_add_client(data['roomId'], data['ident'])
 			data = {
-				"cmd": "RoomFound!!"
+				"cmd": "RoomFound!!", 
+				"roomId": found_room["roomId"]
 			}
 			for client in self.connected_clients:
 				if client.ident == self.ident:
@@ -156,6 +157,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				await client.send(json.dumps(data))
 				
 	async def add_room(self, room_id, player_total):
+		print("In add_room()")
 		room = {
 			"roomId": room_id,
 			"clients": [], 
@@ -163,8 +165,8 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 			"playerTotal": player_total,
 			"status": "waiting"
 		}
-		room['clients'].append(self.ident)
 		self.rooms.append(room)
+		room['clients'].append(self.ident)
 		print(f"Room {room_id} created and added to the list.")
 		
 	async def update_room(self, room_id, new_player_in=None, new_status=None):
