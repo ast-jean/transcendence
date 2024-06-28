@@ -89,11 +89,20 @@ class TruckSimulation {
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(10, 10, 10);
         this.scene.add(directionalLight);
+
+        const container = document.getElementById('gameCont');
+        const width = container.clientWidth;
+        const height = container.clientWidth;
         
+       this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+
+
         this.renderer = new THREE.WebGLRenderer();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('gameCont').appendChild(this.renderer.domElement);
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // canvas = document.querySelector('canvas');
+        // gameCont = document.getElementById("gameCont");
+        this.renderer.setSize(width, height);
+        container.appendChild(this.renderer.domElement);
+        // document.querySelector('body').appendChild(this.renderer.domElement);
         this.camera.position.set(5, -5, 3);
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
         this.camera.up.set(0, 0, 1); 
@@ -808,7 +817,7 @@ export class Player {
             this.highFrictionMaterial,
             this.defaultMaterial,
             {
-                friction: 5.0, // Increase friction
+                friction: 5.0,
                 restitution: 0.0
             }
         );
@@ -882,7 +891,6 @@ export class Player {
                 this.boostLevel = this.maxBoostLevel;
             }
         }
-
         // Update the boost indicator
         const boostBar = document.getElementById('boost-bar');
         if (boostBar) {
@@ -918,9 +926,7 @@ export class Player {
     }
 }
 
-
 // //XxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX
-
 // Resize game window on window resize
 // window.addEventListener('resize', onWindowResize, false);
 
@@ -929,7 +935,6 @@ export class Player {
 //     camera.updateProjectionMatrix();
 //     renderer.setSize(width, height);
 // }
-// // 
 // function resizeRendererToDisplaySize(renderer) {
 //     const canvas = renderer.domElement;
 //     const width = canvas.clientWidth;
