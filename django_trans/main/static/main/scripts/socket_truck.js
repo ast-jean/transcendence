@@ -33,6 +33,10 @@ function setupWebSocket() {
             console.log("In roomNotFound");
             alert("Room not found");
         }
+        if (data.cmd === "roomCreated") {
+            console.log("In roomCreate");
+            getRoomCreateCmd(data.roomId);
+        }
         if (data.cmd === "sync") {
             console.log("event.data", event.data);
             receiveSync(data.ident, data.movementData);
@@ -56,6 +60,10 @@ export function sendRoomSearch(roomId) {
     socket.send(JSON.stringify({ cmd , roomId }));
 }
 
+function getRoomCreateCmd(roomId) {
+    document.getElementById("roomId").textContent = "Room:" + roomId;
+}
+
 function handleSubmit(event) {
     event.preventDefault(); // Prevents the default form submission
     let input = document.querySelector('input[name="searchRoom"]');
@@ -69,14 +77,29 @@ function handleSubmit(event) {
     }
 }
 
-function createRoom(event)  {
-    let cmd = "roomCreate";
-    console.log();
+function createRoom2()  {
+    let cmd = "roomCreate2";
+    console.log("In room create 2");
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
     socket.send(JSON.stringify({ cmd }));
 }
 
+function createRoom4()  {
+    let cmd = "roomCreate4";
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
+    
+    console.log("In room create 4");
+    socket.send(JSON.stringify({ cmd }));
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('form').addEventListener('submit', handleSubmit);
-    document.getElementById('create-room').addEventListener('click', createRoom);
+    document.getElementById('create-room-2').addEventListener('click', createRoom2);
+    document.getElementById('create-room-4').addEventListener('click', createRoom4);
     setupWebSocket();
   });
