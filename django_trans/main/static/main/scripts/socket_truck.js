@@ -22,7 +22,6 @@ function setupWebSocket() {
         var data = JSON.parse(event.data);
         console.log("data " + data);
         console.log("data.cmd "+data.cmd);
-        // {ident, cmd, data}
         if (data.cmd === "chat") {
             receiveChat(data.ident, data.data);
         }

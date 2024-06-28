@@ -68,7 +68,7 @@ html, body
 
 
 .gameCont {
-    display: relative;
+    display: flex;
     justify-content: space-between; /* This will push your chatbox to the right */
     height: 100vh; /* Adjust height as needed */
 }
@@ -252,6 +252,19 @@ html, body
     margin-right: 5px;
 }
 
+#endGameMessage
+{
+    position: absolute;
+	padding-top: 50%;
+    padding-left: 50%;
+	transform: translate(-50%, -50%);
+	color: white;
+	font-size: 2em;
+
+/* 	
+    endGameMessage.style.transform = 'translate(-50%, -50%)';
+    endGameMessage.innerHTML = `${winner} wins!<br>`; */
+}
 /* FOR COLORFUL BACKGROUND */
 body {
 	background: linear-gradient(-45deg, #6c52ee, #e73c7e, #23a6d5, #23d5ab);
@@ -412,7 +425,6 @@ body {
   }
 }
 
-<<<<<<< HEAD
 .midMsg {
     display: none;
     position: 'absolute';
@@ -422,6 +434,14 @@ body {
     /* fontSize: '3em'; */
     color: '#fff';
 }
-=======
 
->>>>>>> main
+#truckGameCont
+{
+	display: flex;
+	overflow: auto;
+	width: 1500px;
+	height: 1000px;
+	margin-top: 20px;
+	
+}
+

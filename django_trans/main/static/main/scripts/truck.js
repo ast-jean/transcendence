@@ -99,6 +99,7 @@ class TruckSimulation {
 
         this.renderer = new THREE.WebGLRenderer();
         // canvas = document.querySelector('canvas');
+        // gameCont = document.getElementById("gameCont");
         this.renderer.setSize(width, height);
         container.appendChild(this.renderer.domElement);
         // document.querySelector('body').appendChild(this.renderer.domElement);
