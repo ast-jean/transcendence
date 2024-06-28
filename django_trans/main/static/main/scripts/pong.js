@@ -1,6 +1,5 @@
-
 import * as THREE from 'three';
-import { socket } from './socket_pong.js';
+import { socket, setupWebSocket, isSocketReady, checkAllPlayersConnected } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 var clock = new THREE.Clock();
@@ -25,31 +24,43 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
 
-var localplay = document.getElementById("localplay_btn");
-localplay.addEventListener("click", localgame);
-
 function hideChat() {
     const chat = document.getElementById('chat-container');
     if (chat) {
         chat.style.display = 'none';
     }
-    startCountdown();
 }
 
 const localPlayButton = document.getElementById('localplay_btn');
 const versusAIButton = document.getElementById('versusai_btn');
+<<<<<<< HEAD
+=======
+const playOnlineButton = document.getElementById('onlineplay_btn');
+>>>>>>> main
 
 if (localPlayButton) {
     localPlayButton.addEventListener('click', () => {
         hideChat();
-        localgame(false);
+        localPlay();
     });
 }
 
 if (versusAIButton) {
     versusAIButton.addEventListener('click', () => {
         hideChat();
-        localgame(true);
+        playAI();
+    });
+}
+
+if (playOnlineButton) {
+    playOnlineButton.addEventListener('click', async () => {
+        hideChat();
+        try {
+            await setupWebSocket();
+            playOnline();
+        } catch (err) {
+            console.error("Failed to establish WebSocket connection:", err);
+        }
     });
 }
 
@@ -62,18 +73,14 @@ function hideAllButtons() {
     });
 }
 
-// Ajouter le gestionnaire d'événements pour le bouton de randomisation des couleurs
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
-
-// Ajouter les gestionnaires d'événements pour masquer les autres boutons
 document.querySelectorAll('.game-button').forEach(button => {
     if (!button.classList.contains('randomize-colors-btn')) {
         button.addEventListener('click', hideAllButtons);
     }
 });
 
-
-function startCountdown() {
+export function startCountdown() {
     const countdownContainer = document.createElement('div');
     countdownContainer.id = 'countdown';
     countdownContainer.style.position = 'absolute';
@@ -92,17 +99,16 @@ function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            ballSpeedX = 10; // Initialiser la vitesse de la balle
-            ballSpeedY = 10; // Initialiser la vitesse de la balle
+            ballSpeedX = 10;
+            ballSpeedY = 10;
         } else {
             countdownContainer.textContent = countdown;
         }
     }, 1000);
 }
 
-
 const wallThickness = 0.5;
-const wallLength = 20;
+export const wallLength = 20;
 const walls = [];
 const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 
@@ -129,8 +135,14 @@ walls.push(rightWall);
 var index = 0;
 let aiPlayer = null;
 
+<<<<<<< HEAD
 function localgame(useAI) {
     console.log("in localgame function", index);
+=======
+function localPlay() {
+    console.log("Starting local play");
+
+>>>>>>> main
     players.forEach(player => scene.remove(player.mesh));
     players = [];
     if (aiPlayer) {
@@ -140,32 +152,77 @@ function localgame(useAI) {
     players.push(player1);
     scene.add(player1.mesh);
 
-    if (useAI) {
-        aiPlayer = new AIPlayer(2, 0, wallLength / 2 - 0.5, 0);
-        players.push(aiPlayer);
-        scene.add(aiPlayer.mesh);
-        useAIForPlayer2 = true;
-    } else {
-        let player2 = new Player(2, 0, wallLength / 2 - 0.5, 0);
-        players.push(player2);
-        scene.add(player2.mesh);
-        useAIForPlayer2 = false;
+    let player2 = new Player(2, 0, wallLength / 2 - 0.5, 0);
+    players.push(player2);
+    scene.add(player2.mesh);
+    useAIForPlayer2 = false;
+
+    updatePlayerVisualization();
+    startCountdown();
+}
+
+function playAI() {
+    console.log("Starting play with AI");
+
+    players.forEach(player => scene.remove(player.mesh));
+    players = [];
+    if (aiPlayer) {
+        scene.remove(aiPlayer.mesh);
     }
+<<<<<<< HEAD
+=======
+
+    let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    players.push(player1);
+    scene.add(player1.mesh);
+
+    aiPlayer = new AIPlayer(2, 0, wallLength / 2 - 0.5, 0);
+    players.push(aiPlayer);
+    scene.add(aiPlayer.mesh);
+    useAIForPlayer2 = true;
+
+    updatePlayerVisualization();
+    startCountdown();
+}
+
+function playOnline() {
+    console.log("Starting online play");
+
+    players.forEach(player => scene.remove(player.mesh));
+    players = [];
+    if (aiPlayer) {
+        scene.remove(aiPlayer.mesh);
+    }
+
+    // let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    // players.push(player1);
+    // scene.add(player1.mesh);
+
+    
+    if (isSocketReady) {
+        sendSync();
+        checkAllPlayersConnected();
+    } else {
+        setupWebSocket().then(() => {
+            sendSync();
+            checkAllPlayersConnected();
+        }).catch(err => {
+            console.error("Failed to establish WebSocket connection:", err);
+        });
+    }
+>>>>>>> main
     updatePlayerVisualization();
 }
 
+function onWindowResize() {
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+}
 let colors = [
-    0x00ff00, // Vert
-    0x0000ff, // Bleu
-    0xff0000, // Rouge
-    0xffff00, // Jaune
-    0x00ffff, // Cyan
-    0xff00ff, // Magenta
-    0xffa500, // Orange
-    0x800080, // Violet (Pourpre)
-    0x008080, // Sarcelle (Teal)
-    0x808000  // Olive
-
+    0x00ff00, 0x0000ff, 0xff0000, 0xffff00,
+    0x00ffff, 0xff00ff, 0xffa500, 0x800080,
+    0x008080, 0x808000
 ];
 let i = 0;
 
@@ -187,11 +244,10 @@ export class Player {
 }
 
 export function updatePlayerVisualization() {
-    if (players.length > 0) {
-        players.forEach(player => {
-            scene.add(player.mesh);
-        });
-    }
+    console.log("Updating player visualization");
+    players.forEach(player => {
+        scene.add(player.mesh);
+    });
 }
 
 let player1Score = 0;
@@ -267,13 +323,11 @@ function endGame() {
     });
 }
 
-
-
 function resetGame() {
     player1Score = 0;
     player2Score = 0;
     ballSpeedX = 0;
-    ballSpeedY = 0;        
+    ballSpeedY = 0;
     isGameOver = false;
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
@@ -281,8 +335,6 @@ function resetGame() {
     });
     updateScoreDisplay();
 }
-
-
 
 function showAllButtons() {
     const buttons = document.querySelectorAll('.game-button');
@@ -317,14 +369,14 @@ export var delta;
 var keyState = {};
 
 document.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight', 'KeyA','KeyD'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = true;
         e.preventDefault();
     }
 }, true);
 
 document.addEventListener('keyup', function (e) {
-    if (['ArrowLeft','ArrowRight','KeyA',  'KeyD'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = false;
         e.preventDefault();
     }
@@ -346,7 +398,7 @@ export function movePlayer(delta) {
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[0].mesh.position.x = newX;
         }
-        if (socket && socket.readyState) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
             let cmd = "move";
             const movementData = { x: x1, y: 0 };
             socket.send(JSON.stringify({ cmd, movementData }));
@@ -359,7 +411,7 @@ export function movePlayer(delta) {
             newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
         }
-        if (socket && socket.readyState) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
             let cmd = "move";
             const movementData = { x: x2, y: 0 };
             socket.send(JSON.stringify({ cmd, movementData }));
@@ -370,7 +422,7 @@ export function movePlayer(delta) {
 }
 
 function moveBall(delta) {
-    if (isGameOver) return; // Ne pas déplacer la balle si le jeu est terminé
+    if (isGameOver) return;
 
     let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
@@ -448,19 +500,10 @@ function moveBall(delta) {
     ballSpeedY = ballSpeed.y;
 }
 
-
-
-
-
-
-
-
-// Easy AI
-
 class AIPlayer extends Player {
     constructor(id, x, y, z) {
         super(id, x, y, z);
-        this.targetX = 0; // Position cible
+        this.targetX = 0;
         this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
     }
 
@@ -468,16 +511,14 @@ class AIPlayer extends Player {
         let predictedPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
         let predictedSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
         const ballRadius = sphere.geometry.parameters.radius;
-        const maxIterations = 1000; // Limite de sécurité pour éviter les boucles infinies
+        const maxIterations = 1000;
         let iterations = 0;
 
-        // Simuler le mouvement de la balle jusqu'à ce qu'elle atteigne l'extrémité du terrain
         while (predictedPosition.y > -wallLength / 2 && predictedPosition.y < wallLength / 2 && iterations < maxIterations) {
             predictedPosition.add(predictedSpeed);
 
-            // Vérifier les collisions avec les murs latéraux
             if (predictedPosition.x - ballRadius <= -wallLength / 2 || predictedPosition.x + ballRadius >= wallLength / 2) {
-                predictedSpeed.x *= -1; // Inverser la direction en x
+                predictedSpeed.x *= -1;
             }
 
             iterations++;
@@ -493,7 +534,7 @@ class AIPlayer extends Player {
     update() {
         const speed = 20;
         const aiPosition = this.mesh.position.x;
-        const tolerance = 1; // Tolérance pour éviter les oscillations rapides
+        const tolerance = 1;
 
         if (Math.abs(this.targetX - aiPosition) > tolerance) {
             let moveDirection = (this.targetX - aiPosition) > 0 ? speed * delta : -speed * delta;
@@ -513,20 +554,6 @@ class AIPlayer extends Player {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function animate() {
     requestAnimationFrame(animate);
     delta = clock.getDelta();
@@ -545,39 +572,55 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-export function receiveMove(id, movementData) {
-    const player = players.find(p => p.id === id);
-    if (player) {
-        if (movementData) {
-            if (movementData.x) player.mesh.position.x += movementData.x;
-            if (movementData.y) player.mesh.position.y += movementData.y;
-        }
+
+export function receiveSync(id, movementData) {
+    console.log(`receiveSync called with id: ${id}, movementData: ${JSON.stringify(movementData)}`);
+    let player = players.find(p => p.id === id);
+    if (!player) {
+        console.log("Creating new player in receiveSync");
+        // if (!movementData.x) movementData.x = 0;
+        // if (!movementData.y) movementData.y = 0;
+        // player = new Player(id, movementData.x, movementData.y, 0);
+        // players.push(player);
     } else {
-        console.log("Player doesn't exist, creating one");
-        if (!movementData.x) movementData.x = 0;
-        players.push(new Player(id, movementData.x, movementData.y, 0));
-        if (!movementData.y) movementData.y = 0;
+        console.log("Updating player position in receiveSync");
+        player.mesh.position.x = movementData.x;
+        player.mesh.position.y = movementData.y;
     }
     updatePlayerVisualization();
 }
 
-export function receiveSync(id, movementData) {
+
+export function receiveConnect(id) {
+    console.log(`Player connected with id: ${id}`);
+    // Optionnel: ajouter une vérification pour ne pas dupliquer les joueurs
+}
+
+export function receiveMove(id, movementData) {
+    console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`);
     const player = players.find(p => p.id === id);
-    if (!player) {
-        if (!movementData.x) movementData.x = 0;
-        if (!movementData.y) movementData.y = 0;
-        players.push(new Player(id, movementData.x, movementData.y, 0));
+    if (player) {
+        if (movementData.x) player.mesh.position.x += movementData.x;
+        if (movementData.y) player.mesh.position.y += movementData.y;
+        updatePlayerVisualization();
+    } else {
+        console.error(`Player with id ${id} not found in receiveMove`);
     }
-    updatePlayerVisualization();
 }
 
 export function sendSync() {
-    let cmd = "sync";
-    let x = players[0].mesh.position.x;
-    let y = players[0].mesh.position.y;
-    const movementData = { x, y };
-    socket.send(JSON.stringify({ cmd, movementData }));
+    if (players.length > 0 && players[0].mesh && socket && socket.readyState === WebSocket.OPEN) {
+        let cmd = "sync";
+        let x = players[0].mesh.position.x;
+        let y = players[0].mesh.position.y;
+        const movementData = { x, y };
+        console.log(`Sending sync: ${JSON.stringify({ cmd, movementData })}`);
+        socket.send(JSON.stringify({ cmd, movementData }));
+    } else {
+        console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
+    }
 }
+
 
 export function removePlayer(playerIdToRemove) {
     console.log("Removing player");
@@ -600,35 +643,24 @@ function removeMeshFromScene(mesh, scene) {
     if (mesh.material.map) mesh.material.map.dispose();
 }
 
-
-
-function changeColors({ 
-    wallColor, 
-    player1Color, 
-    player2Color, 
-    ballColor 
-}) {
-    // Changer la couleur des murs
+function changeColors({ wallColor, player1Color, player2Color, ballColor }) {
     walls.forEach(wall => {
         wall.material.color.set(wallColor);
     });
 
-    // Changer la couleur du joueur 1
     if (players[0]) {
         players[0].mesh.material.color.set(player1Color);
     }
 
-    // Changer la couleur du joueur 2 ou de l'IA
     if (players[1]) {
         players[1].mesh.material.color.set(player2Color);
     }
 
-    // Changer la couleur de la balle
     sphere.material.color.set(ballColor);
 }
 
 function randomizeColors() {
-    const randomColor = () => Math.floor(Math.random() * 16777215); // Génère une couleur aléatoire en hexadécimal
+    const randomColor = () => Math.floor(Math.random() * 16777215);
 
     changeColors({
         wallColor: randomColor(),
@@ -636,24 +668,6 @@ function randomizeColors() {
         player2Color: randomColor(),
         ballColor: randomColor()
     });
-}
-
-
-
-// Attach resize event listener to the window
-window.addEventListener('resize', onWindowResize, false);
-
-function onWindowResize() {
-    // Assuming 'camera' and 'renderer' are accessible in this scope
-    // Update the camera's aspect ratio and the size of the renderer
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);  // false to prevent CSS sizing which can cause issues
 }
 
 // This function could be called in your animation loop to handle resizing
@@ -672,34 +686,5 @@ function resizeRendererToDisplaySize(renderer) {
 
 
 
-
-
-
-
-// // Resize game window on window resize
-// window.addEventListener('resize', onWindowResize, false);
-
-// function onWindowResize() {
-// 	camera.aspect = width / height;
-// 	camera.updateProjectionMatrix();
-// 	renderer.setSize(width, height);
-// }
-
-// function resizeRendererToDisplaySize(renderer) {
-// 	const canvas = renderer.domElement;
-// 	const width = canvas.clientWidth;
-// 	const height = canvas.clientWidth;
-// 	const needResize = canvas.width !== width || canvas.height !== height;
-// 	if (needResize) {
-// 	    renderer.setSize(width, height, false);
-// 	}
-// 	return needResize;
-// } 
-
-
-
 animate();
 updateScoreDisplay();
-
-
-

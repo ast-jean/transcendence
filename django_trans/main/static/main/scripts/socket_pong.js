@@ -1,50 +1,80 @@
-import { receiveMove, receiveSync, sendSync, removePlayer, players, Player } from './pong.js';
+
+import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength} from './pong.js';
+
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
 export var socket;
+export var isSocketReady = false;
 
-function setupWebSocket() {
-    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
-    socket = new WebSocket(ws_path);
+export function setupWebSocket() {
+    return new Promise((resolve, reject) => {
+        const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
+        socket = new WebSocket(ws_path);
 
-    socket.onopen = function() {
-        console.log('WebSocket connection established');
-    };
+        socket.onopen = function() {
+            console.log('WebSocket connection established');
+            isSocketReady = true;
+            resolve();
+        };
 
-    socket.onclose = function() {
-        console.log('WebSocket connection closed');
-        setTimeout(setupWebSocket, 5000); // Try to reconnect after 5 seconds
-    };
+        socket.onclose = function() {
+            console.log('WebSocket connection closed');
+            isSocketReady = false;
+            reject(new Error('WebSocket connection closed'));
+        };
 
-    socket.onmessage = function(event) {
-        // console.log(event.data);
-        var data = JSON.parse(event.data);
-        // {ident, cmd, data}
-        if (data.cmd === "chat") {
-            receiveChat(data.ident, data.data);
-        }
-        if (data.cmd === "move") {
-            // console.log("event.data", event.data);
-            receiveMove(data.ident, data.movementData);
-        }
-        if (data.cmd === "sync") {
-            console.log("event.data", event.data);
-            receiveSync(data.ident, data.movementData);
-        }
-        if (data.cmd === "connect") {
-            // players.push(new Player(data.ident,0,0));
-            sendSync();
-            receiveConnect(data.ident);
-            players.push(new Player(data.ident,0,0));
-        }
-        if (data.cmd === "disconnect") {
-            removePlayer(data.ident);
-            receiveDisconnect(data.ident);
-            removePlayer(data.ident);
-        }
-    };
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            reject(error);
+        };
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            console.log(`Message received: ${event.data}`);
+            if (data.cmd === "chat") {
+                receiveChat(data.ident, data.data);
+            }
+            if (data.cmd === "move") {
+                receiveMove(data.ident, data.movementData);
+            }
+            if (data.cmd === "sync") {
+                receiveSync(data.ident, data.movementData);
+            }
+            if (data.cmd === "connect") {
+                if (!players.find(p => p.id === data.ident)) {
+                    players.push(new Player(data.ident, 0, -wallLength / 2 + 0.5, 0));
+                }
+                sendSync();
+                receiveConnect(data.ident);
+                checkAllPlayersConnected();
+            }
+            
+            if (data.cmd === "disconnect") {
+                removePlayer(data.ident);
+                receiveDisconnect(data.ident);
+            }
+        };
+    });
 }
 
 
-document.addEventListener("DOMContentLoaded", setupWebSocket);
+
+
+
+export function checkAllPlayersConnected() {
+    if (isSocketReady && players.length >= 2) {
+        console.log("All players connected, starting game");
+        startCountdown();
+    }
+}
+
+
+// document.addEventListener("DOMContentLoaded", setupWebSocket);
+document.addEventListener("DOMContentLoaded", () => {
+    const playOnlineButton = document.getElementById('onlineplay_btn');
+    if (playOnlineButton) {
+        playOnlineButton.addEventListener('click', setupWebSocket);
+    }
+});
+
