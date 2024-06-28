@@ -90,9 +90,9 @@ class TruckSimulation {
         directionalLight.position.set(10, 10, 10);
         this.scene.add(directionalLight);
 
-        const container = document.getElementById('gameCont');
+        const container = document.getElementById('truckGameCont');
         const width = container.clientWidth;
-        const height = container.clientWidth;
+        const height = container.clientHeight;
         
        this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 

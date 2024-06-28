@@ -68,7 +68,7 @@ html, body
 
 
 .gameCont {
-    display: relative;
+    display: flex;
     justify-content: space-between; /* This will push your chatbox to the right */
     height: 100vh; /* Adjust height as needed */
 }
@@ -434,3 +434,14 @@ body {
     /* fontSize: '3em'; */
     color: '#fff';
 }
+
+#truckGameCont
+{
+	display: flex;
+	overflow: auto;
+	width: 1500px;
+	height: 1000px;
+	margin-top: 20px;
+	
+}
+
