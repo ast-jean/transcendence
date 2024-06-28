@@ -52,12 +52,11 @@ if (versusAIButton) {
 if (playOnlineButton) {
     playOnlineButton.addEventListener('click', async () => {
         hideChat();
-        try {
-            await setupWebSocket();
+        setupWebSocket().then(() => {
             playOnline();
-        } catch (err) {
+        }) .catch(err => {
             console.error("Failed to establish WebSocket connection:", err);
-        }
+        })
     });
 }
 
@@ -185,22 +184,23 @@ function playOnline() {
         scene.remove(aiPlayer.mesh);
     }
 
-    // let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
-    // players.push(player1);
-    // scene.add(player1.mesh);
+    let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    players.push(local_player);
+    scene.add(local_player.mesh);
 
     
     if (isSocketReady) {
         sendSync();
         checkAllPlayersConnected();
-    } else {
-        setupWebSocket().then(() => {
-            sendSync();
-            checkAllPlayersConnected();
-        }).catch(err => {
-            console.error("Failed to establish WebSocket connection:", err);
-        });
     }
+    // } else {
+    //     setupWebSocket().then(() => {
+    //         sendSync();
+    //         checkAllPlayersConnected();
+    //     }).catch(err => {
+    //         console.error("Failed to establish WebSocket connection:", err);
+    //     });
+    // }
     updatePlayerVisualization();
 }
 
@@ -390,29 +390,47 @@ export function movePlayer(delta) {
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[0].mesh.position.x = newX;
         }
-        if (socket && socket.readyState === WebSocket.OPEN) {
+        if (socket) {
+            console.log("Socket in movePlayer (X1):", socket);
+        } else {
+            console.error("Socket is undefined in movePlayer (X1)");
+        }
+        if (isSocketReady) {
             let cmd = "move";
             const movementData = { x: x1, y: 0 };
             console.log(movementData);
             socket.send(JSON.stringify({ cmd, movementData }));
         }
     }
-
+    
     if (x2 !== 0) {
         let newX = players[1].mesh.position.x + x2;
         if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-            newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+        newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
         }
-        if (socket && socket.readyState === WebSocket.OPEN) {
+        if (socket) {
+            console.log("Socket in movePlayer (X2):", socket);
+        } else {
+            console.error("Socket is undefined in movePlayer (X2)");
+        }
+        if (isSocketReady) {
             let cmd = "move";
             const movementData = { x: x2, y: 0 };
+            console.log(movementData);
             socket.send(JSON.stringify({ cmd, movementData }));
         }
     }
 
     updatePlayerVisualization();
 }
+
+
+
+
+
+
+
 
 function moveBall(delta) {
     if (isGameOver) return;
@@ -604,8 +622,8 @@ export function receiveMove(id, movementData) {
 export function sendSync() {
     if (players.length > 0 && players[0].mesh && socket && socket.readyState === WebSocket.OPEN) {
         let cmd = "sync";
-        let x = players[0].mesh.position.x;
-        let y = players[0].mesh.position.y;
+        let x = players[0].mesh.position.x * -1;
+        let y = players[0].mesh.position.y * -1;
         const movementData = { x, y };
         console.log(`Sending sync: ${JSON.stringify({ cmd, movementData })}`);
         socket.send(JSON.stringify({ cmd, movementData }));
