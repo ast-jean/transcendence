@@ -1,4 +1,4 @@
-import { receiveMove, receiveSync, sendSync, removePlayer, players, Player } from './truck.js';
+import { receiveMove, removePlayer, players, Player } from './truck.js';
 
 export var socket;
 export let room_id;
@@ -32,6 +32,11 @@ function setupWebSocket() {
             console.log("In roomNotFound");
             alert("Room not found");
         }
+        if (data.cmd === "roomFound") {
+            console.log("RoomFound! Connecting...");
+            //Add the number of players has theres players in.
+            getRoomCreateCmd(data.roomId);
+        }
         if (data.cmd === "roomCreated") {
             console.log("In roomCreate");
             getRoomCreateCmd(data.roomId);
@@ -41,7 +46,6 @@ function setupWebSocket() {
             receiveSync(data.ident, data.movementData);
         }
         if (data.cmd === "connect") {
-            sendSync();
             receiveConnect(data.ident);
             console.log("in connect functions");
         }
@@ -68,7 +72,7 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     if (!roomId) {
-        event.preventDefault(); // Stop form submission
+        event.preventDefault();
         alert("Please fill in all required fields.");
     } else {
         sendRoomSearch(roomId);
@@ -95,6 +99,27 @@ function createRoom4()  {
     socket.send(JSON.stringify({ cmd }));
 }
 
+function receiveSync(id, movementData) {
+	const player = players.find(p => p.id === id);
+	if (player) {
+		player.updateState(movementData);
+	}
+}
+
+export function sendSync() {
+	let cmd = "sync";
+	let position 		= players[this.playerNumber].chassisBody.position;
+	let quaternion 		= players[this.playerNumber].chassisBody.quaternion;
+	let velocity 		= players[this.playerNumber].chassisBody.velocity;
+	let angularVelocity = players[this.playerNumber].chassisBody.angularVelocity;
+	const movementData 	= { 
+		position,
+		quaternion,
+		velocity,
+		angularVelocity
+	};
+	socket.send(JSON.stringify({ cmd , movementData }));
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('form').addEventListener('submit', handleSubmit);

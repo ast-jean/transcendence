@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Transcendence | Truck League{% endblock %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'main/styles/truck_style.css' %}" type="text/css">
 <script type="importmap">
     {
         "imports": {
@@ -15,8 +16,6 @@
         <div id="view" class="container">
             <script src="{% static 'main/scripts/socket_truck.js' %}" type="module"></script>
             <script src="{% static 'main/scripts/truck.js' %}" type="module"></script>
-            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
-            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
 
             <div class="loader">
                 <div class="loader-inner">
