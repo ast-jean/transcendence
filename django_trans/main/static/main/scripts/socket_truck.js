@@ -1,7 +1,7 @@
-import { receiveMove, removePlayer, players, Player } from './truck.js';
+import { receiveMove, removePlayer, players, Player, TruckSim } from './truck.js';
 
 export var socket;
-export let room_id;
+export let room_id = null;
 
 function setupWebSocket() {
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -22,12 +22,6 @@ function setupWebSocket() {
         var data = JSON.parse(event.data);
         console.log("data " + data);
         console.log("data.cmd "+data.cmd);
-        if (data.cmd === "chat") {
-            receiveChat(data.ident, data.data);
-        }
-        if (data.cmd === "move") {
-            receiveMove(data.ident, data.movementData);
-        }
         if (data.cmd === "roomNotFound") {
             console.log("In roomNotFound");
             alert("Room not found");
@@ -36,10 +30,12 @@ function setupWebSocket() {
             console.log("RoomFound! Connecting...");
             //Add the number of players has theres players in.
             getRoomCreateCmd(data.roomId);
+            room_id = data.roomId;
         }
         if (data.cmd === "roomCreated") {
             console.log("In roomCreate");
             getRoomCreateCmd(data.roomId);
+            room_id = data.roomId;
         }
         if (data.cmd === "sync") {
             console.log("event.data", event.data);
@@ -99,26 +95,22 @@ function createRoom4()  {
     socket.send(JSON.stringify({ cmd }));
 }
 
+
+function receiveConnect(id, movementData) {
+	const player = players.find(p => p.id === id);
+	if (player) {
+		player.updateState(movementData);
+	} else {
+        
+    }
+}
+
+
 function receiveSync(id, movementData) {
 	const player = players.find(p => p.id === id);
 	if (player) {
 		player.updateState(movementData);
 	}
-}
-
-export function sendSync() {
-	let cmd = "sync";
-	let position 		= players[this.playerNumber].chassisBody.position;
-	let quaternion 		= players[this.playerNumber].chassisBody.quaternion;
-	let velocity 		= players[this.playerNumber].chassisBody.velocity;
-	let angularVelocity = players[this.playerNumber].chassisBody.angularVelocity;
-	const movementData 	= { 
-		position,
-		quaternion,
-		velocity,
-		angularVelocity
-	};
-	socket.send(JSON.stringify({ cmd , movementData }));
 }
 
 document.addEventListener('DOMContentLoaded', function() {

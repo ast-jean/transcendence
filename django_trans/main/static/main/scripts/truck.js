@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socket, sendSync } from './socket_truck.js'
+import { socket, room_id } from './socket_truck.js'
 
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -19,6 +19,19 @@ export let players = [];
 const team1ColorPicker = document.getElementById('team1');
 const team2ColorPicker = document.getElementById('team2');
 
+
+let lastCallTime = null;
+function calculatePing() {
+	let currentTime = Date.now();
+    
+    if (lastCallTime !== null) {
+        let timeDifference = currentTime - lastCallTime;
+        console.log(`Time since last call: ${timeDifference} ms`);
+		document.getElementById('ping').value = "ping: " + timeDifference + 'ms'
+	}
+	lastCallTime = currentTime;
+}
+
 function showLoader() {
 	console.log("Start Loading");
 	document.querySelector('.loader').style.display = 'block';
@@ -30,11 +43,11 @@ function hideLoader() {
 }
 
 let debug = false;
+export let playerNumber = 0;
 
 class TruckSimulation {
 	constructor() {
 		showLoader();
-		this.playerNumber = 0;
 		this.keyState = {};
 		this.toggleCam = false;
 		this.jumpStartTime = null; // Variable to track jump start time
@@ -56,7 +69,7 @@ class TruckSimulation {
 		this.addRoof();
 		this.addBall();
 		team1.push(this.addPlayer(2, 3, 5, "team1"));
-		team2.push(this.addPlayer(2, 25, -5, "team2"));
+		team2.push(this.addPlayer(2, 0, -5, "team2"));
 		this.updateColor = this.updateColor.bind(this);
 		this.initEventListeners();
 
@@ -389,7 +402,8 @@ class TruckSimulation {
 	}
 
 	addPlayer(x, y, z, team) {
-		let player; 
+		let player;
+		//position according to player index
 		if (team === "team1") {
 			player = new Player(this.world, this.scene, x, y, z, this.team1Color);
 		} else if (team === "team2") {
@@ -406,7 +420,7 @@ class TruckSimulation {
 	}
 
 	updateCameraPosition() {
-		const player = players[this.playerNumber];
+		const player = players[playerNumber];
 		if (!player) {
 			console.warn('No player available');
 			return;
@@ -507,8 +521,8 @@ class TruckSimulation {
 		
 		if (gameStarted === true)
 		{
-			if (players[this.playerNumber]) {
-				const player = players[this.playerNumber];
+			if (players[playerNumber]) {
+				const player = players[playerNumber];
 				const chassisBody = player.chassisBody;
 				const cameraOffset = this.relativeCameraOffset.clone().applyQuaternion(new THREE.Quaternion(
 					chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w
@@ -537,7 +551,7 @@ class TruckSimulation {
 					newPos.x = this.jumpStartPos.x + (this.jumpTargetPos.x - this.jumpStartPos.x) * t;
 					newPos.y = this.jumpStartPos.y + (this.jumpTargetPos.y - this.jumpStartPos.y) * t;
 					newPos.z = this.jumpStartPos.z + (this.jumpTargetPos.z - this.jumpStartPos.z) * t;
-					players[this.playerNumber].chassisBody.position.copy(newPos);
+					players[playerNumber].chassisBody.position.copy(newPos);
 				} else {
 					const velocityChange = new CANNON.Vec3(
 						this.jumpTargetPos.x - this.jumpStartPos.x,
@@ -545,8 +559,8 @@ class TruckSimulation {
 						this.jumpTargetPos.z - this.jumpStartPos.z
 						).scale(1 / this.jumpDuration);
 						const newVelocity = this.jumpStartVelocity.clone().vadd(velocityChange);
-						players[this.playerNumber].chassisBody.position.copy(this.jumpTargetPos);
-						players[this.playerNumber].chassisBody.velocity.copy(newVelocity); // Apply the new momentum
+						players[playerNumber].chassisBody.position.copy(this.jumpTargetPos);
+						players[playerNumber].chassisBody.velocity.copy(newVelocity); // Apply the new momentum
 						this.jumpStartTime = null; // Reset jump
 					}
 					
@@ -566,7 +580,11 @@ class TruckSimulation {
 				if (debug === true)
 					this.debugRenderer.update();
 			this.renderer.render(this.scene, this.camera);
-			sendSync();
+			if (socket.readyState === WebSocket.OPEN) {
+					calculatePing();
+					players[playerNumber].sendSync();
+
+			}
 		}
 		
 		resetScene(){
@@ -604,8 +622,8 @@ class TruckSimulation {
 				}
 				if (e.code === 'KeyX') {
 					// this.toggleCam = !this.toggleCam;
-					this.playerNumber = this.playerNumber === 0 ? 1 : 0;
-					console.log("PlayerNumber" + this.playerNumber)
+					playerNumber = playerNumber === 0 ? 1 : 0;
+					console.log("PlayerNumber" + playerNumber)
 				}
 			}, true);
 		}
@@ -618,9 +636,9 @@ handleKeyStates() {
 	const maxForce = 2500; // Adjust this value to control the engine power
 	const steeringLerpFactor = 0.1; // Adjust this value to control the smoothness of the steering
 	const rotationSpeed = 0.02;
-	if (players[this.playerNumber])
+	if (players[playerNumber])
 	{
-		const player = players[this.playerNumber];
+		const player = players[playerNumber];
 			if (this.keyState['ArrowUp'])
 			{
 				player.vehicle.applyEngineForce(-maxForce, 0);
@@ -835,6 +853,25 @@ export class Player {
 		}
 	}
 
+	sendSync() {
+		if (room_id) {
+			let cmd = "sync";
+			let position 		= this.chassisBody.position;
+			let quaternion 		= this.chassisBody.quaternion;
+			let velocity 		= this.chassisBody.velocity;
+			let angularVelocity = this.chassisBody.angularVelocity;
+			const movementData 	= {
+
+				position,
+				quaternion,
+				velocity,
+				angularVelocity
+			};
+			socket.send(JSON.stringify({ cmd , room_id, movementData }));
+		}
+	}
+	
+
 	updateState (movementData) {
 		this.chassisBody.position.copy(movementData.position);
 		this.chassisBody.quaternion.copy(movementData.quaternion);
@@ -955,7 +992,7 @@ export function receiveMove(id, movementData) {
 
 
 
-
+export let TruckSim;
 document.addEventListener('DOMContentLoaded', () => {
-	new TruckSimulation();
+	TruckSim = new TruckSimulation();
 });
