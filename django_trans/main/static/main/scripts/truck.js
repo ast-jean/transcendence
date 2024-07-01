@@ -861,7 +861,6 @@ export class Player {
 			let velocity 		= this.chassisBody.velocity;
 			let angularVelocity = this.chassisBody.angularVelocity;
 			const movementData 	= {
-
 				position,
 				quaternion,
 				velocity,
@@ -971,24 +970,24 @@ export function removePlayer(playerIdToRemove) {
 	players = players.filter(player => player.id !== playerIdToRemove);
 }
 
-export function receiveMove(id, movementData) {
-	const player = players.find(p => p.id === id);
-	if (player) {
-		if (movementData) {
-			if (movementData.x)
-				player.mesh.position.x += movementData.x;
-			if (movementData.z) 
-				player.mesh.position.z += movementData.z;
-		}
-	} else {
-		console.log("Player doesnt exist, creating one");
-		if (!movementData.x)
-			movementData.x = 0;
-		players.push(new Player(id, movementData.x, movementData.z));
-		if (!movementData.z)
-			movementData.z = 0;
-	}
-}
+// export function receiveSync(id, movementData) {
+// 	const player = players.find(p => p.id === id);
+// 	if (player) {
+// 		if (movementData) {
+// 			if (movementData.x)
+// 				player.mesh.position.x += movementData.x;
+// 			if (movementData.z) 
+// 				player.mesh.position.z += movementData.z;
+// 		}
+// 	} else {
+// 		console.log("Player doesnt exist, creating one");
+// 		if (!movementData.x)
+// 			movementData.x = 0;
+// 		players.push(new Player(id, movementData.x, movementData.z));
+// 		if (!movementData.z)
+// 			movementData.z = 0;
+// 	}
+// }
 
 
 
