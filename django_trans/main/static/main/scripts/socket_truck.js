@@ -1,4 +1,4 @@
-import { receiveMove, removePlayer, players, Player, TruckSim } from './truck.js';
+import { receiveMove, removePlayer, players, Player, TruckSim, playerNumber} from './truck.js';
 
 export var socket;
 export let room_id = null;
@@ -26,16 +26,12 @@ function setupWebSocket() {
             console.log("In roomNotFound");
             alert("Room not found");
         }
-        if (data.cmd === "roomFound") {
-            console.log("RoomFound! Connecting...");
-            //Add the number of players has theres players in.
+        if (data.cmd === "joinRoom") {
+            console.log("joined room" + data.roomId);
             getRoomCreateCmd(data.roomId);
             room_id = data.roomId;
-        }
-        if (data.cmd === "roomCreated") {
-            console.log("In roomCreate");
-            getRoomCreateCmd(data.roomId);
-            room_id = data.roomId;
+            playerNumber = data.clientId;
+            //RESETS the players in the room location with preset location depending on their playerNumber
         }
         if (data.cmd === "sync") {
             console.log("event.data", event.data);
@@ -101,7 +97,7 @@ function receiveConnect(id, movementData) {
 	if (player) {
 		player.updateState(movementData);
 	} else {
-        
+        TruckSim.addPlayer()
     }
 }
 
