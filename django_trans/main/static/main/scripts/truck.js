@@ -23,13 +23,15 @@ const team2ColorPicker = document.getElementById('team2');
 let lastCallTime = null;
 function calculatePing() {
 	let currentTime = Date.now();
-    
-    if (lastCallTime !== null) {
-        let timeDifference = currentTime - lastCallTime;
-        console.log(`Time since last call: ${timeDifference} ms`);
-		document.getElementById('ping').value = "ping: " + timeDifference + 'ms'
+    if (currentTime % 10 === 0)
+	{
+		if (lastCallTime !== null) {
+			let timeDifference = currentTime - lastCallTime;
+			// console.log(`Time since last call: ${timeDifference} ms`);
+			document.getElementById('ping').textContent = "ping: " + timeDifference + 'ms'
+		}
+		lastCallTime = currentTime;
 	}
-	lastCallTime = currentTime;
 }
 
 function showLoader() {
@@ -44,6 +46,10 @@ function hideLoader() {
 
 let debug = false;
 export let playerNumber = 0;
+
+export function setPlayerNumber(value) {
+	playerNumber = value;
+}
 
 class TruckSimulation {
 	constructor() {
@@ -69,7 +75,7 @@ class TruckSimulation {
 		this.addRoof();
 		this.addBall();
 		team1.push(this.addPlayer(2, 3, 5, "team1"));
-		team2.push(this.addPlayer(2, 0, -5, "team2"));
+		team2.push(this.addPlayer(2, 3, -5, "team2"));
 		this.updateColor = this.updateColor.bind(this);
 		this.initEventListeners();
 
@@ -540,7 +546,9 @@ class TruckSimulation {
 			}
 
 			players.forEach(player => {
-				player.update();
+				if (player){
+					player.update();
+				}
 			});
 			
 			if (this.jumpStartTime) {
@@ -580,9 +588,19 @@ class TruckSimulation {
 				if (debug === true)
 					this.debugRenderer.update();
 			this.renderer.render(this.scene, this.camera);
-			if (socket.readyState === WebSocket.OPEN) {
+			if (socket.readyState === WebSocket.OPEN || room_id) {
 					calculatePing();
-					players[playerNumber].sendSync();
+					let currentTime = Date.now();
+				if (players[playerNumber] && currentTime % 5 === 0) {
+					players[playerNumber].sendSync(room_id);
+				}
+				// else {
+				// 	if (playerNumber % 2 === 0) {
+				// 		team2.push(this.addPlayer(2, 2, -5, "team2"));
+				// 	} else {
+				// 		team1.push(this.addPlayer(2, 2, 5, "team1"));
+				// 	}
+				// }
 
 			}
 		}
@@ -622,8 +640,8 @@ class TruckSimulation {
 				}
 				if (e.code === 'KeyX') {
 					// this.toggleCam = !this.toggleCam;
-					playerNumber = playerNumber === 0 ? 1 : 0;
-					console.log("PlayerNumber" + playerNumber)
+					console.log(players[playerNumber])
+					// playerNumber = playerNumber === 0 ? 1 : 0;
 				}
 			}, true);
 		}
@@ -750,11 +768,7 @@ export class Player {
 		this.world = world;
 		this.scene = scene;
 		this.teamColor = teamColor;
-		this.boostLevel = 100; // Initialize boost level to 100%
-		this.maxBoostLevel = 100;
-		this.boostUsageRate = 2; // Boost level decreases by 1% per frame when boosting
-		this.boostRechargeRate = 0.5; // Boost level recharges by 0.5% per frame when not boosting
-		this.isBoosting = false;
+		this.index;
 
 		this.defaultMaterial = this.world.defaultContactMaterial;
 		this.highFrictionMaterial = new CANNON.Material('highFrictionMaterial');
@@ -853,9 +867,10 @@ export class Player {
 		}
 	}
 
-	sendSync() {
-		if (room_id) {
+	sendSync(roomId) {
+		if (roomId) {
 			let cmd = "sync";
+			let index = playerNumber;
 			let position 		= this.chassisBody.position;
 			let quaternion 		= this.chassisBody.quaternion;
 			let velocity 		= this.chassisBody.velocity;
@@ -866,16 +881,20 @@ export class Player {
 				velocity,
 				angularVelocity
 			};
-			socket.send(JSON.stringify({ cmd , room_id, movementData }));
+			socket.send(JSON.stringify({ cmd , index, roomId, movementData }));
 		}
 	}
 	
-
 	updateState (movementData) {
-		this.chassisBody.position.copy(movementData.position);
-		this.chassisBody.quaternion.copy(movementData.quaternion);
-		this.chassisBody.velocity.copy(movementData.velocity);
-		this.chassisBody.angularVelocity.copy(movementData.angularVelocity);
+		if (this.chassisBody) {
+			let vector = new CANNON.Vec3(movementData.position);
+
+			this.chassisBody.position.lerp(this.chassisBody.position, 0.1,vector);
+			
+			this.chassisBody.quaternion.copy(movementData.quaternion);
+			this.chassisBody.velocity.copy(movementData.velocity);
+			this.chassisBody.angularVelocity.copy(movementData.angularVelocity);
+		}
 	}
 
 	loadTruckModel() {
