@@ -45,6 +45,7 @@ html, body
 
 /* !!! Padding will need to be changed once game window is flexible!!! */
 #scoreboard  {
+	position: absolute;
 	padding-top: 45px;
     padding-left: 20px;
 }
