@@ -20,6 +20,9 @@ export let players = [];
 const team1ColorPicker = document.getElementById('team1');
 const team2ColorPicker = document.getElementById('team2');
 
+document.getElementById("truckTeam1Score").style.backgroundColor = team1ColorPicker.value;
+document.getElementById("truckTeam2Score").style.backgroundColor = team2ColorPicker.value;
+
 function showLoader() {
     console.log("Start Loading");
     document.querySelector('.loader').style.display = 'block';
@@ -476,7 +479,8 @@ class TruckSimulation {
     updateColor() {
         this.team1Color = team1ColorPicker.value;
         this.team2Color = team2ColorPicker.value;
-
+		document.getElementById("truckTeam1Score").style.backgroundColor = this.team1Color;
+		document.getElementById("truckTeam2Score").style.backgroundColor = this.team2Color;
         if (team1.length !== 0) {
             team1.forEach(player => {
                 if (player)
