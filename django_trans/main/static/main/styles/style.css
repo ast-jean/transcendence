@@ -448,7 +448,7 @@ body {
 
 #truckScoreboard
 {
-	position: absolute;
+	position: inherit;
 	top: 0px;
 	left: 350px;
 	color: white;
