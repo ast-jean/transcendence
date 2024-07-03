@@ -1,7 +1,35 @@
-import { receiveMove, receiveSync, sendSync, removePlayer, players, Player } from './truck.js';
+import { removePlayer, players, Player, TruckSim, setPlayerNumber , playerNumber} from './truck.js';
 
 export var socket;
-export let room_id;
+export let room_id = null;
+
+let state1 = {
+    position: { x: 16, y: -24, z: 1.02540224318039 } ,
+    quaternion: { w: -0.3, x: 0, y: 0, z: 0.95 },
+    velocity: { x: 0, y: 0, z: 0 },
+    angularVelocity:  { x: 0, y: 0, z: 0 }
+}
+
+let state2 = {
+    position:   { x: -16, y: 24, z: 1.0254022431803902 },
+    quaternion: { w: -0.95, x: 0, y: 0, z: -0.3},
+    velocity: { x: 0, y: 0, z: 0 },
+    angularVelocity:  { x: 0, y: 0, z: 0 }
+}
+
+let state3 = {
+    position: { x: -16, y: -24, z: 1.02540224318039 },
+    quaternion:  { w: 0.3, x: 0, y: 0, z: 0.95},
+    velocity: { x: 0, y: 0, z: 0 },
+    angularVelocity:  { x: 0, y: 0, z: 0 }
+}
+
+let state4 = {
+    position: { x: 16, y: 24, z: 1.02540224318039 },
+    quaternion: { w: 0.95, x: 0, y: 0, z:-0.3},
+    velocity: { x: 0, y: 0, z: 0 },
+    angularVelocity:  { x: 0, y: 0, z: 0 }
+}
 
 function setupWebSocket() {
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -22,26 +50,23 @@ function setupWebSocket() {
         var data = JSON.parse(event.data);
         console.log("data " + data);
         console.log("data.cmd "+data.cmd);
-        // {ident, cmd, data}
-        if (data.cmd === "chat") {
-            receiveChat(data.ident, data.data);
-        }
-        if (data.cmd === "move") {
-            receiveMove(data.ident, data.movementData);
-        }
         if (data.cmd === "roomNotFound") {
             console.log("In roomNotFound");
             alert("Room not found");
         }
+        if (data.cmd === "joinRoom") {
+            console.log("joined room" + data.roomId);
+            getRoomCreateCmd(data.roomId);
+            room_id = data.roomId;
+            setPlayerNumber(data.clientId)
+            sendCmd("resetLocations", data.roomId);
+        }
         if (data.cmd === "sync") {
             console.log("event.data", event.data);
-            receiveSync(data.ident, data.movementData);
+            receiveSync(data.index, data.movementData);
         }
         if (data.cmd === "connect") {
-            sendSync();
             receiveConnect(data.ident);
-
-
             console.log("in connect functions");
         }
         if (data.cmd === "disconnect") {
@@ -49,13 +74,18 @@ function setupWebSocket() {
             receiveDisconnect(data.ident);
             removePlayer(data.ident);
         }
+        if (data.cmd === 'resetLocations') {
+            //sync location -> add non existing players
+        }
     };
 }
 
-export function sendRoomSearch(roomId) {
-    let cmd = "roomSearch";
-    console.log();
-    socket.send(JSON.stringify({ cmd , roomId }));
+function sendCmd(cmd, roomId) {
+    socket.send(JSON.stringify({cmd, roomId}))
+}
+
+function getRoomCreateCmd(roomId) {
+    document.getElementById("roomId").textContent = "Room:" + roomId;
 }
 
 function handleSubmit(event) {
@@ -63,22 +93,60 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     if (!roomId) {
-        event.preventDefault(); // Stop form submission
+        event.preventDefault();
         alert("Please fill in all required fields.");
     } else {
-        sendRoomSearch(roomId);
+        sendCmd("roomSearch", roomId);
         console.log("Searching for Room #"+ roomId);
     }
 }
 
-function createRoom(event)  {
-    let cmd = "roomCreate";
-    console.log();
-    socket.send(JSON.stringify({ cmd }));
+function createRoom2()  {
+    let cmd = "roomCreate2";
+    console.log("In room create 2");
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
+    sendCmd(cmd, 0);    
+}
+
+function createRoom4()  {
+    let cmd = "roomCreate4";
+    document.querySelectorAll(".menu").forEach(button => {
+        button.style.display = 'none';
+    });
+    sendCmd(cmd, 0);
+}
+
+
+function receiveConnect(id, movementData) {
+	const player = players.find(p => p.id === id);
+	if (player) {
+		player.updateState(movementData);
+	} else {
+        TruckSim.addPlayer()
+    }
+}
+
+
+function receiveSync(index, movementData) {
+	const player = players[index];
+	if (player) {
+		player.updateState(movementData);
+	} else {
+        let new_player;
+        if (index % 2 === 0){
+            new_player = team2.push(this.addPlayer(0, 2, 0, "team2"));
+        } else {
+            new_player = team1.push(this.addPlayer(0, 2, 0, "team1"));
+        }
+        new_player.updateState(movementData);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('form').addEventListener('submit', handleSubmit);
-    document.getElementById('create-room').addEventListener('click', createRoom);
+    document.getElementById('create-room-2').addEventListener('click', createRoom2);
+    document.getElementById('create-room-4').addEventListener('click', createRoom4);
     setupWebSocket();
   });
