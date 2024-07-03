@@ -33,6 +33,8 @@ function calculatePing() {
 		lastCallTime = currentTime;
 	}
 }
+document.getElementById("truckTeam1Score").style.backgroundColor = team1ColorPicker.value;
+document.getElementById("truckTeam2Score").style.backgroundColor = team2ColorPicker.value;
 
 function showLoader() {
 	console.log("Start Loading");
@@ -473,35 +475,23 @@ class TruckSimulation {
 		}
 	}
 
-	updateColor() {
-		this.team1Color = team1ColorPicker.value;
-		this.team2Color = team2ColorPicker.value;
-
-		if (team1.length !== 0) {
-			team1.forEach(player => {
-				if (player)
-				player.truckMesh.children.forEach((child) => {
-					if (child.name === "chassis") {
-						child.material = new THREE.MeshToonMaterial({
-							color: new THREE.Color(this.team1Color), 
-						});
-					}
-				});
-			});
-		}
-
-		if (team2.length !== 0) {
-			team2.forEach(player => {
-				if (player)
-				player.truckMesh.children.forEach((child) => {
-					if (child.name === "chassis") {
-						child.material = new THREE.MeshToonMaterial({
-							color: new THREE.Color(this.team2Color),
-						});
-					}
-				});
-			});
-		}
+    updateColor() {
+        this.team1Color = team1ColorPicker.value;
+        this.team2Color = team2ColorPicker.value;
+		document.getElementById("truckTeam1Score").style.backgroundColor = this.team1Color;
+		document.getElementById("truckTeam2Score").style.backgroundColor = this.team2Color;
+        if (team1.length !== 0) {
+            team1.forEach(player => {
+                if (player)
+                player.truckMesh.children.forEach((child) => {
+                    if (child.name === "chassis") {
+                        child.material = new THREE.MeshToonMaterial({
+                            color: new THREE.Color(this.team1Color), 
+                        });
+                    }
+                });
+            });
+        }
 
 		if (this.walls && this.walls.length > 0) {
 			this.walls.slice(0, 3).forEach(wall => {
