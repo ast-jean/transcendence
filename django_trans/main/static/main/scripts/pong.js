@@ -20,6 +20,7 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
+
 const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
@@ -139,7 +140,6 @@ function localPlay() {
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
-
     let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(player1);
     scene.add(player1.mesh);
@@ -284,17 +284,15 @@ function endGame() {
 
     const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
     const endGameMessage = document.createElement('div');
-    endGameMessage.id = 'end-game-message';
-    endGameMessage.style.position = 'absolute';
-    endGameMessage.style.top = '50%';
-    endGameMessage.style.left = '50%';
-    endGameMessage.style.transform = 'translate(-50%, -50%)';
-    endGameMessage.style.fontSize = '2em';
-    endGameMessage.style.color = '#fff';
-    endGameMessage.innerHTML = `
-        ${winner} wins!<br>
-    `;
-    document.body.appendChild(endGameMessage);
+    // endGameMessage.id = 'end-game-message';
+    // endGameMessage.style.position = 'absolute';
+    // endGameMessage.style.top = '50%';
+    // endGameMessage.style.left = '50%';
+		// endGameMessage.style.transform = 'translate(-50%, -50%)';	
+    // endGameMessage.style.fontSize = '2em';
+    // endGameMessage.style.color = '#fff';
+    endGameMessage.innerHTML = `${winner} wins!<br>`;
+    document.getElementById('gameCont').appendChild(endGameMessage);
 
     const endGameButtons = document.getElementById('end-game-buttons');
     endGameButtons.style.display = 'block';
@@ -390,12 +388,8 @@ export function movePlayer(delta) {
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[0].mesh.position.x = newX;
         }
-        if (socket) {
-            console.log("Socket in movePlayer (X1):", socket);
-        } else {
-            console.error("Socket is undefined in movePlayer (X1)");
-        }
-        if (isSocketReady) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            console.log("Send move to Server");
             let cmd = "move";
             const movementData = { x: x1, y: 0 };
             console.log(movementData);
