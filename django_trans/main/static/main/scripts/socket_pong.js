@@ -62,34 +62,37 @@
 import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength } from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
-export var socket;
-export var isSocketReady = false;
+export const socketState = {
+    socket: null,
+    isSocketReady: false
+};
 
 export function setupWebSocket() {
     return new Promise((resolve, reject) => {
         const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
         const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
-        socket = new WebSocket(ws_path);
-        console.log("Creating WebSocket:", socket);
+        socketState.socket = new WebSocket(ws_path);
+        console.log("Creating WebSocket:", socketState.socket);
 
-        socket.onopen = function() {
+        socketState.socket.onopen = function() {
             console.log('WebSocket connection established');
-            isSocketReady = true;
+            socketState.isSocketReady = true;
+            console.log(socketState.isSocketReady);
             resolve();
         };
 
-        socket.onclose = function() {
+        socketState.socket.onclose = function() {
             console.log('WebSocket connection closed');
-            isSocketReady = false;
+            socketState.isSocketReady = false;
             reject(new Error('WebSocket connection closed'));
         };
 
-        socket.onerror = function(error) {
+        socketState.socket.onerror = function(error) {
             console.error('WebSocket error:', error);
             reject(error);
         };
 
-        socket.onmessage = function(event) {
+        socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             console.log(`Message received: ${event.data}`);
             if (data.cmd === "chat") {
@@ -118,11 +121,12 @@ export function setupWebSocket() {
 }
 
 export function checkAllPlayersConnected() {
-    if (isSocketReady && players.length >= 2) {
+    if (socketState.isSocketReady && players.length >= 2) {
         console.log("All players connected, starting game");
         startCountdown();
     }
 }
+
 
 
 // document.addEventListener("DOMContentLoaded", setupWebSocket);

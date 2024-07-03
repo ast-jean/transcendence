@@ -1,4 +1,4 @@
-import { socket } from './socket_pong.js'
+import { socketState } from './socket_pong.js'
 
 var input = document.getElementById('chat-input');
 
@@ -53,6 +53,6 @@ function sendMessage() {
         chatBox.scrollTop = chatBox.scrollHeight; 
 
         var cmd = "chat"
-        socket.send(JSON.stringify({ cmd, data })); //Sending to gameserv/consumers.py 
+        socketState.socket.send(JSON.stringify({ cmd, data })); //Sending to gameserv/consumers.py 
     }
 }

@@ -1,10 +1,12 @@
 import * as THREE from 'three';
-import { socket, setupWebSocket, isSocketReady, checkAllPlayersConnected } from './socket_pong.js';
+import { socketState, setupWebSocket, checkAllPlayersConnected } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
 
 var clock = new THREE.Clock();
 let ballSpeedX = 0;
 let ballSpeedY = 0;
+let local_game = true;
 let useAIForPlayer2 = false;
 let isGameOver = false;
 
@@ -46,6 +48,7 @@ if (localPlayButton) {
 if (versusAIButton) {
     versusAIButton.addEventListener('click', () => {
         hideChat();
+        local_game = false;
         playAI();
     });
 }
@@ -53,6 +56,7 @@ if (versusAIButton) {
 if (playOnlineButton) {
     playOnlineButton.addEventListener('click', async () => {
         hideChat();
+        local_game = false;
         setupWebSocket().then(() => {
             playOnline();
         }) .catch(err => {
@@ -189,7 +193,7 @@ function playOnline() {
     scene.add(local_player.mesh);
 
     
-    if (isSocketReady) {
+    if (socketState.isSocketReady) {
         sendSync();
         checkAllPlayersConnected();
     }
@@ -372,6 +376,7 @@ document.addEventListener('keyup', function (e) {
     }
 }, true);
 
+
 export function movePlayer(delta) {
     const speed = 20;
     let x1 = 0;
@@ -379,22 +384,27 @@ export function movePlayer(delta) {
 
     if (keyState['ArrowLeft']) x1 -= speed * delta;
     if (keyState['ArrowRight']) x1 += speed * delta;
-    if (keyState['KeyA']) x2 -= speed * delta;
-    if (keyState['KeyD']) x2 += speed * delta;
+
+    if (local_game){
+        if (keyState['KeyA']) x2 -= speed * delta;
+        if (keyState['KeyD']) x2 += speed * delta;
+    }
 
     if (x1 !== 0) {
         let newX = players[0].mesh.position.x + x1;
         if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[0].mesh.position.x = newX;
+            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                let cmd = "move";
+                const movementData = { x: x1, y: 0 };
+                console.log(movementData);
+                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+            }
         }
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            console.log("Send move to Server");
-            let cmd = "move";
-            const movementData = { x: x1, y: 0 };
-            console.log(movementData);
-            socket.send(JSON.stringify({ cmd, movementData }));
-        }
+        console.log("For X1");
+        if (socketState.socket)
+            console.log(socketState.socket);
     }
     
     if (x2 !== 0) {
@@ -402,22 +412,24 @@ export function movePlayer(delta) {
         if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
         newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
+            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                let cmd = "move";
+                const movementData = { x: x2 * -1, y: 0 };
+                console.log(movementData);
+                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+            }
         }
-        if (socket) {
-            console.log("Socket in movePlayer (X2):", socket);
+        console.log("For X2");
+        if (socketState.socket) {
+            console.log(socketState.socket);
         } else {
             console.error("Socket is undefined in movePlayer (X2)");
-        }
-        if (isSocketReady) {
-            let cmd = "move";
-            const movementData = { x: x2, y: 0 };
-            console.log(movementData);
-            socket.send(JSON.stringify({ cmd, movementData }));
         }
     }
 
     updatePlayerVisualization();
 }
+
 
 
 
@@ -503,6 +515,7 @@ function moveBall(delta) {
 
     ballSpeedX = ballSpeed.x;
     ballSpeedY = ballSpeed.y;
+
 }
 
 class AIPlayer extends Player {
@@ -614,13 +627,13 @@ export function receiveMove(id, movementData) {
 }
 
 export function sendSync() {
-    if (players.length > 0 && players[0].mesh && socket && socket.readyState === WebSocket.OPEN) {
+    if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         let cmd = "sync";
         let x = players[0].mesh.position.x * -1;
         let y = players[0].mesh.position.y * -1;
         const movementData = { x, y };
         console.log(`Sending sync: ${JSON.stringify({ cmd, movementData })}`);
-        socket.send(JSON.stringify({ cmd, movementData }));
+        socketState.socket.send(JSON.stringify({ cmd, movementData }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
