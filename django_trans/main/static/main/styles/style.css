@@ -330,3 +330,39 @@ body {
 	
 }
 
+#truckScoreboard
+{
+	position: absolute;
+	top: 0px;
+	left: 350px;
+	color: white;
+	font-size: 24px;
+	font-family: Arial, sans-serif;
+}
+/* 
+#truckScoreMsg
+{
+	color: white;
+	background-color: #3b3b3b;
+	width: 100px;
+	text-align: center;
+	/* -webkit-text-stroke-width: 3px;
+	-webkit-text-stroke-color: black;
+	-ms-text-size-adjust: 25; 
+}*/
+
+#truckTeam1Score
+{
+	color: white;
+	background-color: #3b3b3b; /* make it team color*/
+	text-align: center;
+	width: 125px;
+}
+
+#truckTeam2Score
+{
+	color: white;
+	background-color: #3b3b3b; /* make it team color*/
+	text-align: center;
+	width: 125px;
+} */
