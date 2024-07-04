@@ -20,6 +20,7 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
+
 const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
