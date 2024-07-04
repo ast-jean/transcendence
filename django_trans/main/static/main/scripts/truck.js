@@ -730,13 +730,9 @@ handleKeyStates() {
 					}
 				}
 			}
-			if (this.keyState['ShiftLeft'] && player.boostLevel > 0.1) {
+			if (this.keyState['ShiftLeft']) {
 				player.applyBoost();
 				this.relativeCameraOffset = new THREE.Vector3(0, 12, 5);
-				player.boostLevel -= player.boostUsageRate;
-				if (player.boostLevel < 0) {
-					player.boostLevel = 0;
-				}
 			} else {
 				player.isBoosting = false;
 				this.relativeCameraOffset = new THREE.Vector3(0, 10, 5);
