@@ -1,10 +1,16 @@
 html, body 
 {
-    background-color: rgb(67, 67, 67);
+    /* background-color: rgb(67, 67, 67); */
     height: 100%;
     margin: 0;
     font-size: 16pt;
 }
+
+body
+{
+	position: relative;
+}
+
 .button_home { 
     background-image: url( '/static/main/obj/truck.png'); 
     background-size: cover; 
@@ -327,25 +333,36 @@ body {
     color: '#fff';
 }
 
+.menu
+{
+	left: 0;
+}
+
 #truckGameCont
 {
+	position: absolute;
 	display: flex;
-	overflow: auto;
+	/* overflow: auto; */
 	width: 1500px;
 	height: 1000px;
 	margin-top: 20px;
-	z-index: 1;
+	align-items: center;
+    justify-content: center;
+    z-index: 200;
 	
 }
 
 #truckScoreboard
 {
-	position: inherit;
+	/* position:; */
+	/* align-content: center; */
 	top: 0px;
 	left: 350px;
 	color: white;
 	font-size: 24px;
 	font-family: Arial, sans-serif;
+	width: 500px;
+	z-index: 2;
 }
 /* 
 #truckScoreMsg
@@ -359,20 +376,57 @@ body {
 	-ms-text-size-adjust: 25; 
 }*/
 
-#truckTeam1Score
+			/* #truckTeam1Score
+			{
+				color: white;
+				font-size: 40px;
+				text-align: center;
+				width: 210px;
+			}
+
+			#truckTeam2Score
+			{
+				color: white;
+				font-size: 40px;
+				text-align: center;
+				width: 210px;
+			} */
+
+#gameWindow
 {
-	color: white;
-	/* background-color: #3b3b3b; make it team color */
-	text-align: center;
-	width: 125px;
+	align-items: flex-start;
+	position: relative;
+	display: flex;
+	justify-content: flex-start;
+	background-color: #a4f97f;
+
 }
 
-#truckTeam2Score
+.score-container 
 {
+	position: absolute;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	border: 1px solid #ccc;
+	padding: 10px;
+	max-width: 600px;
+	background-color: white;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 2;
+}
+
+.team 
+{
+    text-align: center;
 	color: white;
-	/* background-color: #3b3b3b; make it team color */
+	font-size: 40px;
 	text-align: center;
-	width: 125px;
+	width: 210px;
+	flex: 1;
+	background-color: #23a6d5;
 }
 
 .t-buttons
@@ -383,3 +437,7 @@ body {
 	vertical-align: middle;
 	border-radius: 10px;
 }
+
+
+/* PROFILE */
+
