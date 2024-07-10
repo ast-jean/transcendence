@@ -7,6 +7,8 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from requests_oauthlib import OAuth2Session
 from django.conf import settings
+from django.db import models
+from .models import Profile, OnlineMatchResults
 from dotenv import load_dotenv
 import os
 
@@ -79,11 +81,31 @@ def logout_view(request):
 
 def profile(request):
     token = request.session.get('oauth_token')
-    # if not token:
-    #     return redirect('oauth_login')
+
     oauth = OAuth2Session(CLIENT_ID, token=token)
     response = oauth.get('https://api.intra.42.fr/v2/me')
     profile_data = response.json()
-    if not profile_data:
-        return redirect('home')
-    return render(request, 'profile.html', {'profile': profile_data})
+
+    # Fetch or create profile in the database
+    profile_db, created = Profile.objects.get_or_create(
+        user_id = profile_data['login'],
+        defaults={
+            'name': profile_data.get('name', ''),
+            'email': profile_data.get('email', '')
+        }
+    )
+
+    # Update profile if it exists but login might not be updated
+    if not created:
+        profile_db.name = profile_data.get('name', profile_db.name)
+        profile_db.email = profile_data.get('email', profile_db.email)
+        profile_db.login = profile_data.get('login', profile_db.login)
+        profile_db.save()
+
+    #Fetch match results
+    user_login = profile_data['login']
+    match_results = OnlineMatchResults.objects.filter(
+        models.Q(winner=user_login) | models.Q(loser=user_login)
+    )
+
+    return render(request, 'profile.html', {'profile': profile_data, 'profile_db' : profile_db, 'match_results' : match_results})

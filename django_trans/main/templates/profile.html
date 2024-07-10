@@ -10,4 +10,15 @@
 {% else %}
     <p>No profile data available.</p>
 {% endif %}
+
+<h2>Match Results</h2>
+{% if match_results %}
+    <ul>
+        {% for match in match_results %}
+            <li>Game ID: {{ match.game_id }}, Winner: {{ match.winner }}, Loser: {{ match.loser }}, Score: {{ match.score }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No match results found for this user.</p>
+{% endif %}
 {% endblock %}
