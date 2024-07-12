@@ -100,6 +100,7 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
+            console.log("ball start");
             ballSpeedX = 10;
             ballSpeedY = 10;
         } else {
@@ -195,16 +196,11 @@ function playOnline() {
     
     if (socketState.isSocketReady) {
         sendSync();
-        checkAllPlayersConnected();
+        // checkAllPlayersConnected();
+        // startCountdown();
+
     }
-    // } else {
-    //     setupWebSocket().then(() => {
-    //         sendSync();
-    //         checkAllPlayersConnected();
-    //     }).catch(err => {
-    //         console.error("Failed to establish WebSocket connection:", err);
-    //     });
-    // }
+
     updatePlayerVisualization();
 }
 
