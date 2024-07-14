@@ -26,15 +26,10 @@
 				<div id="gameCont" class="three-js-canvas d-flex justify-content-center align-items-center"></div>
 				<div class="play_btns hud"> <!-- text-center align-items-center align-self-center -->
 					<div id="onlineplay_btn" class="hud-btn game-button">
-						{% if profile.login %}
 							<b>Play online</b>
 							<small>has {{ profile.login }} </small>
 							<small>(1vs1 / 2vs2)</small>
-							{ % else %}
-							<b>Play online</b>
-							<small>has guest or login </small>
-							<small>(1vs1 / 2vs2)</small>
-						{ % endif% }
+		
 					</div>
 					<div id="localplay_btn" class="hud-btn game-button ">
 						<b>Local play</b>
