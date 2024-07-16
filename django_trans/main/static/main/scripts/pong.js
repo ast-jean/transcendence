@@ -8,7 +8,7 @@ let ballSpeedX = 0;
 let ballSpeedY = 0;
 let local_game = true;
 let useAIForPlayer2 = false;
-let isGameOver = false;
+let isGameOver = true;
 
 console.log("loading pong.js file.");
 
@@ -101,6 +101,7 @@ export function startCountdown() {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
             console.log("ball start");
+            isGameOver = false;
             ballSpeedX = 10;
             ballSpeedY = 10;
         } else {
@@ -318,7 +319,7 @@ function resetGame() {
     player2Score = 0;
     ballSpeedX = 0;
     ballSpeedY = 0;
-    isGameOver = false;
+    isGameOver = true;
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
         player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
@@ -350,7 +351,7 @@ scene.add(ballLight);
 
 const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
 const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+export const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphere.position.set(0, 0, 0);
 scene.add(sphere);
 
@@ -434,8 +435,23 @@ export function movePlayer(delta) {
 
 
 
+
+// Fonction pour envoyer périodiquement l'état de la balle au serveur
+function sendBallState() {
+    if (socketState.socket && socketState.isSocketReady) {
+        let cmd = "ballSync";
+        const ballData = {
+            x: sphere.position.x,
+            y: sphere.position.y,
+            vx: ballSpeedX,
+            vy: ballSpeedY
+        };
+        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+    }
+}
+
 function moveBall(delta) {
-    if (isGameOver) return;
+    if (isGameOver) return ;
 
     let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
@@ -512,7 +528,21 @@ function moveBall(delta) {
     ballSpeedX = ballSpeed.x;
     ballSpeedY = ballSpeed.y;
 
+    // Envoyer périodiquement l'état de la balle au serveur
+    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        let cmd = "ballSync";
+        const ballData = {
+            x: sphere.position.x,
+            y: sphere.position.y,
+            vx: ballSpeedX,
+            vy: ballSpeedY
+        };
+        console.log(ballData);
+        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+    }
 }
+
+
 
 class AIPlayer extends Player {
     constructor(id, x, y, z) {

@@ -1,12 +1,12 @@
 
 
-import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength } from './pong.js';
+import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere } from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
 export const socketState = {
     socket: null,
     isSocketReady: false,
-    players_ready: false
+    players_ready: false,
 };
 
 export function setupWebSocket() {
@@ -19,7 +19,6 @@ export function setupWebSocket() {
         socketState.socket.onopen = function() {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
-            console.log(socketState.isSocketReady);
             resolve();
         };
 
@@ -46,6 +45,9 @@ export function setupWebSocket() {
             if (data.cmd === "sync") {
                 receiveSync(data.ident, data.movementData);
             }
+            if (data.cmd === "ballSync") {
+                receiveBallSync(data.ballData);
+            }
             if (data.cmd === "connect") {
                 if (!players.find(p => p.id === data.ident)) {
                     players.push(new Player(data.ident, 0, -wallLength / 2 + 0.5, 0));
@@ -61,6 +63,13 @@ export function setupWebSocket() {
         };
     });
 }
+
+export function receiveBallSync(ballData) {
+    sphere.position.set(ballData.x, ballData.y, 0);
+    ballSpeedX = ballData.vx;
+    ballSpeedY = ballData.vy;
+}
+
 
 export function checkAllPlayersConnected() {
     if (socketState.isSocketReady && players.length == 2) {

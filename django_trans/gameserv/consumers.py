@@ -21,7 +21,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         if len(text_data) > 0:
             text_data_json = json.loads(text_data)
-            text_data_json.update({"ident": "user_%s" % self.ident}) #adds the player id
+            text_data_json.update({"ident": "user_%s" % self.ident}) # adds the player id
             if text_data_json["cmd"] == "chat":
                 await self.broadcast_chat(text_data_json)
             if text_data_json["cmd"] == "move":
@@ -32,8 +32,19 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.broadcast_disconnect(text_data_json)
             if text_data_json["cmd"] == "sync":
                 await self.broadcast_move(text_data_json)
-            if text_data_json["cmd"] == "ballMove":
-                await self.broadcast_ball_move(text_data_json)
+            if text_data_json["cmd"] == "ballSync":
+                await self.broadcast_ball_sync(text_data_json)
+
+    async def broadcast_ball_sync(self, data):
+        for client in self.connected_clients:
+            if client.ident != self.ident:
+                await client.send(json.dumps(data))
+
+    
+    async def broadcast_ball_sync(self, data):
+        for client in self.connected_clients:
+            if client.ident != self.ident:
+                await client.send(json.dumps(data))
 
     async def broadcast_chat(self, data):
         for client in self.connected_clients:
