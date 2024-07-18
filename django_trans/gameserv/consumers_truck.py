@@ -86,7 +86,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				await self.createRoom(2)
 			if text_data_json["cmd"] == "roomCreate4":
 				await self.createRoom(4)
-
 	
 	async def createRoom(self, playerTotal):
 		print(f"Creating new room of {playerTotal}")

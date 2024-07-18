@@ -88,7 +88,7 @@ def profile(request):
 
     # Fetch or create profile in the database
     profile_db, created = Profile.objects.get_or_create(
-        user_id = profile_data['login'],
+        login = profile_data['login'],
         defaults={
             'name': profile_data.get('name', ''),
             'email': profile_data.get('email', '')

@@ -2,6 +2,13 @@ import * as THREE from 'three';
 import { socketState, setupWebSocket, checkAllPlayersConnected } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+/* Btns layer 1     Btns layer 2
+
+    [ ONLINE ]  --->   [ New 1v1 ]
+    [  LOCAL ]         [ New 2v2 ]
+    [   AI   ]         [ Search  ]
+
+*/
 
 var clock = new THREE.Clock();
 let ballSpeedX = 0;
@@ -27,10 +34,13 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
 
-function hideChat() {
+function hideChat(boolean) {
     const chat = document.getElementById('chat-container');
-    if (chat) {
+    if (chat && boolean === true) {
         chat.style.display = 'none';
+    }
+    if (chat && boolean === false) {
+        chat.style.display = 'block';
     }
 }
 
@@ -38,16 +48,31 @@ const localPlayButton = document.getElementById('localplay_btn');
 const versusAIButton = document.getElementById('versusai_btn');
 const playOnlineButton = document.getElementById('onlineplay_btn');
 
+
+function showLayer2Btns() {
+    var layer2Btns = document.getElementById('layer2Btns');
+    layer2Btns.classList.add('active');
+    layer2Btns.classList.remove('hidden');
+}
+
+function hideLayer2Btns() {
+    var layer2Btns = document.getElementById('layer2Btns');
+    layer2Btns.classList.remove('active');
+    layer2Btns.classList.add('hidden');
+}
+
 if (localPlayButton) {
     localPlayButton.addEventListener('click', () => {
-        hideChat();
+        hideChat(true);
+        hideAllButtons();
         localPlay();
     });
 }
 
 if (versusAIButton) {
     versusAIButton.addEventListener('click', () => {
-        hideChat();
+        hideChat(true);
+        // hideAllButtons();
         local_game = false;
         playAI();
     });
@@ -55,23 +80,26 @@ if (versusAIButton) {
 
 if (playOnlineButton) {
     playOnlineButton.addEventListener('click', async () => {
-        hideChat();
         local_game = false;
+        showLayer2Btns();
         setupWebSocket().then(() => {
-            playOnline();
+            OneVsOne = document.getElementById("OneVsOne");
+            TwoVsTwo = document.getElementById("TwoVsTwo");
+            OneVsOne.addEventListener('click', playOnline(2));
+            TwoVsTwo.addEventListener('click', playOnline(4));
+            // playOnline();
         }) .catch(err => {
             console.error("Failed to establish WebSocket connection:", err);
         })
     });
 }
 
+
 function hideAllButtons() {
-    const buttons = document.querySelectorAll('.game-button');
-    buttons.forEach(button => {
-        if (!button.classList.contains('randomize-colors-btn')) {
-            button.classList.add('hidden');
-        }
-    });
+    let play_btns = document.getElementById('play_btns');
+    if (play_btns) {
+        play_btns.style.display = "none";
+    }
 }
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
@@ -181,15 +209,31 @@ function playAI() {
     startCountdown();
 }
 
-function playOnline() {
-    console.log("Starting online play");
 
+function cleanScene(){
+    hideLayer2Btns();
     players.forEach(player => scene.remove(player.mesh));
     players = [];
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
+}
 
+// Function to wait until the game is full
+function waitForGameToBeFull() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (isGameFull()) {
+                clearInterval(checkInterval);
+                resolve();
+            }
+        }, 500); // Check every second
+    });
+}
+
+function playOnline(maxPlayers) {
+    console.log("Starting online play");
+    cleanScene();
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(local_player);
     scene.add(local_player.mesh);
@@ -197,6 +241,7 @@ function playOnline() {
     
     if (socketState.isSocketReady) {
         sendSync();
+        waitForGameToBeFull(maxPlayers);
         // checkAllPlayersConnected();
         // startCountdown();
 
@@ -309,6 +354,7 @@ function endGame() {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
         showAllButtons();
+        hideLayer2Btns();
         resetGame();
         controls.enabled = false;
     });
@@ -359,17 +405,31 @@ export var delta;
 
 var keyState = {};
 
+export let shouldPreventDefault = true;
+
 document.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
         keyState[e.code] = true;
-        e.preventDefault();
+        if (shouldPreventDefault)
+            e.preventDefault();
+    }
+    if (local_game) {
+        if (['KeyA', 'KeyD'].includes(e.code)) {
+            keyState[e.code] = true;
+                e.preventDefault();
+        }
     }
 }, true);
 
 document.addEventListener('keyup', function (e) {
     if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = false;
-        e.preventDefault();
+    }
+    if (local_game) {
+        if (['KeyA', 'KeyD'].includes(e.code)) {
+            keyState[e.code] = true;
+                e.preventDefault();
+        }
     }
 }, true);
 
@@ -426,14 +486,6 @@ export function movePlayer(delta) {
 
     updatePlayerVisualization();
 }
-
-
-
-
-
-
-
-
 
 
 // Fonction pour envoyer périodiquement l'état de la balle au serveur

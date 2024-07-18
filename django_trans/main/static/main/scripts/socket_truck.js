@@ -49,7 +49,7 @@ function setupWebSocket() {
         console.log("Event.data" + event.data);
         var data = JSON.parse(event.data);
         console.log("data " + data);
-        console.log("data.cmd "+data.cmd);
+        console.log("data.cmd " + data.cmd);
         if (data.cmd === "roomNotFound") {
             console.log("In roomNotFound");
             alert("Room not found");
