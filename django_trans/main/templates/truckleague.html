@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}Transcendence | Truck League{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'main/styles/truck_style.css' %}" type="text/css">
 <script type="importmap">
     {
         "imports": {
@@ -16,6 +15,8 @@
         <div id="view" class="container">
             <script src="{% static 'main/scripts/socket_truck.js' %}" type="module"></script>
             <script src="{% static 'main/scripts/truck.js' %}" type="module"></script>
+            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
 
             <div class="loader">
                 <div class="loader-inner">
@@ -38,11 +39,11 @@
             </div>
 			<div id="truckGameCont">
 				<div class="flex-container hud">
-					<div class="hud-btn menu" id="create-room-2">
+					<div class="hud-btn" id="create-room-2">
 						<b>Create Room</b><br>
 						<small>1 vs 1</small>
 					</div>
-					<div class="hud-btn menu" id="create-room-4">
+					<div class="hud-btn" id="create-room-4">
 						<b>Create Room</b><br>
 						<small>2 vs 2</small>
 					</div>
@@ -78,9 +79,6 @@
 					</div>
 					<div class="midMsg">
 						<p class="playercount text-white">Waiting for player: </p>
-					</div>
-					<div class="">
-						<p id="ping" class="text-white"></p>
 					</div>
 				</div>
 			</div>

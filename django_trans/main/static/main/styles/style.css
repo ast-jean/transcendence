@@ -48,11 +48,33 @@ html, body
 	padding-top: 45px;
     padding-left: 20px;
 }
+#boost-indicator {
+    border-radius: 5px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 20px;
+    background-color: grey;
+}
+
+#boost-bar {
+    border-radius: 5px;
+    height: 100%;
+    width: 100%;
+    background-color: green;
+    background: linear-gradient(90deg, rgb(210, 233, 2) 0%, rgba(0,180,22,1) 100%);
+}
+
 
 .gameCont {
-    display: flex;
-    justify-content: space-between;
+    display: relative;
+    justify-content: space-between; /* This will push your chatbox to the right */
     height: 100vh; /* Adjust height as needed */
+}
+
+#gameCont 
+{
 	align-items: center;
 	padding-top: 40px;
 	height: 600px;
@@ -108,24 +130,17 @@ html, body
 }
 
 
-/* .hud-btn {
+.hud-btn {
     display: block;
     border-radius: 1em;
     text-align: center;
     font-family: sans-serif;
     font-size: 150%;    
     flex:1;
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.88);/*not a highlight. Its a lowdark*/ 
     padding: 20px;
     margin: 5px;
-    border: solid 1px rgb(215, 215, 215); */
-.hud-btn { 
-	background: whitesmoke;
-	border: 2px solid;
-	font: inherit;
-	line-height: 1;
-	margin: 0.5em;
-	padding: 1em 2em;
+    border: solid 1px rgb(215, 215, 215);
 }
 
 
@@ -230,19 +245,6 @@ html, body
     margin-right: 5px;
 }
 
-#endGameMessage
-{
-    position: absolute;
-	padding-top: 50%;
-    padding-left: 50%;
-	transform: translate(-50%, -50%);
-	color: white;
-	font-size: 2em;
-
-/* 	
-    endGameMessage.style.transform = 'translate(-50%, -50%)';
-    endGameMessage.innerHTML = `${winner} wins!<br>`; */
-}
 /* FOR COLORFUL BACKGROUND */
 body {
 	background: linear-gradient(-45deg, #6c52ee, #e73c7e, #23a6d5, #23d5ab);
@@ -309,6 +311,99 @@ body {
 	0% { box-shadow: 0 0 0 0 var(--hover); }
 }
 
+.loader {
+    display: none;
+    background: #000;
+    background: radial-gradient(#3b3b3b, #000);
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.loader-inner {
+    bottom: 0;
+    height: 60px;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100px;
+}
+
+.loader-line-wrap {
+    animation: 
+    spin 2000ms cubic-bezier(.175, .885, .32, 1.275) infinite;
+    box-sizing: border-box;
+    height: 50px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    transform-origin: 50% 100%;
+    width: 100px;
+}
+.loader-line {
+    border: 4px solid transparent;
+    border-radius: 100%;
+    box-sizing: border-box;
+    height: 100px;
+    left: 0;
+    margin: 0 auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100px;
+}
+.loader-line-wrap:nth-child(1) { animation-delay: -50ms; }
+.loader-line-wrap:nth-child(2) { animation-delay: -100ms; }
+.loader-line-wrap:nth-child(3) { animation-delay: -150ms; }
+.loader-line-wrap:nth-child(4) { animation-delay: -200ms; }
+.loader-line-wrap:nth-child(5) { animation-delay: -250ms; }
+
+.loader-line-wrap:nth-child(1) .loader-line {
+    border-color: #ee7752;
+    height: 90px;
+    width: 90px;
+    top: 7px;
+}
+.loader-line-wrap:nth-child(2) .loader-line {
+    border-color: #e73c7e;
+    height: 76px;
+    width: 76px;
+    top: 14px;
+}
+.loader-line-wrap:nth-child(3) .loader-line {
+    border-color: #23a6d5;
+    height: 62px;
+    width: 62px;
+    top: 21px;
+}
+.loader-line-wrap:nth-child(4) .loader-line {
+    border-color: #23d5ab;
+    height: 48px;
+    width: 48px;
+    top: 28px;
+}
+.loader-line-wrap:nth-child(5) .loader-line {
+    border-color: hsl(61, 96%, 67%);
+    height: 34px;
+    width: 34px;
+    top: 35px;
+}
+
+@keyframes spin {
+    0%, 15% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 .midMsg {
     display: none;
@@ -330,39 +425,3 @@ body {
 	
 }
 
-#truckScoreboard
-{
-	position: absolute;
-	top: 0px;
-	left: 350px;
-	color: white;
-	font-size: 24px;
-	font-family: Arial, sans-serif;
-}
-/* 
-#truckScoreMsg
-{
-	color: white;
-	background-color: #3b3b3b;
-	width: 100px;
-	text-align: center;
-	/* -webkit-text-stroke-width: 3px;
-	-webkit-text-stroke-color: black;
-	-ms-text-size-adjust: 25; 
-}*/
-
-#truckTeam1Score
-{
-	color: white;
-	background-color: #3b3b3b; /* make it team color*/
-	text-align: center;
-	width: 125px;
-}
-
-#truckTeam2Score
-{
-	color: white;
-	background-color: #3b3b3b; /* make it team color*/
-	text-align: center;
-	width: 125px;
-} */
