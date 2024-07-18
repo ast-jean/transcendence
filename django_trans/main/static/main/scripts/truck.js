@@ -118,6 +118,7 @@ class TruckSimulation {
 
 		this.renderer = new THREE.WebGLRenderer();
 		this.renderer.setSize(width, height);
+        this.renderer.id = "gameCanvas";
 		// this.renderer.setSize(500, 400); //temp
 		container.appendChild(this.renderer.domElement);
 		// document.querySelector('body').appendChild(this.renderer.domElement);
@@ -960,13 +961,13 @@ export class Player {
 
 // //XxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX
 // Resize game window on window resize
-// window.addEventListener('resize', onWindowResize, false);
+window.addEventListener('resize', onWindowResize, false);
 
-// function onWindowResize() {
-//     camera.aspect = width / height;
-//     camera.updateProjectionMatrix();
-//     renderer.setSize(width, height);
-// }
+function onWindowResize() {
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+}
 // function resizeRendererToDisplaySize(renderer) {
 //     const canvas = renderer.domElement;
 //     const width = canvas.clientWidth;
