@@ -55,7 +55,7 @@ function setupWebSocket() {
             alert("Room not found");
         }
         if (data.cmd === "joinRoom") {
-            console.log("joined room" + data.roomId);
+            console.log("joined room " + data.roomId);
             getRoomCreateCmd(data.roomId);
             room_id = data.roomId;
             setPlayerNumber(data.clientId)
@@ -100,24 +100,6 @@ function handleSubmit(event) {
         console.log("Searching for Room #"+ roomId);
     }
 }
-
-function createRoom2()  {
-    let cmd = "roomCreate2";
-    console.log("In room create 2");
-    document.querySelectorAll(".menu").forEach(button => {
-        button.style.display = 'none';
-    });
-    sendCmd(cmd, 0);    
-}
-
-function createRoom4()  {
-    let cmd = "roomCreate4";
-    document.querySelectorAll(".menu").forEach(button => {
-        button.style.display = 'none';
-    });
-    sendCmd(cmd, 0);
-}
-
 
 function receiveConnect(id, movementData) {
 	const player = players.find(p => p.id === id);

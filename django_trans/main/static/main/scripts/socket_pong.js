@@ -1,6 +1,6 @@
 
 
-import { receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere } from './pong.js';
+import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere } from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
 export var room_id;
@@ -10,7 +10,9 @@ export const socketState = {
     isSocketReady: false,
     players_ready: false,
 };
-
+export function getRoomId(){
+    return room_id;
+}
 export function setupWebSocket() {
     return new Promise((resolve, reject) => {
         const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -36,6 +38,9 @@ export function setupWebSocket() {
         };
 
 
+        function changeRoomIdElement(roomId) {
+            document.getElementById("roomId").textContent = "Room:" + roomId;
+        }
         
         
         socketState.socket.onmessage = function(event) {
@@ -45,10 +50,19 @@ export function setupWebSocket() {
             if (data.cmd === "roomNotFound") {
                 console.log("In roomNotFound");
                 alert("Room not found");
+                showLayer2Btns();
             }
             if (data.cmd === "joinRoom") {
+                // "cmd": "joinRoom", 
+                // "roomId": found_room.roomId,
+                // "playerIn": found_room.playerIn,
+                // "playerTotal": found_room.playerTotal,
+                // 'clientId': new_client.index,
                 console.log("joined room" + data.roomId);
+                changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
+                checkAllPlayersConnected(data.playerTotal);
+                // playerNumber = data.clientId;
             }
             if (data.cmd === "chat") {
                 receiveChat(data.ident, data.data);
@@ -66,7 +80,7 @@ export function setupWebSocket() {
                 if (!players.find(p => p.id === data.ident)) {
                     players.push(new Player(data.ident, 0, -wallLength / 2 + 0.5, 0));
                 }
-                sendSync();
+                // sendSync();
                 receiveConnect(data.ident);
                 checkAllPlayersConnected();
             }
@@ -78,25 +92,8 @@ export function setupWebSocket() {
     });
 }
 
-function createRoom2()  {
-    let cmd = "roomCreate2";
-    console.log("In room create 2");
-    document.querySelectorAll(".menu").forEach(button => {
-        button.style.display = 'none';
-    });
-    sendCmd(cmd, 0);    
-}
-
-function createRoom4()  {
-    let cmd = "roomCreate4";
-    document.querySelectorAll(".menu").forEach(button => {
-        button.style.display = 'none';
-    });
-    sendCmd(cmd, 0);
-}
-
-function sendCmd(cmd, roomId) {
-    socket.send(JSON.stringify({cmd, roomId}))
+export function sendCmd(cmd, roomId) {
+    socketState.socket.send(JSON.stringify({cmd, roomId}))
 }
 
 export function receiveBallSync(ballData) {
@@ -106,14 +103,14 @@ export function receiveBallSync(ballData) {
 }
 
 
-export function checkAllPlayersConnected() {
-    if (socketState.isSocketReady && players.length == 2) {
-        console.log("All players connected, starting game");
+export function checkAllPlayersConnected(maxPlayers) {
+    if (socketState.isSocketReady && players.length == maxPlayers) {
+        console.log("All players connected, starting game: >" + maxPlayers + "<");
         startCountdown();
-        
     }
 }
 
+document.querySelector('form').addEventListener('submit', handleSubmit);
 function handleSubmit(event) {
     event.preventDefault(); // Prevents the default form submission
     let input = document.querySelector('input[name="searchRoom"]');
@@ -122,6 +119,7 @@ function handleSubmit(event) {
         event.preventDefault();
         alert("Please fill in all required fields.");
     } else {
+        hideLayer2Btns();
         sendCmd("roomSearch", roomId);
         console.log("Searching for Room #"+ roomId);
     }
@@ -129,11 +127,6 @@ function handleSubmit(event) {
 
 
 // document.addEventListener("DOMContentLoaded", setupWebSocket);
-
-
-
-
-
 
 // document.addEventListener("DOMContentLoaded", () => {
 //     const playOnlineButton = document.getElementById('onlineplay_btn');

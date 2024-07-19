@@ -1,5 +1,10 @@
 # transcendence
 # TODO:
+     - [ ] Make gamer join a room
+     - [ ] Update chat
+
+
+
 
 ## Achitecture:
     - [X] Change socketio to channels.
@@ -33,3 +38,5 @@
     |   ___________________  _______ |
     |  | Type a message... | | Send ||
     |__| _________________ | |______||
+
+

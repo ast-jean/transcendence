@@ -64,7 +64,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		self.connected_clients.remove(self)
-		await self.broadcast_connect({"ident": "user_%s" % self.ident,'cmd' : "disconnect"})
+		await self.broadcast_disconnect({"ident": "user_%s" % self.ident,'cmd' : "disconnect"})
 		print(f"Client {self.ident} has disconnected with code {close_code}.")
 
 	async def receive(self, text_data):

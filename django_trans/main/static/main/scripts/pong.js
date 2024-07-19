@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState, setupWebSocket, checkAllPlayersConnected } from './socket_pong.js';
+import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /* Btns layer 1     Btns layer 2
@@ -49,13 +49,13 @@ const versusAIButton = document.getElementById('versusai_btn');
 const playOnlineButton = document.getElementById('onlineplay_btn');
 
 
-function showLayer2Btns() {
+export function showLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
     layer2Btns.classList.add('active');
     layer2Btns.classList.remove('hidden');
 }
 
-function hideLayer2Btns() {
+export function hideLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
     layer2Btns.classList.remove('active');
     layer2Btns.classList.add('hidden');
@@ -72,7 +72,7 @@ if (localPlayButton) {
 if (versusAIButton) {
     versusAIButton.addEventListener('click', () => {
         hideChat(true);
-        // hideAllButtons();
+        hideAllButtons();
         local_game = false;
         playAI();
     });
@@ -83,11 +83,8 @@ if (playOnlineButton) {
         local_game = false;
         showLayer2Btns();
         setupWebSocket().then(() => {
-            OneVsOne = document.getElementById("OneVsOne");
-            TwoVsTwo = document.getElementById("TwoVsTwo");
-            OneVsOne.addEventListener('click', playOnline(2));
-            TwoVsTwo.addEventListener('click', playOnline(4));
-            // playOnline();
+            document.getElementById("OneVsOne").addEventListener('click', () => playOnline(2));
+            document.getElementById("TwoVsTwo").addEventListener('click', () => playOnline(4));
         }) .catch(err => {
             console.error("Failed to establish WebSocket connection:", err);
         })
@@ -214,36 +211,63 @@ function cleanScene(){
     hideLayer2Btns();
     players.forEach(player => scene.remove(player.mesh));
     players = [];
+    resetPlayer();
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
 }
 
-// Function to wait until the game is full
-function waitForGameToBeFull() {
-    return new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-            if (isGameFull()) {
-                clearInterval(checkInterval);
-                resolve();
-            }
-        }, 500); // Check every second
-    });
-}
-
-function playOnline(maxPlayers) {
-    console.log("Starting online play");
-    cleanScene();
+function resetPlayer() {
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(local_player);
     scene.add(local_player.mesh);
-
     
-    if (socketState.isSocketReady) {
-        sendSync();
-        waitForGameToBeFull(maxPlayers);
+}
+
+// Function to wait until room_id changes from null
+function waitForRoomId() {
+    return new Promise((resolve, reject) => {
+        const checkInterval = setInterval(() => {
+            if (getRoomId() !== null) {
+                clearInterval(checkInterval);
+                resolve(getRoomId());
+            }
+        }, 100); // Check every 100 milliseconds
+
+        // Optional: Set a timeout to reject the promise if it takes too long
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            reject(new Error("Timed out waiting for room_id to change from null"));
+        }, 10000); // 10 seconds timeout
+    });
+}
+
+
+//click PlayOnline() -> show Layer2Btns -> Click game mode -> HideLayer2 & waitGameFull -> Start Countdown & Start Game
+async function playOnline(maxPlayers) {
+    console.log("Starting online play");
+
+
+    if (socketState.isSocketReady ) {
+        //sendGameMode and wait for joinRoom() from server
+        console.log("Connected to server socket")
+        
+        var cmd = "roomCreate" + maxPlayers;
+        sendCmd(cmd);
+        try {
+            await waitForRoomId();
+
+            console.log("Connected to room: "+ getRoomId());
+        } catch {
+            location.reload();
+        }
+        hideLayer2Btns();
+        // waitForGameToBeFull(maxPlayers);
+        cleanScene();
+
         // checkAllPlayersConnected();
         // startCountdown();
+        // sendSync(); loop
 
     }
 
@@ -280,7 +304,7 @@ export class Player {
 }
 
 export function updatePlayerVisualization() {
-    console.log("Updating player visualization");
+    // console.log("Updating player visualization");
     players.forEach(player => {
         scene.add(player.mesh);
     });
@@ -354,7 +378,7 @@ function endGame() {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
         showAllButtons();
-        hideLayer2Btns();
+        // hideLayer2Btns();
         resetGame();
         controls.enabled = false;
     });
@@ -433,58 +457,61 @@ document.addEventListener('keyup', function (e) {
     }
 }, true);
 
-
 export function movePlayer(delta) {
     const speed = 20;
     let x1 = 0;
     let x2 = 0;
 
-    if (keyState['ArrowLeft']) x1 -= speed * delta;
-    if (keyState['ArrowRight']) x1 += speed * delta;
-
-    if (local_game){
-        if (keyState['KeyA']) x2 -= speed * delta;
-        if (keyState['KeyD']) x2 += speed * delta;
-    }
-
-    if (x1 !== 0) {
+    if (players[0]){        
+        if (keyState['ArrowLeft']) x1 -= speed * delta;
+        if (keyState['ArrowRight']) x1 += speed * delta;
+        
+        if (local_game){
+            if (keyState['KeyA']) x2 -= speed * delta;
+            if (keyState['KeyD']) x2 += speed * delta;
+        }
+        
+        if (x1 !== 0) {
         let newX = players[0].mesh.position.x + x1;
         if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-            players[0].mesh.position.x = newX;
-            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                let cmd = "move";
-                const movementData = { x: x1, y: 0 };
-                console.log(movementData);
-                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+                players[0].mesh.position.x = newX;
+                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                    //sendMove
+                    let cmd = "sync";
+                    const movementData = { x: x1, y: 0 };
+                    let roomId = getRoomId();
+                    console.log(movementData, roomId);
+                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+                }
             }
+            // if (socketState.socket)
+            //     console.log(socketState.socket);
         }
-        console.log("For X1");
-        if (socketState.socket)
-            console.log(socketState.socket);
-    }
-    
-    if (x2 !== 0) {
-        let newX = players[1].mesh.position.x + x2;
-        if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+        
+        if (x2 !== 0) {
+            let newX = players[1].mesh.position.x + x2;
+            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
         newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
             if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                let cmd = "move";
+                let cmd = "sync";
                 const movementData = { x: x2 * -1, y: 0 };
-                console.log(movementData);
-                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+                let roomId = getRoomId();
+                console.log(movementData, roomId);
+                socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
             }
         }
-        console.log("For X2");
+        // console.log("For X2");
         if (socketState.socket) {
             console.log(socketState.socket);
         } else {
             console.error("Socket is undefined in movePlayer (X2)");
         }
     }
-
-    updatePlayerVisualization();
+    
+        updatePlayerVisualization();
+    }
 }
 
 
@@ -709,9 +736,10 @@ export function sendSync() {
         let cmd = "sync";
         let x = players[0].mesh.position.x * -1;
         let y = players[0].mesh.position.y * -1;
+        let roomId = getRoomId();
         const movementData = { x, y };
-        console.log(`Sending sync: ${JSON.stringify({ cmd, movementData })}`);
-        socketState.socket.send(JSON.stringify({ cmd, movementData }));
+        console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`);
+        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
