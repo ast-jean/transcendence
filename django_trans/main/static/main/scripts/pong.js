@@ -125,7 +125,7 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            console.log("ball start");
+            // console.log("ball start");
             isGameOver = false;
             ballSpeedX = 10;
             ballSpeedY = 10;
@@ -163,6 +163,8 @@ walls.push(rightWall);
 var index = 0;
 let aiPlayer = null;
 
+
+
 function localPlay() {
     console.log("Starting local play");
 
@@ -171,14 +173,8 @@ function localPlay() {
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
-    let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
-    players.push(player1);
-    scene.add(player1.mesh);
 
-    let player2 = new Player(2, 0, wallLength / 2 - 0.5, 0);
-    players.push(player2);
-    scene.add(player2.mesh);
-    useAIForPlayer2 = false;
+    initializePlayers();
 
     updatePlayerVisualization();
     startCountdown();
@@ -206,7 +202,6 @@ function playAI() {
     startCountdown();
 }
 
-
 function cleanScene(){
     hideLayer2Btns();
     players.forEach(player => scene.remove(player.mesh));
@@ -223,6 +218,20 @@ function resetPlayer() {
     scene.add(local_player.mesh);
     
 }
+function initializePlayers() {
+    players.forEach(player => scene.remove(player.mesh));
+    players = [];
+    let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    players.push(player1);
+    scene.add(player1.mesh);
+
+    let player2 = new Player(2, 0, wallLength / 2 - 0.5, 0);
+    players.push(player2);
+    scene.add(player2.mesh);
+    updatePlayerVisualization();
+}
+
+
 
 // Function to wait until room_id changes from null
 function waitForRoomId() {
@@ -251,7 +260,8 @@ async function playOnline(maxPlayers) {
     if (socketState.isSocketReady ) {
         //sendGameMode and wait for joinRoom() from server
         console.log("Connected to server socket")
-        
+        players.forEach(player => scene.remove(player.mesh));
+        players = [];
         var cmd = "roomCreate" + maxPlayers;
         sendCmd(cmd);
         try {
@@ -261,10 +271,13 @@ async function playOnline(maxPlayers) {
         } catch {
             location.reload();
         }
+        let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+        players.push(local_player);
+        scene.add(local_player.mesh);
         hideLayer2Btns();
         // waitForGameToBeFull(maxPlayers);
         cleanScene();
-
+        // initializePlayers()
         // checkAllPlayersConnected();
         // startCountdown();
         sendSync();
@@ -433,29 +446,26 @@ export let shouldPreventDefault = true;
 
 document.addEventListener('keydown', function (e) {
     if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        keyState[e.code] = false;
-        if (shouldPreventDefault)
+        keyState[e.code] = true;
+        if (shouldPreventDefault) {
             e.preventDefault();
-    }
-    if (local_game) {
-        if (['KeyA', 'KeyD'].includes(e.code)) {
-            keyState[e.code] = true;
-                e.preventDefault();
         }
+    }
+    if (local_game && ['KeyA', 'KeyD'].includes(e.code)) {
+        keyState[e.code] = true;
+        e.preventDefault();
     }
 }, true);
 
 document.addEventListener('keyup', function (e) {
     if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = false;
-    }
-    if (local_game) {
-        if (['KeyA', 'KeyD'].includes(e.code)) {
-            keyState[e.code] = true;
-                e.preventDefault();
+        if (local_game && ['KeyA', 'KeyD'].includes(e.code)) {
+            e.preventDefault();
         }
     }
 }, true);
+
 
 export function movePlayer(delta) {
     const speed = 20;
@@ -667,6 +677,16 @@ class AIPlayer extends Player {
     }
 }
 
+// // Function to adjust the camera for the local player
+// function adjustCameraForPlayer(player) {
+//     const offsetDistance = 15;  // Distance behind the player
+//     const height = 10;  // Height of the camera above the player
+    
+//     camera.position.set(player.mesh.position.x, player.mesh.position.y - offsetDistance, height);
+//     camera.lookAt(player.mesh.position.x, player.mesh.position.y, 0);
+// }
+
+
 function animate() {
     requestAnimationFrame(animate);
     delta = clock.getDelta();
@@ -693,15 +713,18 @@ export function receiveSync(id, movementData) {
         console.log("Creating new player in receiveSync");
         if (!movementData.x) movementData.x = 0;
         if (!movementData.y) movementData.y = 0;
-        player = new Player(id, movementData.x, movementData.y, 0);
+        player = new Player(id, movementData.x, movementData.y * -1, 0);  // Inverser la position y lors de la réception
         players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
-        player.mesh.position.y = movementData.y;
+        player.mesh.position.y = movementData.y * -1;  // Inverser la position y lors de la réception
     }
     updatePlayerVisualization();
 }
+
+
+
 
 
 export function receiveConnect(id) {
@@ -724,8 +747,8 @@ export function receiveMove(id, movementData) {
 export function sendSync() {
     if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         let cmd = "sync";
-        let x = players[0].mesh.position.x * -1;
-        let y = players[0].mesh.position.y * -1;
+        let x = players[0].mesh.position.x;
+        let y = players[0].mesh.position.y * -1;  // Inverser la position y
         let roomId = getRoomId();
         const movementData = { x, y };
         console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`);
@@ -734,6 +757,9 @@ export function sendSync() {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
 }
+
+
+
 
 
 export function removePlayer(playerIdToRemove) {

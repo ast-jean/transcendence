@@ -1,5 +1,3 @@
-
-
 import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere } from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 
@@ -53,16 +51,18 @@ export function setupWebSocket() {
                 showLayer2Btns();
             }
             if (data.cmd === "joinRoom") {
-                // "cmd": "joinRoom", 
-                // "roomId": found_room.roomId,
-                // "playerIn": found_room.playerIn,
-                // "playerTotal": found_room.playerTotal,
-                // 'clientId': new_client.index,
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
                 checkAllPlayersConnected(data.playerTotal);
-                // playerNumber = data.clientId;
+            }
+            if (data.cmd === "existingPlayers") {
+                data.players.forEach(player => {
+                    if (!players.find(p => p.id === player.ident)) {
+                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0));  
+                    }
+                });
+                updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
                 receiveChat(data.ident, data.data);
@@ -78,7 +78,7 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 if (!players.find(p => p.id === data.ident)) {
-                    players.push(new Player(data.ident, 0, -wallLength / 2 + 0.5, 0));
+                    players.push(new Player(data.ident, 0, wallLength / 2 - 0.5, 0));
                 }
                 sendSync();
                 receiveConnect(data.ident);
@@ -102,7 +102,6 @@ export function receiveBallSync(ballData) {
     ballSpeedY = ballData.vy;
 }
 
-
 export function checkAllPlayersConnected(maxPlayers) {
     if (socketState.isSocketReady && players.length == maxPlayers) {
         console.log("All players connected, starting game: >" + maxPlayers + "<");
@@ -124,14 +123,3 @@ function handleSubmit(event) {
         console.log("Searching for Room #"+ roomId);
     }
 }
-
-
-// document.addEventListener("DOMContentLoaded", setupWebSocket);
-
-// document.addEventListener("DOMContentLoaded", () => {
-//     const playOnlineButton = document.getElementById('onlineplay_btn');
-//     if (playOnlineButton) {
-//         playOnlineButton.addEventListener('click', setupWebSocket);
-//     }
-// });
-
