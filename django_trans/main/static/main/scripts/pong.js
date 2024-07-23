@@ -267,7 +267,7 @@ async function playOnline(maxPlayers) {
 
         // checkAllPlayersConnected();
         // startCountdown();
-        // sendSync(); loop
+        sendSync();
 
     }
 
@@ -433,7 +433,7 @@ export let shouldPreventDefault = true;
 
 document.addEventListener('keydown', function (e) {
     if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        keyState[e.code] = true;
+        keyState[e.code] = false;
         if (shouldPreventDefault)
             e.preventDefault();
     }
@@ -478,10 +478,10 @@ export function movePlayer(delta) {
                 players[0].mesh.position.x = newX;
                 if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
                     //sendMove
-                    let cmd = "sync";
+                    let cmd = "move";
                     const movementData = { x: x1, y: 0 };
                     let roomId = getRoomId();
-                    console.log(movementData, roomId);
+                    // console.log(movementData, roomId);
                     socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
                 }
             }
@@ -495,10 +495,10 @@ export function movePlayer(delta) {
         newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
             if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                let cmd = "sync";
+                let cmd = "move";
                 const movementData = { x: x2 * -1, y: 0 };
                 let roomId = getRoomId();
-                console.log(movementData, roomId);
+                // console.log(movementData, roomId);
                 socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
             }
         }
@@ -608,17 +608,7 @@ function moveBall(delta) {
     ballSpeedY = ballSpeed.y;
 
     // Envoyer périodiquement l'état de la balle au serveur
-    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-        let cmd = "ballSync";
-        const ballData = {
-            x: sphere.position.x,
-            y: sphere.position.y,
-            vx: ballSpeedX,
-            vy: ballSpeedY
-        };
-        console.log(ballData);
-        socketState.socket.send(JSON.stringify({ cmd, ballData }));
-    }
+    sendBallState();
 }
 
 

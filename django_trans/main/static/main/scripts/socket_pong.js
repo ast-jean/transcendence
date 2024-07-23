@@ -80,7 +80,7 @@ export function setupWebSocket() {
                 if (!players.find(p => p.id === data.ident)) {
                     players.push(new Player(data.ident, 0, -wallLength / 2 + 0.5, 0));
                 }
-                // sendSync();
+                sendSync();
                 receiveConnect(data.ident);
                 checkAllPlayersConnected();
             }
