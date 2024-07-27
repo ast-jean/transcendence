@@ -256,9 +256,8 @@ function waitForRoomId() {
 async function playOnline(maxPlayers) {
     console.log("Starting online play");
 
-
-    if (socketState.isSocketReady ) {
-        //sendGameMode and wait for joinRoom() from server
+    if (socketState.isSocketReady) {
+        // Send game mode and wait for joinRoom() from server
         console.log("Connected to server socket")
         players.forEach(player => scene.remove(player.mesh));
         players = [];
@@ -266,26 +265,29 @@ async function playOnline(maxPlayers) {
         sendCmd(cmd);
         try {
             await waitForRoomId();
-
-            console.log("Connected to room: "+ getRoomId());
+            console.log("Connected to room: " + getRoomId());
         } catch {
             location.reload();
         }
+
         let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
         players.push(local_player);
         scene.add(local_player.mesh);
         hideLayer2Btns();
-        // waitForGameToBeFull(maxPlayers);
         cleanScene();
-        // initializePlayers()
-        // checkAllPlayersConnected();
-        // startCountdown();
         sendSync();
 
+        try {
+            await checkAllPlayersConnected(maxPlayers);
+        } catch (error) {
+            console.error("Error waiting for players:", error);
+            location.reload();
+        }
     }
 
     updatePlayerVisualization();
 }
+
 
 function onWindowResize() {
     camera.aspect = width / height;

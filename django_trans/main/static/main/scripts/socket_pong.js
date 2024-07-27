@@ -103,11 +103,24 @@ export function receiveBallSync(ballData) {
 }
 
 export function checkAllPlayersConnected(maxPlayers) {
-    if (socketState.isSocketReady && players.length == maxPlayers) {
-        console.log("All players connected, starting game: >" + maxPlayers + "<");
-        startCountdown();
-    }
+    return new Promise((resolve, reject) => {
+        const checkInterval = setInterval(() => {
+            if (socketState.isSocketReady && players.length === maxPlayers) {
+                clearInterval(checkInterval);
+                console.log("All players connected, starting game: >" + maxPlayers + "<");
+                startCountdown();
+                resolve();
+            }
+        }, 500); // Vérifie toutes les 500 ms
+
+        // Optionnel : Définir un délai d'attente pour rejeter la promesse si cela prend trop de temps
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            reject(new Error('Timeout waiting for all players to connect'));
+        }, 60000); // Délai d'attente de 30 secondes
+    });
 }
+
 
 document.querySelector('form').addEventListener('submit', handleSubmit);
 function handleSubmit(event) {
