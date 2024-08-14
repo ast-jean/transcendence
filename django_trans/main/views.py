@@ -8,7 +8,6 @@ from django.shortcuts import redirect, render
 from requests_oauthlib import OAuth2Session
 from django.conf import settings
 from django.db import models
-from .models import Profile, OnlineMatchResults
 from dotenv import load_dotenv
 import os
 

@@ -1,13 +1,13 @@
 all:
-	@docker compose -f ./docker-compose.yml up --build
+	@docker compose up --build
 up:
 	@docker compose up --build
 down:
-	@docker compose -f ./docker-compose.yml down
+	@docker compose -f ./docker compose.yml down
 in_db:
 	docker exec -it trans_db_1 bash
 in_django:
-	docker exec -it transcendence_django_1 bash
+	docker exec -it django bash
 out:
 	@echo "👨‍❤️‍💋‍👨"
 

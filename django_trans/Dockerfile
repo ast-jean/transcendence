@@ -8,13 +8,6 @@ ENV PYTHONUNBUFFERED=1
 # Set the working directory in the container
 WORKDIR /app
 
-# Install Node.js and npm
-RUN apt-get update && \
-    apt-get install -y nodejs npm
-
-# Update npm to the latest version
-RUN npm install npm@latest -g
-
 # Copy the requirements.txt and install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip

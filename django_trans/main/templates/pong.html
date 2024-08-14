@@ -6,9 +6,8 @@
     <h4 id="ServerStatus">Server Status : <span style="color: red;">Disconnected</span></h4>
 <button id="sendBtn">Send Message to Server</button>
 <button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
-<script src="{% static 'main/scripts/socket_pong.js' %}" type="module"></script>
-<script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
-<script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
+
+<!-- ThreeJs -->
 <script type="importmap">
     {
         "imports": {
@@ -16,7 +15,10 @@
             "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/" 
       }
     }
-	</script>
+</script>
+<script src="{% static 'main/scripts/socket_pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
 <div id="editor">
 	<div id="view" class="container">
 		<!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->

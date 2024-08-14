@@ -88,9 +88,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await client.send(json.dumps(data))
 
     async def broadcast_chat(self, data):
-        for client in self.connected_clients:
-            if client.ident != self.ident:
-                await client.send(json.dumps(data))
+        room = await self.find_room(data['roomId'])
+        if room is not None:
+            for client in room.clients:
+                if client.ident != self.ident:
+                    await client.websocket.send(json.dumps(data))
 
     async def broadcast_move(self, data):
         room = await self.find_room(data['roomId'])

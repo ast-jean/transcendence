@@ -1,28 +1,47 @@
 import { socketState } from './socket_pong.js'
-import { shouldPreventDefault } from './pong.js'
+
+export let shouldPreventDefault = true;
 
 
-//Listening the button click
-document.addEventListener('DOMContentLoaded', function() {
+export function getShouldPreventDefault(){
+    return shouldPreventDefault;
+}
+
+export function setShouldPreventDefault(boolean){
+    shouldPreventDefault = boolean;
+}
+
+
+function pageLoaded() {
+    alert("PAge loaded");
     const sendButton = document.getElementById('chat-btn');
     const chatInput = document.getElementById('chat-input');
-
-    sendButton.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keydown', function(event){
-    shouldPreventDefault = false;
+    if (sendButton !== null) {
+        sendButton.addEventListener('click', () => {
+            console.log("Button is pressed");
+            sendMessage();
+        });
+    } else {
+        alert("NO SEND BUTTON, rip");
+    }
+    chatInput.addEventListener('keydown', (event) => {
+        shouldPreventDefault = false;
         if (event.key == 'Enter') {
-            event.preventDefault();
+            console.log("Enter pressed");
+            // event.preventDefault();
             sendMessage();
         }
         else {
-            event.
             console.log("another key is pressed");
         }
-    });
+    }, true);
     chatInput.addEventListener('keyup', function(event){
         shouldPreventDefault = true;
-    });
-});
+    }, true);
+}
+
+//Listening the button click
+document.addEventListener('DOMContentLoaded', pageLoaded);
 
 //Receiving message from server
 export function receiveConnect(client_id){
