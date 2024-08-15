@@ -1,6 +1,7 @@
 from django.db import models
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import RequestException
+import os
 
 def current_path(request):
     return {'current_path': request.path}

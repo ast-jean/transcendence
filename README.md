@@ -2,8 +2,8 @@
 # TODO:
      - [ ] Make gamer join a room
      - [ ] Update chat
-
-
+     - [ ] Repair moves in local game 
+     - [ ]   
 
 
 ## Achitecture:

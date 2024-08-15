@@ -22,7 +22,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 username = '$DJANGO_SU'
 password = '$DJANGO_SUPW'
-email = 'admin@creacanvas.ca'
+email = 'admin@transcendence.ca'
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username, email, password)
 EOF

@@ -7,7 +7,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
-    container_name: db
+    container_name: trans_db
     environment:    
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -24,7 +24,7 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
     command: gunicorn django_trans.wsgi:application --bind 0.0.0.0:8000
-    container_name: django
+    container_name: trans_django
     environment:
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
       DB_NAME: ${DB_NAME}
@@ -34,6 +34,8 @@ services:
       DB_PORT: ${DB_PORT}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
+      DJANGO_SU: ${DJANGO_SU}
+      DJANGO_SUPW: ${DJANGO_SUPW}
     ports:
       - "8000:8000"
     depends_on:
