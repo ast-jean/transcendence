@@ -30,6 +30,9 @@
                 <li class="nav-item {% if current_path == '/about/' %}active{% endif %}">
                     <a class="nav-link" href="/about/">About {% if current_path == '/about/' %}<span class="sr-only">(current)</span>{% endif %}</a>
                 </li>
+                <li class="nav-item {% if current_path == '/games/' %}active{% endif %}">
+                    <a class="nav-link" href="/games/">Pong Game history {% if current_path == '/games/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                </li>
                 {% if profile.login %}
                 <li class="nav-item {% if current_path == '/profile/' %}active{% endif %}">
                     <a class="nav-link" href="/profile/">Profile {% if current_path == '/profile/' %}<span class="sr-only">(current)</span>{% endif %}</a>

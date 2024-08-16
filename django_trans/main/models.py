@@ -25,11 +25,9 @@ class CustomUser(AbstractUser):
 		self.save()
 	
 class Game(models.Model):
-	# Fields related to the Game itself
 	date = models.DateTimeField(auto_now_add=True)
-
 	def __str__(self):
-		return self.name
+		return f"Game N°{self.id} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
 
 class Player(models.Model):
 	user = models.ForeignKey("CustomUser", verbose_name=_("Player"), on_delete=models.CASCADE)
@@ -39,4 +37,4 @@ class Player(models.Model):
 	team = models.IntegerField()
 
 	def __str__(self):
-		return f"{self.user.username} in {self.game.name}"
+		return f"{self.user.username} in {self.game.id}"
