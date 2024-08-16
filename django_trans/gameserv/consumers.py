@@ -3,6 +3,8 @@ import uuid
 import json
 from typing import List, Optional
 import random
+from main.models import Game, Player
+CustomUser = get_user_model()
 
 class Client:
     def __init__(self, ident, index, websocket):
@@ -167,3 +169,34 @@ class GameConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"Error searching room: {str(e)}")
             await self.send(json.dumps({'cmd':'roomNotFound'}))
+
+
+# Exemple de donnees dans data
+# {
+#     "cmd": "endGame",
+#     "gameId": 1,
+#     "players": [
+#         {"username": "player1", "score": 10, "winner": True, "team": 1},
+#         {"username": "player2", "score": 5, "winner": False, "team": 2}
+#     ]
+# }
+    async def save_game_result(self, game_id, players_data):
+            try:
+                # Create a new game instance
+                game = Game.objects.create()
+                
+                # Iterate over the player data and create Player instances
+                for player_data in players_data:
+                    user = CustomUser.objects.get(username=player_data['username'])
+                    Player.objects.create(
+                        user=user,
+                        game=game,
+                        score=player_data['score'],
+                        winner=player_data['winner'],
+                        team=player_data['team']
+                    )
+                
+                print(f"Game {game.id} saved successfully with {len(players_data)} players.")
+            
+            except Exception as e:
+                print(f"Error saving game result: {str(e)}")
