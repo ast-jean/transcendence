@@ -34,6 +34,7 @@ services:
       DB_PORT: ${DB_PORT}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
+      SECRET_KEY: ${SECRET_KEY}
       DJANGO_SU: ${DJANGO_SU}
       DJANGO_SUPW: ${DJANGO_SUPW}
     ports:

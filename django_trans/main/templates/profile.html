@@ -12,13 +12,22 @@
 {% endif %}
 
 <h2>Match Results</h2>
-{% if match_results %}
-    <ul>
-        {% for match in match_results %}
-            <li>Game ID: {{ match.game_id }}, Winner: {{ match.winner }}, Loser: {{ match.loser }}, Score: {{ match.score }}</li>
-        {% endfor %}
-    </ul>
+{% if games %}
+<ul>
+{% for game in games %}
+    <li>
+        <strong>Game ID:</strong> {{ game.id }} <br>
+        <strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+        <strong>Players:</strong>
+        <ul>
+            {% for player in game.players.all %}
+                <li>{{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}{% if player.winner %} (Winner){% endif %}</li>
+            {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
 {% else %}
-    <p>No match results found for this user.</p>
+<p>No games available.</p>
 {% endif %}
 {% endblock %}
