@@ -2,19 +2,19 @@
 
 # Load environment variables from .env file or Docker Compose
 if [ -f .env ]; then
-    set -a
+    set -ae
     source .env
     set +a
 fi
 
 
 # Run collectstatic
-python manage.py collectstatic --noinput
 python manage.py makemigrations
 python manage.py migrate
+python manage.py collectstatic --noinput
 
 
-
+export DJANGO_SETTINGS_MODULE=django_trans.settings
 
 # Create superuser if it doesn't exist
 python manage.py shell <<EOF
