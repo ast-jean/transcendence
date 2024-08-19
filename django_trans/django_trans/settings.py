@@ -114,6 +114,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+AUTH_USER_MODEL = 'main.CustomUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -159,5 +160,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'main.CustomUser'
+
 
