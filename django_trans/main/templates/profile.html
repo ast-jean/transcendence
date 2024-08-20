@@ -9,21 +9,6 @@
     <p>Email: {{ profile.email }}</p>
 {% else %}
     <p>No profile data available.</p>
-<<<<<<< HEAD
-
-	<div class="our-team">
-        <div class="picture">
-			<img src="{{ profile.image.versions.small }}" alt="{{ profile.login }}">
-        </div>
-        <div class="team-content">
-          <h3 class="name">Justin Ramos</h3>
-          <h4 class="title">Web Developer</h4>
-        </div>
-      </div>
-
-
-	{% endif %}
-=======
 {% endif %}
 
 <h2>Match Results</h2>
@@ -45,5 +30,4 @@
 {% else %}
 <p>No games available.</p>
 {% endif %}
->>>>>>> main
 {% endblock %}
