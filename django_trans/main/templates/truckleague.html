@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}Transcendence | Truck League{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'main/styles/truck_style.css' %}" type="text/css">
 <script type="importmap">
     {
         "imports": {
@@ -12,10 +11,18 @@
         }
     }
     </script>
+
+
+
+
+
+
     <div id="editor">
         <div id="view" class="container">
             <script src="{% static 'main/scripts/socket_truck.js' %}" type="module"></script>
             <script src="{% static 'main/scripts/truck.js' %}" type="module"></script>
+            <!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+            <!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
 
             <div class="loader">
                 <div class="loader-inner">
@@ -36,6 +43,7 @@
                   </div>
                 </div>
             </div>
+<<<<<<< HEAD
 			<div id="truckGameCont" class="three-js-canvas d-flex justify-content-center align-items-center">
 				<div class="flex-container hud-truck menu" style="background-color: aquamarine;">
 					<div class="hud-btn menu t-buttons" id="create-room-2">
@@ -43,6 +51,15 @@
 						<small>1 vs 1</small>
 					</div>
 					<!-- <div class="hud-btn menu t-buttons" id="create-room-4">
+=======
+			<div id="truckGameCont">
+				<div class="flex-container hud">
+					<div class="hud-btn" id="create-room-2">
+						<b>Create Room</b><br>
+						<small>1 vs 1</small>
+					</div>
+					<div class="hud-btn" id="create-room-4">
+>>>>>>> main
 						<b>Create Room</b><br>
 						<small>2 vs 2</small>
 					</div> -->
@@ -61,8 +78,28 @@
 					<div id="roomIdDiv">
 						<p id="roomId" class="text-white bg-dark">Room: </p>
 					</div>
+<<<<<<< HEAD
 					<div class="">
 						<p id="ping" class="text-white"></p>
+=======
+					<div id="truckScoreboard" class="col align-items-center">
+						<div id="scoreboard">
+							<div>
+								<div id="truckTeam1Score">Player 1:</div>
+								<div id="player1Score"></div>
+							</div>
+							<div>
+								<div id="truckTeam2Score">Player 2:</div>
+								<div id="player2Score"></div>
+							</div>
+						</div>
+						<!-- <p id="truckScoreMsg">Score</p>
+						<p id="truckTeam1Score">0</p>
+						<p id="truckTeam2Score">0</p> -->
+					</div>
+					<div class="midMsg">
+						<p class="playercount text-white">Waiting for player: </p>
+>>>>>>> main
 					</div>
 				</div>
 				
@@ -88,9 +125,15 @@
 					</div>
 				</div> <!-- ------------------------------------------------------------------------ -->
 			</div>
+<<<<<<< HEAD
 		</div>
     </div>       
 </div>
+=======
+    	</div>       
+	</div>
+
+>>>>>>> main
 {% endblock %}
 
 

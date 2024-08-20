@@ -9,6 +9,7 @@
     <p>Email: {{ profile.email }}</p>
 {% else %}
     <p>No profile data available.</p>
+<<<<<<< HEAD
 
 	<div class="our-team">
         <div class="picture">
@@ -22,4 +23,27 @@
 
 
 	{% endif %}
+=======
+{% endif %}
+
+<h2>Match Results</h2>
+{% if games %}
+<ul>
+{% for game in games %}
+    <li>
+        <strong>Game ID:</strong> {{ game.id }} <br>
+        <strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+        <strong>Players:</strong>
+        <ul>
+            {% for player in game.players.all %}
+                <li>{{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}{% if player.winner %} (Winner){% endif %}</li>
+            {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No games available.</p>
+{% endif %}
+>>>>>>> main
 {% endblock %}

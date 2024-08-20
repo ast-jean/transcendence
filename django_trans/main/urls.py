@@ -12,6 +12,7 @@ urlpatterns = [
     path('callback/', views.callback, name='callback'),
     path('profile/', views.profile, name='profile'),
     path('logout/', views.logout_view, name='logout'),
+    path('games/', views.games_view, name='games'),
 ]
 
 # The static() function is only used during development, and it's typically conditioned on DEBUG being True

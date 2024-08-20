@@ -1,12 +1,22 @@
 import * as THREE from 'three';
-import { socket, setupWebSocket, isSocketReady, checkAllPlayersConnected } from './socket_pong.js';
+import { socketState, setupWebSocket, checkAllPlayersConnected } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { getShouldPreventDefault } from './chat.js'
+
+/* Btns layer 1     Btns layer 2
+
+    [ ONLINE ]  --->   [ New 1v1 ]
+    [  LOCAL ]         [ New 2v2 ]
+    [   AI   ]         [ Search  ]
+
+*/
 
 var clock = new THREE.Clock();
 let ballSpeedX = 0;
 let ballSpeedY = 0;
+let local_game = true;
 let useAIForPlayer2 = false;
-let isGameOver = false;
+let isGameOver = true;
 
 console.log("loading pong.js file.");
 
@@ -25,10 +35,13 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
 
-function hideChat() {
+function hideChat(boolean) {
     const chat = document.getElementById('chat-container');
-    if (chat) {
+    if (chat && boolean === true) {
         chat.style.display = 'none';
+    }
+    if (chat && boolean === false) {
+        chat.style.display = 'block';
     }
 }
 
@@ -36,39 +49,57 @@ const localPlayButton = document.getElementById('localplay_btn');
 const versusAIButton = document.getElementById('versusai_btn');
 const playOnlineButton = document.getElementById('onlineplay_btn');
 
+
+export function showLayer2Btns() {
+    var layer2Btns = document.getElementById('layer2Btns');
+    layer2Btns.classList.add('active');
+    layer2Btns.classList.remove('hidden');
+}
+
+export function hideLayer2Btns() {
+    var layer2Btns = document.getElementById('layer2Btns');
+    layer2Btns.classList.remove('active');
+    layer2Btns.classList.add('hidden');
+}
+
 if (localPlayButton) {
     localPlayButton.addEventListener('click', () => {
-        hideChat();
+        hideChat(true);
+        hideAllButtons();
         localPlay();
     });
 }
 
 if (versusAIButton) {
     versusAIButton.addEventListener('click', () => {
-        hideChat();
+        hideChat(true);
+        // hideAllButtons();
+        local_game = false;
         playAI();
     });
 }
 
 if (playOnlineButton) {
     playOnlineButton.addEventListener('click', async () => {
-        hideChat();
-        try {
-            await setupWebSocket();
-            playOnline();
-        } catch (err) {
+        local_game = false;
+        showLayer2Btns();
+        setupWebSocket().then(() => {
+            OneVsOne = document.getElementById("OneVsOne");
+            TwoVsTwo = document.getElementById("TwoVsTwo");
+            OneVsOne.addEventListener('click', playOnline(2));
+            TwoVsTwo.addEventListener('click', playOnline(4));
+            // playOnline();
+        }) .catch(err => {
             console.error("Failed to establish WebSocket connection:", err);
-        }
+        })
     });
 }
 
 function hideAllButtons() {
-    const buttons = document.querySelectorAll('.game-button');
-    buttons.forEach(button => {
-        if (!button.classList.contains('randomize-colors-btn')) {
-            button.classList.add('hidden');
-        }
-    });
+    let play_btns = document.getElementById('play_btns');
+    if (play_btns) {
+        play_btns.style.display = "none";
+    }
 }
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
@@ -97,6 +128,8 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
+            console.log("ball start");
+            isGameOver = false;
             ballSpeedX = 10;
             ballSpeedY = 10;
         } else {
@@ -176,31 +209,46 @@ function playAI() {
     startCountdown();
 }
 
-function playOnline() {
-    console.log("Starting online play");
 
+function cleanScene(){
+    hideLayer2Btns();
     players.forEach(player => scene.remove(player.mesh));
     players = [];
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
+}
 
-    // let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
-    // players.push(player1);
-    // scene.add(player1.mesh);
+// Function to wait until the game is full
+function waitForGameToBeFull() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (isGameFull()) {
+                clearInterval(checkInterval);
+                resolve();
+            }
+        }, 500); // Check every half second
+    });
+}
 
-    
-    if (isSocketReady) {
+function playOnline(maxPlayers) {
+    console.log("Starting online play");
+    cleanScene();
+    let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    players.push(local_player);
+    scene.add(local_player.mesh);
+
+    var room;
+
+
+    if (socketState.isSocketReady) {
         sendSync();
-        checkAllPlayersConnected();
-    } else {
-        setupWebSocket().then(() => {
-            sendSync();
-            checkAllPlayersConnected();
-        }).catch(err => {
-            console.error("Failed to establish WebSocket connection:", err);
-        });
+        waitForGameToBeFull(maxPlayers, player);
+        // checkAllPlayersConnected();
+        // startCountdown();
+
     }
+
     updatePlayerVisualization();
 }
 
@@ -209,6 +257,7 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
 }
+
 let colors = [
     0x00ff00, 0x0000ff, 0xff0000, 0xffff00,
     0x00ffff, 0xff00ff, 0xffa500, 0x800080,
@@ -308,6 +357,7 @@ function endGame() {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
         showAllButtons();
+        hideLayer2Btns();
         resetGame();
         controls.enabled = false;
     });
@@ -318,7 +368,7 @@ function resetGame() {
     player2Score = 0;
     ballSpeedX = 0;
     ballSpeedY = 0;
-    isGameOver = false;
+    isGameOver = true;
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
         player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
@@ -350,7 +400,7 @@ scene.add(ballLight);
 
 const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
 const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+export const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphere.position.set(0, 0, 0);
 scene.add(sphere);
 
@@ -359,18 +409,32 @@ export var delta;
 var keyState = {};
 
 document.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
         keyState[e.code] = true;
-        e.preventDefault();
+        if (getShouldPreventDefault === true)
+            e.preventDefault();
+    }
+    if (local_game) {
+        if (['KeyA', 'KeyD'].includes(e.code)) {
+            keyState[e.code] = true;
+            if (getShouldPreventDefault === true)
+                e.preventDefault();
+        }
     }
 }, true);
 
 document.addEventListener('keyup', function (e) {
     if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = false;
-        e.preventDefault();
+    }
+    if (local_game) {
+        if (['KeyA', 'KeyD'].includes(e.code)) {
+            keyState[e.code] = true;
+                e.preventDefault();
+        }
     }
 }, true);
+
 
 export function movePlayer(delta) {
     const speed = 20;
@@ -379,41 +443,69 @@ export function movePlayer(delta) {
 
     if (keyState['ArrowLeft']) x1 -= speed * delta;
     if (keyState['ArrowRight']) x1 += speed * delta;
-    if (keyState['KeyA']) x2 -= speed * delta;
-    if (keyState['KeyD']) x2 += speed * delta;
+
+    if (local_game){
+        if (keyState['KeyA']) x2 -= speed * delta;
+        if (keyState['KeyD']) x2 += speed * delta;
+    }
 
     if (x1 !== 0) {
         let newX = players[0].mesh.position.x + x1;
         if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
             newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[0].mesh.position.x = newX;
+            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                let cmd = "move";
+                const movementData = { x: x1, y: 0 };
+                console.log(movementData);
+                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+            }
         }
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            console.log("Send move to Server");
-            let cmd = "move";
-            const movementData = { x: x1, y: 0 };
-            socket.send(JSON.stringify({ cmd, movementData }));
-        }
+        console.log("For X1");
+        if (socketState.socket)
+            console.log(socketState.socket);
     }
-
+    
     if (x2 !== 0) {
         let newX = players[1].mesh.position.x + x2;
         if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-            newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+        newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
             players[1].mesh.position.x = newX;
+            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                let cmd = "move";
+                const movementData = { x: x2 * -1, y: 0 };
+                console.log(movementData);
+                socketState.socket.send(JSON.stringify({ cmd, movementData }));
+            }
         }
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            let cmd = "move";
-            const movementData = { x: x2, y: 0 };
-            socket.send(JSON.stringify({ cmd, movementData }));
+        console.log("For X2");
+        if (socketState.socket) {
+            console.log(socketState.socket);
+        } else {
+            console.error("Socket is undefined in movePlayer (X2)");
         }
     }
 
     updatePlayerVisualization();
 }
 
+
+// Fonction pour envoyer périodiquement l'état de la balle au serveur
+function sendBallState() {
+    if (socketState.socket && socketState.isSocketReady) {
+        let cmd = "ballSync";
+        const ballData = {
+            x: sphere.position.x,
+            y: sphere.position.y,
+            vx: ballSpeedX,
+            vy: ballSpeedY
+        };
+        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+    }
+}
+
 function moveBall(delta) {
-    if (isGameOver) return;
+    if (isGameOver) return ;
 
     let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
@@ -489,7 +581,22 @@ function moveBall(delta) {
 
     ballSpeedX = ballSpeed.x;
     ballSpeedY = ballSpeed.y;
+
+    // Envoyer périodiquement l'état de la balle au serveur
+    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        let cmd = "ballSync";
+        const ballData = {
+            x: sphere.position.x,
+            y: sphere.position.y,
+            vx: ballSpeedX,
+            vy: ballSpeedY
+        };
+        console.log(ballData);
+        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+    }
 }
+
+
 
 class AIPlayer extends Player {
     constructor(id, x, y, z) {
@@ -569,10 +676,10 @@ export function receiveSync(id, movementData) {
     let player = players.find(p => p.id === id);
     if (!player) {
         console.log("Creating new player in receiveSync");
-        // if (!movementData.x) movementData.x = 0;
-        // if (!movementData.y) movementData.y = 0;
-        // player = new Player(id, movementData.x, movementData.y, 0);
-        // players.push(player);
+        if (!movementData.x) movementData.x = 0;
+        if (!movementData.y) movementData.y = 0;
+        player = new Player(id, movementData.x, movementData.y, 0);
+        players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
@@ -600,17 +707,18 @@ export function receiveMove(id, movementData) {
 }
 
 export function sendSync() {
-    if (players.length > 0 && players[0].mesh && socket && socket.readyState === WebSocket.OPEN) {
+    if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         let cmd = "sync";
-        let x = players[0].mesh.position.x;
-        let y = players[0].mesh.position.y;
+        let x = players[0].mesh.position.x * -1;
+        let y = players[0].mesh.position.y * -1;
         const movementData = { x, y };
         console.log(`Sending sync: ${JSON.stringify({ cmd, movementData })}`);
-        socket.send(JSON.stringify({ cmd, movementData }));
+        socketState.socket.send(JSON.stringify({ cmd, movementData }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
 }
+
 
 
 export function removePlayer(playerIdToRemove) {

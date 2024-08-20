@@ -7,7 +7,9 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from requests_oauthlib import OAuth2Session
 from django.conf import settings
+from django.db import models
 from dotenv import load_dotenv
+from .models import CustomUser, Game
 import os
 
 load_dotenv()
@@ -70,6 +72,18 @@ def callback(request):
     oauth = OAuth2Session(CLIENT_ID, state=request.session['oauth_state'], redirect_uri=redirect_uri)
     token = oauth.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.build_absolute_uri())
     request.session['oauth_token'] = token
+    response = oauth.get('https://api.intra.42.fr/v2/me')
+    profile_data = response.json()
+    user, created = CustomUser.objects.get_or_create(
+        username=profile_data['login'],
+        defaults={
+            'profile_data': profile_data,
+        }
+    )
+    if not created:
+        user.update_profile_data(profile_data)
+    login(request, user)
+
     return redirect('home')
 
 def logout_view(request):
@@ -77,13 +91,16 @@ def logout_view(request):
     request.session.flush() 
     return redirect('home')
 
+
+def games_view(request):
+    games = Game.objects.all()  # Fetch all games and related players
+    context = {
+        'games': games,
+    }
+    return render(request, 'games.html', context)
+
+
 def profile(request):
-    token = request.session.get('oauth_token')
-    # if not token:
-    #     return redirect('oauth_login')
-    oauth = OAuth2Session(CLIENT_ID, token=token)
-    response = oauth.get('https://api.intra.42.fr/v2/me')
-    profile_data = response.json()
-    if not profile_data:
-        return redirect('home')
-    return render(request, 'profile.html', {'profile': profile_data})
+    user = request.user
+    games = Game.objects.filter(players__user=user).distinct()
+    return render(request, 'profile.html', {'user' : user , 'profile' : user.profile_data, 'games' : games})

@@ -64,7 +64,7 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		self.connected_clients.remove(self)
-		await self.broadcast_connect({"ident": "user_%s" % self.ident,'cmd' : "disconnect"})
+		await self.broadcast_disconnect({"ident": "user_%s" % self.ident,'cmd' : "disconnect"})
 		print(f"Client {self.ident} has disconnected with code {close_code}.")
 
 	async def receive(self, text_data):
@@ -86,7 +86,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 				await self.createRoom(2)
 			if text_data_json["cmd"] == "roomCreate4":
 				await self.createRoom(4)
-
 	
 	async def createRoom(self, playerTotal):
 		print(f"Creating new room of {playerTotal}")
