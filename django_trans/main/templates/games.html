@@ -9,17 +9,21 @@
     <ul>
     {% for game in games %}
         <li>
-            <strong>Game ID:</strong> {{ game.id }} <br>
-            <strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
-            <strong>Players:</strong>
-            <ul>
-                {% for player in game.players.all %}
+			<div class="card col-md-6" >
+				<div class="card-body">
+					<strong>Game ID:</strong> {{ game.id }} <br>
+            		<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+            		<strong>Players:</strong>
+            		<ul>
+                		{% for player in game.players.all %}
                     <li>
                         {{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}
                         {% if player.winner %}(Winner){% endif %}
                     </li>
-                {% endfor %}
-            </ul>
+                		{% endfor %}
+            		</ul>
+				</div>
+			</div>
         </li>
     {% endfor %}
     </ul>
