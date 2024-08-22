@@ -24,6 +24,10 @@ class CustomUser(AbstractUser):
 		self.is_online = False
 		self.save()
 	
+	def games_won_count(self):
+		"""Returns the count of games won by the user."""
+		return self.player_set.filter(winner=True).count()
+ 
 class Game(models.Model):
 	date = models.DateTimeField(auto_now_add=True)
 	def __str__(self):
