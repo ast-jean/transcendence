@@ -409,16 +409,10 @@ export var delta;
 var keyState = {};
 
 document.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = true;
-        if (getShouldPreventDefault === true)
+        if (getShouldPreventDefault === true) {
             e.preventDefault();
-    }
-    if (local_game) {
-        if (['KeyA', 'KeyD'].includes(e.code)) {
-            keyState[e.code] = true;
-            if (getShouldPreventDefault === true)
-                e.preventDefault();
         }
     }
 }, true);
@@ -426,14 +420,12 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('keyup', function (e) {
     if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = false;
-    }
-    if (local_game) {
-        if (['KeyA', 'KeyD'].includes(e.code)) {
-            keyState[e.code] = true;
-                e.preventDefault();
+        if (getShouldPreventDefault === true) {
+            e.preventDefault();
         }
     }
 }, true);
+
 
 
 export function movePlayer(delta) {
