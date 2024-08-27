@@ -102,6 +102,11 @@ export function receiveBallSync(ballData) {
     ballSpeedY = ballData.vy;
 }
 
+
+
+
+
+
 export function checkAllPlayersConnected(maxPlayers) {
     return new Promise((resolve, reject) => {
         const checkInterval = setInterval(() => {
