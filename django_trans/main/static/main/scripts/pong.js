@@ -325,38 +325,34 @@ export function updatePlayerVisualization() {
     });
 }
 
-let player1Score = 0;
-let player2Score = 0;
-const maxScore = 5;
 
-const player1ScoreElement = document.getElementById('player1Score');
-const player2ScoreElement = document.getElementById('player2Score');
 
 function updateScore(player) {
-    if (player === 1) {
-        player1Score++;
-    } else if (player === 2) {
-        player2Score++;
+    let team = player === 1 ? "team1" : "team2";
+    
+    if (socketState.socket && socketState.isSocketReady) {
+        let cmd = "score";
+        let roomId = getRoomId();
+        socketState.socket.send(JSON.stringify({ cmd, team, roomId }));
     }
-    updateScoreDisplay();
-    checkEndGame();
 }
 
-function updateScoreDisplay() {
-    player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-    player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
-}
 
-function getScoreHTML(score, symbol, maxScore) {
-    let scoreHTML = '';
-    for (let i = 0; i < score; i++) {
-        scoreHTML += symbol;
-    }
-    for (let i = score; i < maxScore; i++) {
-        scoreHTML += '⚪';
-    }
-    return scoreHTML;
-}
+// function updateScoreDisplay() {
+//     player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
+//     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+// }
+
+// function getScoreHTML(score, symbol, maxScore) {
+//     let scoreHTML = '';
+//     for (let i = 0; i < score; i++) {
+//         scoreHTML += symbol;
+//     }
+//     for (let i = score; i < maxScore; i++) {
+//         scoreHTML += '⚪';
+//     }
+//     return scoreHTML;
+// }
 
 function checkEndGame() {
     if (player1Score >= maxScore || player2Score >= maxScore) {
@@ -833,4 +829,4 @@ function resizeRendererToDisplaySize(renderer) {
 
 
 animate();
-updateScoreDisplay();
+// updateScoreDisplay();

@@ -20,6 +20,13 @@ class Room:
         self.scoreTeam1 = 0
         self.scoreTeam2 = 0
 
+    def update_score(self, team):
+        if team == "team1":
+            self.scoreTeam1 += 1
+        elif team == "team2":
+            self.scoreTeam2 += 1
+        return {"scoreTeam1": self.scoreTeam1, "scoreTeam2": self.scoreTeam2}
+
     def generate_room_id(self, existing_room_ids):
         lower_bound = 1000
         upper_bound = 9999
@@ -59,28 +66,47 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.broadcast_disconnect({"ident": "user_%s" % self.ident, 'cmd' : "disconnect"})
         print(f"Client {self.ident} has disconnected.")
 
+
     async def receive(self, text_data):
         if len(text_data) > 0:
             text_data_json = json.loads(text_data)
-            text_data_json.update({"ident": "user_%s" % self.ident}) # adds the player id
-            if text_data_json["cmd"] == "chat":
+            text_data_json.update({"ident": "user_%s" % self.ident})
+
+            cmd = text_data_json.get("cmd")
+
+            if cmd == "chat":
                 await self.broadcast_chat(text_data_json)
-            if text_data_json["cmd"] == "move":
+            elif cmd == "move":
                 await self.broadcast_move(text_data_json)
-            if text_data_json["cmd"] == "connect":
+            elif cmd == "connect":
                 await self.broadcast_connect(text_data_json)
-            if text_data_json["cmd"] == "disconnect":
+            elif cmd == "disconnect":
                 await self.broadcast_disconnect(text_data_json)
-            if text_data_json["cmd"] == "sync":
+            elif cmd == "sync":
                 await self.broadcast_move(text_data_json)
-            if text_data_json["cmd"] == "ballSync":
+            elif cmd == "ballSync":
                 await self.broadcast_ball_sync(text_data_json)
-            if text_data_json["cmd"] == "roomSearch":
+            elif cmd == "roomSearch":
                 await self.searchRoom(text_data_json)
-            if text_data_json["cmd"] == "roomCreate2":
+            elif cmd == "roomCreate2":
                 await self.createRoom(2)
-            if text_data_json["cmd"] == "roomCreate4":
+            elif cmd == "roomCreate4":
                 await self.createRoom(4)
+            elif cmd == "score":
+                room = await self.find_room(text_data_json["roomId"])
+                if room:
+                    score_data = room.update_score(text_data_json["team"])
+                    await self.broadcast_score_update(room, score_data)
+
+
+    async def broadcast_score_update(self, room, score_data):
+        data = {
+            "cmd": "scoreUpdate",
+            "scoreTeam1": score_data["scoreTeam1"],
+            "scoreTeam2": score_data["scoreTeam2"]
+        }
+        for client in room.clients:
+            await client.websocket.send(json.dumps(data))
 
     async def broadcast_ball_sync(self, data):
         for client in self.connected_clients:

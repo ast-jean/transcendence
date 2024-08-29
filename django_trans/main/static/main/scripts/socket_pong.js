@@ -88,6 +88,11 @@ export function setupWebSocket() {
                 removePlayer(data.ident);
                 receiveDisconnect(data.ident);
             }
+            if (data.cmd === "scoreUpdate") {
+                player1Score = data.scoreTeam1;
+                player2Score = data.scoreTeam2;
+                updateScoreDisplay();
+            }
         };
     });
 }
@@ -102,8 +107,28 @@ export function receiveBallSync(ballData) {
     ballSpeedY = ballData.vy;
 }
 
+let player1Score = 0;
+let player2Score = 0;
+const maxScore = 5;
 
+const player1ScoreElement = document.getElementById('player1Score');
+const player2ScoreElement = document.getElementById('player2Score');
 
+function updateScoreDisplay() {
+    player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
+    player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+}
+
+function getScoreHTML(score, symbol, maxScore) {
+    let scoreHTML = '';
+    for (let i = 0; i < score; i++) {
+        scoreHTML += symbol;
+    }
+    for (let i = score; i < maxScore; i++) {
+        scoreHTML += '⚪';
+    }
+    return scoreHTML;
+}
 
 
 
