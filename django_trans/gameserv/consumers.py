@@ -19,6 +19,9 @@ class Room:
         self.playerTotal = player_total,
         self.scoreTeam1 = 0
         self.scoreTeam2 = 0
+        self.host_ident = None  # Identifiant de l'hôte
+
+
 
     def update_score(self, team):
         if team == "team1":
@@ -40,6 +43,9 @@ class Room:
         if self.playerIn < self.playerTotal[0]:
             self.clients.append(client)
             self.playerIn += 1
+            if self.playerIn == 1:
+                # Le premier joueur est l'hôte
+                self.host_ident = client.ident
             return client
         else:
             return None
@@ -94,9 +100,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.createRoom(4)
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
-                if room:
+                if self.ident == room.host_ident:
                     score_data = room.update_score(text_data_json["team"])
                     await self.broadcast_score_update(room, score_data)
+                else:
+                    print(f"Client {self.ident} is not the host and cannot update the score.")
 
 
     async def broadcast_score_update(self, room, score_data):
@@ -107,6 +115,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         }
         for client in room.clients:
             await client.websocket.send(json.dumps(data))
+
 
     async def broadcast_ball_sync(self, data):
         for client in self.connected_clients:
