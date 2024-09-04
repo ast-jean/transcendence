@@ -11,8 +11,15 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 */
 
 var clock = new THREE.Clock();
-let ballSpeedX = 0;
-let ballSpeedY = 0;
+const INITIAL_BALL_SPEED_X = 5;
+const INITIAL_BALL_SPEED_Y = 5;
+
+
+
+
+
+export let ballSpeedX = 0;
+export let ballSpeedY = 0;
 let local_game = true;
 let useAIForPlayer2 = false;
 let isGameOver = true;
@@ -33,6 +40,22 @@ container.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 
 export let players = [];
+
+export function setBallSpeedX(value) {
+    ballSpeedX = value;
+}
+
+export function setBallSpeedY(value) {
+    ballSpeedY = value;
+}
+
+export function getBallSpeedX() {
+    return ballSpeedX;
+}
+
+export function getBallSpeedY() {
+    return ballSpeedY;
+}
 
 function hideChat(boolean) {
     const chat = document.getElementById('chat-container');
@@ -127,8 +150,8 @@ export function startCountdown() {
             document.body.removeChild(countdownContainer);
             // console.log("ball start");
             isGameOver = false;
-            ballSpeedX = 10;
-            ballSpeedY = 10;
+            ballSpeedX = INITIAL_BALL_SPEED_X;
+            ballSpeedY = INITIAL_BALL_SPEED_Y;
         } else {
             countdownContainer.textContent = countdown;
         }
@@ -539,10 +562,14 @@ function sendBallState() {
     }
 }
 // Envoyer l'état de la balle toutes les 100ms pour réduire la surcharge réseau
-setInterval(sendBallState, 100);
+setInterval(sendBallState, 200); // Réduire la fréquence à toutes les 200 ms
+
 
 function moveBall(delta) {
     if (isGameOver) return ;
+
+    sphere.position.x += ballSpeedX * delta;
+    sphere.position.y += ballSpeedY * delta;
 
     let ballPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let ballSpeed = new THREE.Vector2(ballSpeedX, ballSpeedY);
@@ -587,7 +614,7 @@ function moveBall(delta) {
         sphere.position.set(newPosition.x, newPosition.y);
     } else {
         sphere.position.set(0, 0, 0);
-        ballSpeed.set(5 * (Math.random() > 0.5 ? 1 : -1), 5 * (Math.random() > 0.5 ? 1 : -1));
+        ballSpeed.set(INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y);
         ballSpeedX = ballSpeed.x;
         ballSpeedY = ballSpeed.y;
     }
@@ -599,20 +626,21 @@ function moveBall(delta) {
 
         if (playerBox.intersectsBox(sphereBox)) {
             let relativeIntersectY = (newPosition.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
-            let bounceAngle = relativeIntersectY * (Math.PI / 8);
+            let bounceAngle = relativeIntersectY * (Math.PI / 4); // Ajuste cet angle pour limiter les courbes
+        
             let speed = ballSpeed.length();
             if (newPosition.x > player.mesh.position.x) {
                 ballSpeed.set(Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             } else {
                 ballSpeed.set(-Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             }
-
+        
+            // Éviter les rebonds trop faibles
             if (Math.abs(ballSpeed.x) < speed * 0.5) {
                 ballSpeed.x = Math.sign(ballSpeed.x) * speed * 0.5;
             }
-
+        
             ballSpeed.normalize().multiplyScalar(speed);
-            // ballSpeed.multiplyScalar(speedIncreaseFactor);
         }
     });
 
@@ -709,7 +737,7 @@ function animate() {
 
 
 export function receiveSync(id, movementData) {
-    console.log(`receiveSync called with id: ${id}, movementData: ${JSON.stringify(movementData)}`);
+    // console.log(`receiveSync called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
     let player = players.find(p => p.id === id);
     if (!player) {
         console.log("Creating new player in receiveSync");
@@ -735,7 +763,7 @@ export function receiveConnect(id) {
 }
 
 export function receiveMove(id, movementData) {
-    console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`);
+    // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
     const player = players.find(p => p.id === id);
     if (player) {
         if (movementData.x) player.mesh.position.x += movementData.x;
@@ -753,7 +781,7 @@ export function sendSync() {
         let y = players[0].mesh.position.y * -1;  // Inverser la position y
         let roomId = getRoomId();
         const movementData = { x, y };
-        console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`);
+        // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
         socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");

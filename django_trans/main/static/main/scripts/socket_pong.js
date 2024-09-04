@@ -1,5 +1,7 @@
-import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere } from './pong.js';
+import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere, setBallSpeedX, setBallSpeedY} from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
+import * as THREE from 'three';
+
 
 export var room_id;
 
@@ -43,7 +45,6 @@ export function setupWebSocket() {
         
         socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
-            console.log(`Message received: ${event.data}`);
     
             if (data.cmd === "roomNotFound") {
                 console.log("In roomNotFound");
@@ -101,11 +102,23 @@ export function sendCmd(cmd, roomId) {
     socketState.socket.send(JSON.stringify({cmd, roomId}))
 }
 
+
 export function receiveBallSync(ballData) {
-    sphere.position.set(ballData.x, ballData.y, 0);
-    ballSpeedX = ballData.vx;
-    ballSpeedY = ballData.vy;
+
+    let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
+    let serverPos = new THREE.Vector2(ballData.x, ballData.y);
+    
+    let smoothingFactor = 0.5;
+    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
+    
+    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
+    
+    
+    // Synchroniser les vitesses de la balle également
+    setBallSpeedX(ballData.vx)
+    setBallSpeedY(ballData.vy)
 }
+
 
 let player1Score = 0;
 let player2Score = 0;
