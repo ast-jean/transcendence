@@ -570,11 +570,13 @@ body {
     margin-right: 5px;
 }
 
-.card
+.matchcard-body
 {
-	/* padding-top: 10px;
-	padding-bottom: 10px; */
-	background-color: #3b3b3b;
 	margin-top: 10px;
 	margin-bottom: 10px;
+}
+
+.profilecard-text
+{
+	margin-left: 25px;
 }

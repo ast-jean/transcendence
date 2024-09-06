@@ -7,10 +7,10 @@
 
 {% if games %}
     <ul>
-    {% for game in games %}
+	{% for game in games %}
         <li>
 			<div class="card col-md-6" >
-				<div class="card-body">
+				<div class="matchcard-body">
 					<strong>Game ID:</strong> {{ game.id }} <br>
             		<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
             		<strong>Players:</strong>
