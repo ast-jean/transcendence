@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './socket_pong.js';
+import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId, room_id } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /* Btns layer 1     Btns layer 2
@@ -67,10 +67,121 @@ function hideChat(boolean) {
     }
 }
 
+
 const localPlayButton = document.getElementById('localplay_btn');
 const versusAIButton = document.getElementById('versusai_btn');
 const playOnlineButton = document.getElementById('onlineplay_btn');
+const tournamentButton = document.getElementById('tournament_btn');
+const startTournamentButton = document.getElementById('startTournament');
+const joinTournamentButton = document.getElementById('joinTournament');
 
+if (tournamentButton) {
+    tournamentButton.addEventListener('click', () => {
+        hideAllButtons();
+        showTournamentOptions();
+    });
+}
+
+export function showTournamentOptions() {
+    const tournamentOptions = document.getElementById('tournamentOptions');
+    tournamentOptions.classList.add('active');
+    tournamentOptions.classList.remove('hidden');
+}
+
+export function hideTournamentOptions() {
+    const tournamentOptions = document.getElementById('tournamentOptions');
+    tournamentOptions.classList.remove('active');
+    tournamentOptions.classList.add('hidden');
+}
+
+
+if (startTournamentButton) {
+    startTournamentButton.addEventListener('click', async () => {
+        console.log("Starting tournament lobby");
+
+        hideTournamentOptions();
+
+        hideAllButtons();
+        showLobbyPlayers();
+
+        setupWebSocket().then(() => {
+            console.log("WebSocket ready, sending tournamentLobby command.");
+            sendCmd("tournamentLobby");
+        }).catch(err => {
+            console.error("WebSocket connection failed:", err);
+        });
+    });
+}
+
+if (joinTournamentButton) {
+    joinTournamentButton.addEventListener('click', async () => {
+        console.log("Joining an existing tournament");
+
+        hideTournamentOptions();
+
+        hideAllButtons();
+        showRoomSearch(); 
+    });
+}
+
+function showRoomSearch() {
+    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
+    if (roomSearchDiv) {
+        roomSearchDiv.classList.remove('hidden');
+    }
+}
+
+function hideRoomSearch() {
+    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
+    if (roomSearchDiv) {
+        roomSearchDiv.classList.add('hidden');
+    }
+}
+
+const roomSearchForm = document.getElementById('roomSearchForm');
+if (roomSearchForm) {
+    roomSearchForm.addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        const roomIdInput = document.getElementById('roomIdInput');
+        const roomId = roomIdInput.value.trim();
+
+        if (roomId) {
+            hideRoomSearch();
+
+            setupWebSocket().then(() => {
+                sendCmd("roomSearch", roomId);
+            }).catch(err => {
+                console.error("WebSocket connection failed:", err);
+            });
+        } else {
+            alert("Please enter a valid Room ID.");
+        }
+    });
+}
+
+
+function onPlayerJoinedRoom(roomId, playerCount, maxPlayers) {
+    updateTournamentInfo(roomId, playerCount, maxPlayers);
+}
+
+export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
+    const tournamentRoomElement = document.getElementById('tournamentRoom');
+    const connectedPlayersElement = document.getElementById('connectedPlayers');
+
+    if (tournamentRoomElement && connectedPlayersElement) {
+        tournamentRoomElement.innerHTML = `Tournament Room: ${roomId}`;
+        connectedPlayersElement.innerHTML = `Players Connected: ${playerCount}/${maxPlayers}`;
+    } else {
+        console.error("Tournament info elements not found in DOM.");
+    }
+}
+
+function showLobbyPlayers() {
+    const playersList = document.getElementById('playersList');
+    playersList.innerHTML = '<h3>Players in the lobby:</h3>';
+    playersList.style.display = 'block';
+}
 
 export function showLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
