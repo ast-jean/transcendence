@@ -351,7 +351,7 @@ function resetPlayer() {
     scene.add(local_player.mesh);
     
 }
-function initializePlayers() {
+export function initializePlayers() {
     players.forEach(player => scene.remove(player.mesh));
     players = [];
     let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);

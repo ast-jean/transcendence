@@ -77,14 +77,6 @@ class Room:
             self.rooms.remove(room)
 
 
-    async def notify_players_in_lobby(self, room):
-        players_in_lobby = [{"ident": client.ident} for client in room.clients]
-        data = {
-            "cmd": "updateLobbyPlayers",
-            "players": players_in_lobby
-        }
-        for client in room.clients:
-            await client.websocket.send(json.dumps(data))
 
 
 
@@ -296,6 +288,14 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.send(json.dumps({'cmd':'roomNotFound'}))
 
 
+    async def notify_players_in_lobby(self, room):
+        players_in_lobby = [{"ident": client.ident} for client in room.clients]
+        data = {
+            "cmd": "updateLobbyPlayers",
+            "players": players_in_lobby
+        }
+        for client in room.clients:
+            await client.websocket.send(json.dumps(data))
 # Exemple de donnees dans data
 # {
 #     "cmd": "endGame",
