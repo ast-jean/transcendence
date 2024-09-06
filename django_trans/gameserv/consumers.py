@@ -273,14 +273,22 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "cmd": "existingPlayers",
                     "players": existing_players
                 }))
-                
-                data = {
-                    "cmd": "joinRoom", 
-                    "roomId": found_room.roomId,
-                    "playerIn": found_room.playerIn,
-                    "playerTotal": found_room.playerTotal[0],
-                    'clientId': new_client.index,
-                }
+                if (found_room.is_lobby):
+                    data = {
+                        "cmd": "joinLobby",
+                        "roomId": found_room.roomId,
+                        "playerIn": found_room.playerIn,
+                        "playerTotal": found_room_room.playerTotal,
+                        "host": False
+                    }
+                else:
+                    data = {
+                        "cmd": "joinRoom", 
+                        "roomId": found_room.roomId,
+                        "playerIn": found_room.playerIn,
+                        "playerTotal": found_room.playerTotal[0],
+                        'clientId': new_client.index,
+                    }
                 await self.send(json.dumps(data))
                 await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
         except Exception as e:
