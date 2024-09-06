@@ -482,3 +482,14 @@ body {
     border-radius: 5px;
     margin-right: 5px;
 }
+
+.matchcard-body
+{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.profilecard-text
+{
+	margin-left: 25px;
+}

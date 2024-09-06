@@ -13,7 +13,7 @@ export function setShouldPreventDefault(boolean){
 
 
 function pageLoaded() {
-    alert("PAge loaded");
+    // alert("PAge loaded");
     const sendButton = document.getElementById('chat-btn');
     const chatInput = document.getElementById('chat-input');
     if (sendButton !== null) {
