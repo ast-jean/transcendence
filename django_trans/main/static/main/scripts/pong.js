@@ -2,13 +2,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { initializePlayers, movePlayer, updatePlayerVisualization } from './gameplay/player.js';
-import { moveBall, ballSpeedX, ballSpeedY } from './gameplay/ball.js';
-import { setupWalls,setWallColor, walls, wallLength } from './gameplay/wall.js';
+import { moveBall } from './gameplay/ball.js';
+import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { updateScoreDisplay, resetGame, checkEndGame } from './gameplay/score.js';
 import { startCountdown } from './ui/ui_updates.js';
 import { setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
-import { showLayer2Btns, hideLayer2Btns} from './ui/ui_updates.js';
+import { showLayer2Btns, hideLayer2Btns } from './ui/ui_updates.js';
 import { Player } from './gameplay/player.js';
 
 // Variables globales du jeu
@@ -29,16 +29,24 @@ renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
 
-setupWalls(scene); // Crée les murs dans la scène
-
-// Pour changer la couleur des murs
-setWallColor(0x00ff00); // Met les murs en vert
+// Configuration des murs
+setupWalls(scene);  // Crée les murs dans la scène
+setWallColor(0x00ff00);  // Met les murs en vert
 
 // Contrôles de caméra
 const controls = new OrbitControls(camera, renderer.domElement);
+camera.position.set(0, -15, 10);  // Position initiale de la caméra
+camera.lookAt(0, 0, 0);           // Assure qu'elle regarde le centre de la scène
 
-// Initialisation des éléments du jeu
-setupWalls(scene);
+// Lumières
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(0, 20, 10);
+scene.add(directionalLight);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+// Initialisation des joueurs
 let players = [];
 
 // Démarrage du jeu local
@@ -93,7 +101,7 @@ function animate() {
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
 
-    if (useAIForPlayer2) {
+    if (useAIForPlayer2 && aiPlayer) {
         aiPlayer.update(delta); // Mettre à jour l'IA si nécessaire
     }
 }
@@ -111,7 +119,7 @@ function resizeRendererToDisplaySize(renderer) {
     }
 }
 
-// Événement d'affichage des scores
+// Gestion des scores
 function updateScore(player) {
     let team = player === 1 ? "team1" : "team2";
     if (player === 1) {
@@ -131,7 +139,6 @@ document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
 document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
-
 
 
 
