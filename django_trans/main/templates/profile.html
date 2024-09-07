@@ -3,10 +3,27 @@
 {% block title %}Profile | About{% endblock %}
 {% block content %}
 <h1>Profile</h1>
+
+  <div class="card mb-5" style="max-width: 1000px;">
+	<div class="row g-0">
+	  <div class="col-md-4">
+		<img src="{{ profile.image.versions.medium }}" alt="{{ profile.login }}">
+	  </div>
+	  <div class="col-md-8">
+		<div class="profilecard-body">
+		  <h5 class="profilecard-text"> {{ profile.displayname }}
+		
+		  </h5>
+		  <p class="profilecard-text"> Login: {{ profile.login }}</p>
+		  <p class="profilecard-text"> Email: {{ profile.email }}</p>
+		  <p class="profilecard-text"> Games won: 0</p>
+		</div>
+	  </div>
+	</div>
+  </div>
+  <hr style="text-align:left;margin-left:0;height:10px"> {{profile}}
 {% if profile.login %}
-    <img src="{{ profile.image.versions.small }}" alt="{{ profile.login }}">
-    <p>Name: {{ profile.login }}</p>
-    <p>Email: {{ profile.email }}</p>
+    <!-- <img src="{{ profile.image.versions.small }}" alt="{{ profile.login }}"> -->
 {% else %}
     <p>No profile data available.</p>
 {% endif %}
