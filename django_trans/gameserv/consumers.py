@@ -273,12 +273,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "cmd": "existingPlayers",
                     "players": existing_players
                 }))
-                if (found_room.is_lobby):
+                if (found_room.isLobby):
                     data = {
                         "cmd": "joinLobby",
                         "roomId": found_room.roomId,
                         "playerIn": found_room.playerIn,
-                        "playerTotal": found_room_room.playerTotal,
+                        "playerTotal": found_room.playerTotal,
                         "host": False
                     }
                 else:
