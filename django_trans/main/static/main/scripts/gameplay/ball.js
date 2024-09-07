@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { sphere } from './player.js';
-import { ballSpeedX, ballSpeedY } from './player.js'; // Si tu veux accéder aux vitesses globales
 import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
 import { getRoomId } from '../websockets/socket_pong.js';
 
@@ -62,3 +60,24 @@ export function moveBall(delta, walls, players, updateScore) {
         ballSpeedY = INITIAL_BALL_SPEED_Y;
     }
 }
+
+
+
+
+
+
+// Fonction pour envoyer périodiquement l'état de la balle au serveur
+export function sendBallState() {
+    if (socketState.socket && socketState.isSocketReady) {
+        let cmd = "ballSync";
+        const ballData = {
+            x: sphere.position.x,
+            y: sphere.position.y,
+            vx: ballSpeedX,
+            vy: ballSpeedY
+        };
+        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+    }
+}
+// Envoyer l'état de la balle toutes les 100ms pour réduire la surcharge réseau
+setInterval(sendBallState, 200); // Réduire la fréquence à toutes les 200 ms

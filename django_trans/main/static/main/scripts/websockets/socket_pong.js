@@ -1,7 +1,12 @@
 import { players, initializePlayers, resetPlayer } from '../gameplay/player.js'; // Gestion des joueurs
-import { receiveSync, receiveMove, removePlayer } from '../gameplay/player.js'; // Si tu synchronises les actions via WebSocket
 import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
 
+
+export const socketState = {
+    socket: null,
+    isSocketReady: false,
+    players_ready: false,
+};
 
 export function setupWebSocket() {
     return new Promise((resolve, reject) => {
@@ -180,4 +185,23 @@ export function removePlayer(playerIdToRemove) {
     removeMeshFromScene(player.mesh, scene);
     players = players.filter(player => player.id !== playerIdToRemove);
     updatePlayerVisualization();
+}
+
+export function checkAllPlayersConnected(maxPlayers) {
+    return new Promise((resolve, reject) => {
+        const checkInterval = setInterval(() => {
+            if (socketState.isSocketReady && players.length === maxPlayers) {
+                clearInterval(checkInterval);
+                console.log("All players connected, starting game: >" + maxPlayers + "<");
+                startCountdown();
+                resolve();
+            }
+        }, 500); // Vérifie toutes les 500 ms
+
+        // Optionnel : Définir un délai d'attente pour rejeter la promesse si cela prend trop de temps
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            reject(new Error('Timeout waiting for all players to connect'));
+        }, 60000); // Délai d'attente de 30 secondes
+    });
 }

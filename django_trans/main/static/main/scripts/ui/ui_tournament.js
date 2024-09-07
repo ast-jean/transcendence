@@ -1,5 +1,5 @@
 import { setupWebSocket, sendCmd } from '../websockets/socket_pong.js'; // Pour les actions liées aux tournois
-import { updateTournamentInfo } from './uiUpdates.js'; // Pour mettre à jour l'affichage du tournoi
+import { updateTournamentInfo } from './ui_updates.js'; // Pour mettre à jour l'affichage du tournoi
 
 
 export function showTournamentOptions() {

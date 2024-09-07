@@ -1,5 +1,4 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { updateScoreDisplay } from './uiUpdates.js'; // Mise à jour de l'affichage du score
 
 
 let player1Score = 0;
@@ -33,10 +32,19 @@ function updateScore(player) {
 const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
-function updateScoreDisplay() {
+export function updateScoreDisplay() {
     player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
 }
+
+
+export function checkEndGame() {
+    if (player1Score >= maxScore || player2Score >= maxScore) {
+        endGame();
+    }
+}
+
+
 
 function getScoreHTML(score, symbol, maxScore) {
     let scoreHTML = '';
@@ -47,4 +55,17 @@ function getScoreHTML(score, symbol, maxScore) {
         scoreHTML += '⚪';
     }
     return scoreHTML;
+}
+
+export function resetGame() {
+    player1Score = 0;
+    player2Score = 0;
+    ballSpeedX = 0;
+    ballSpeedY = 0;
+    isGameOver = true;
+    sphere.position.set(0, 0, 0);
+    players.forEach(player => {
+        player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
+    });
+    updateScoreDisplay();
 }

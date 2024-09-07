@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
-import { wallLength } from './walls.js'; // Pour les limites du terrain
-import { updatePlayerVisualization } from './visualization.js'; // Si tu mets à jour les visuels des joueurs
+import { wallLength } from './wall.js'; // Pour les limites du terrain
+//import { updatePlayerVisualization } from './visualization.js'; // Si tu mets à jour les visuels des joueurs
 
 
 export let players = [];
@@ -85,12 +85,16 @@ export function movePlayer(delta) {
     }
 }
 
-function resetPlayer() {
+export function resetPlayer() {
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(local_player);
     scene.add(local_player.mesh);
     
 }
+
+
+
+
 
 function cleanScene(){
     hideLayer2Btns();
@@ -100,4 +104,11 @@ function cleanScene(){
     if (aiPlayer) {
         scene.remove(aiPlayer.mesh);
     }
+}
+
+export function updatePlayerVisualization() {
+    // console.log("Updating player visualization");
+    players.forEach(player => {
+        scene.add(player.mesh);
+    });
 }
