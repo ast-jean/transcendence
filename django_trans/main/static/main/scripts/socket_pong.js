@@ -1,4 +1,4 @@
-import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere, setBallSpeedX, setBallSpeedY} from './pong.js';
+import {showLayer2Btns, hideLayer2Btns, receiveMove, receiveSync, sendSync, removePlayer, players, Player, startCountdown, wallLength, sphere, setBallSpeedX, setBallSpeedY, updateTournamentInfo} from './pong.js';
 import { receiveChat, receiveConnect, receiveDisconnect } from './chat.js';
 import * as THREE from 'three';
 
@@ -94,13 +94,44 @@ export function setupWebSocket() {
                 player2Score = data.scoreTeam2;
                 updateScoreDisplay();
             }
+
+            if (data.cmd === "joinLobby") {
+                // Mise à jour du room_id après la création du lobby
+                room_id = data.roomId;
+                console.log("Tournament lobby created, room ID:", room_id);
+        
+                // Mise à jour des informations du tournoi avec le room_id reçu
+                updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
+            }
+
+            if (data.cmd === "updateLobbyPlayers") {
+                const playersList = document.getElementById('playersList');
+                playersList.innerHTML = "";  // Clear the existing list
+                data.players.forEach(player => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `Player: ${player.ident}`;
+                    playersList.appendChild(listItem);
+                });
+            if (data.cmd === "playerJoinedTournament") {
+                // Mettre à jour le nombre de joueurs connectés
+                const playerCount = data.playerCount;
+                const maxPlayers = data.maxPlayers;
+                const roomId = data.roomId;
+                onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
+            }
+        };
         };
     });
 }
 
 export function sendCmd(cmd, roomId) {
-    socketState.socket.send(JSON.stringify({cmd, roomId}))
+    if (socketState.socket && socketState.isSocketReady) {
+        socketState.socket.send(JSON.stringify({ cmd, roomId }));
+    } else {
+        console.error("WebSocket is not ready. Unable to send command.");
+    }
 }
+
 
 
 export function receiveBallSync(ballData) {
@@ -120,28 +151,28 @@ export function receiveBallSync(ballData) {
 }
 
 
-let player1Score = 0;
-let player2Score = 0;
-const maxScore = 5;
+// let player1Score = 0;
+// let player2Score = 0;
+// const maxScore = 5;
 
-const player1ScoreElement = document.getElementById('player1Score');
-const player2ScoreElement = document.getElementById('player2Score');
+// const player1ScoreElement = document.getElementById('player1Score');
+// const player2ScoreElement = document.getElementById('player2Score');
 
-function updateScoreDisplay() {
-    player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-    player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
-}
+// function updateScoreDisplay() {
+//     player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
+//     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+// }
 
-function getScoreHTML(score, symbol, maxScore) {
-    let scoreHTML = '';
-    for (let i = 0; i < score; i++) {
-        scoreHTML += symbol;
-    }
-    for (let i = score; i < maxScore; i++) {
-        scoreHTML += '⚪';
-    }
-    return scoreHTML;
-}
+// function getScoreHTML(score, symbol, maxScore) {
+//     let scoreHTML = '';
+//     for (let i = 0; i < score; i++) {
+//         scoreHTML += symbol;
+//     }
+//     for (let i = score; i < maxScore; i++) {
+//         scoreHTML += '⚪';
+//     }
+//     return scoreHTML;
+// }
 
 
 
