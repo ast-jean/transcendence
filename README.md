@@ -1,9 +1,15 @@
 # transcendence
 # TODO:
-     - [ ] Make gamer join a room
-     - [ ] Update chat
-     - [ ] Repair moves in local game 
-     - [ ]   
+     - [ ] Tournoi
+          - [ ] Model Tournoi 
+               - [ ] Games - Ajouter txt ex: Semi-finale, quart-finale, finale
+               - Partie Forfeit
+          - [ ] Web Server 
+               - 2 niveaux
+                    - Salle attentes -> joueurs arrive, joueurs finisse partie.
+                         - 4 joueurs
+               - Partie isolee retourne dans salle attente
+     - [ ] Chat => Dans room en ligne
 
 
 ## Achitecture:
