@@ -1,7 +1,7 @@
 all:
-	@docker-compose up --build
+	@docker compose up --build
 up:
-	@docker-compose up --build
+	@docker compose up --build
 down:
 	@docker compose -f ./docker compose.yml down
 in_db:
