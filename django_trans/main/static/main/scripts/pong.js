@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './socket_pong.js';
+import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId, room_id } from './socket_pong.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /* Btns layer 1     Btns layer 2
@@ -67,10 +67,121 @@ function hideChat(boolean) {
     }
 }
 
+
 const localPlayButton = document.getElementById('localplay_btn');
 const versusAIButton = document.getElementById('versusai_btn');
 const playOnlineButton = document.getElementById('onlineplay_btn');
+const tournamentButton = document.getElementById('tournament_btn');
+const startTournamentButton = document.getElementById('startTournament');
+const joinTournamentButton = document.getElementById('joinTournament');
 
+if (tournamentButton) {
+    tournamentButton.addEventListener('click', () => {
+        hideAllButtons();
+        showTournamentOptions();
+    });
+}
+
+export function showTournamentOptions() {
+    const tournamentOptions = document.getElementById('tournamentOptions');
+    tournamentOptions.classList.add('active');
+    tournamentOptions.classList.remove('hidden');
+}
+
+export function hideTournamentOptions() {
+    const tournamentOptions = document.getElementById('tournamentOptions');
+    tournamentOptions.classList.remove('active');
+    tournamentOptions.classList.add('hidden');
+}
+
+
+if (startTournamentButton) {
+    startTournamentButton.addEventListener('click', async () => {
+        console.log("Starting tournament lobby");
+
+        hideTournamentOptions();
+
+        hideAllButtons();
+        showLobbyPlayers();
+
+        setupWebSocket().then(() => {
+            console.log("WebSocket ready, sending tournamentLobby command.");
+            sendCmd("tournamentLobby");
+        }).catch(err => {
+            console.error("WebSocket connection failed:", err);
+        });
+    });
+}
+
+if (joinTournamentButton) {
+    joinTournamentButton.addEventListener('click', async () => {
+        console.log("Joining an existing tournament");
+
+        hideTournamentOptions();
+
+        hideAllButtons();
+        showRoomSearch(); 
+    });
+}
+
+function showRoomSearch() {
+    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
+    if (roomSearchDiv) {
+        roomSearchDiv.classList.remove('hidden');
+    }
+}
+
+function hideRoomSearch() {
+    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
+    if (roomSearchDiv) {
+        roomSearchDiv.classList.add('hidden');
+    }
+}
+
+const roomSearchForm = document.getElementById('roomSearchForm');
+if (roomSearchForm) {
+    roomSearchForm.addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        const roomIdInput = document.getElementById('roomIdInput');
+        const roomId = roomIdInput.value.trim();
+
+        if (roomId) {
+            hideRoomSearch();
+
+            setupWebSocket().then(() => {
+                sendCmd("roomSearch", roomId);
+            }).catch(err => {
+                console.error("WebSocket connection failed:", err);
+            });
+        } else {
+            alert("Please enter a valid Room ID.");
+        }
+    });
+}
+
+
+function onPlayerJoinedRoom(roomId, playerCount, maxPlayers) {
+    updateTournamentInfo(roomId, playerCount, maxPlayers);
+}
+
+export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
+    const tournamentRoomElement = document.getElementById('tournamentRoom');
+    const connectedPlayersElement = document.getElementById('connectedPlayers');
+
+    if (tournamentRoomElement && connectedPlayersElement) {
+        tournamentRoomElement.innerHTML = `Tournament Room: ${roomId}`;
+        connectedPlayersElement.innerHTML = `Players Connected: ${playerCount}/${maxPlayers}`;
+    } else {
+        console.error("Tournament info elements not found in DOM.");
+    }
+}
+
+function showLobbyPlayers() {
+    const playersList = document.getElementById('playersList');
+    playersList.innerHTML = '<h3>Players in the lobby:</h3>';
+    playersList.style.display = 'block';
+}
 
 export function showLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
@@ -148,7 +259,6 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            // console.log("ball start");
             isGameOver = false;
             ballSpeedX = INITIAL_BALL_SPEED_X;
             ballSpeedY = INITIAL_BALL_SPEED_Y;
@@ -189,7 +299,7 @@ let aiPlayer = null;
 
 
 function localPlay() {
-    console.log("Starting local play");
+    // console.log("Starting local play");
 
     players.forEach(player => scene.remove(player.mesh));
     players = [];
@@ -204,7 +314,7 @@ function localPlay() {
 }
 
 function playAI() {
-    console.log("Starting play with AI");
+    // console.log("Starting play with AI");
 
     players.forEach(player => scene.remove(player.mesh));
     players = [];
@@ -241,7 +351,7 @@ function resetPlayer() {
     scene.add(local_player.mesh);
     
 }
-function initializePlayers() {
+export function initializePlayers() {
     players.forEach(player => scene.remove(player.mesh));
     players = [];
     let player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0);
@@ -277,11 +387,11 @@ function waitForRoomId() {
 
 //click PlayOnline() -> show Layer2Btns -> Click game mode -> HideLayer2 & waitGameFull -> Start Countdown & Start Game
 async function playOnline(maxPlayers) {
-    console.log("Starting online play");
+    // console.log("Starting online play");
 
     if (socketState.isSocketReady) {
         // Send game mode and wait for joinRoom() from server
-        console.log("Connected to server socket")
+        // console.log("Connected to server socket")
         players.forEach(player => scene.remove(player.mesh));
         players = [];
         var cmd = "roomCreate" + maxPlayers;
@@ -350,9 +460,27 @@ export function updatePlayerVisualization() {
 
 
 
+let player1Score = 0;
+let player2Score = 0;
+const maxScore = 5;
+
 function updateScore(player) {
     let team = player === 1 ? "team1" : "team2";
-    
+
+    if (player === 1) {
+        if (player1Score < maxScore) {
+            player1Score++;
+        }
+    } else if (player === 2) {
+        if (player2Score < maxScore) {
+            player2Score++;
+        }
+    }
+
+    updateScoreDisplay();  // Met à jour l'affichage des scores
+    checkEndGame();        // Vérifie si la partie doit se terminer
+
+    // Envoie les scores au serveur si on est en ligne
     if (socketState.socket && socketState.isSocketReady) {
         let cmd = "score";
         let roomId = getRoomId();
@@ -361,21 +489,26 @@ function updateScore(player) {
 }
 
 
-// function updateScoreDisplay() {
-//     player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-//     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
-// }
 
-// function getScoreHTML(score, symbol, maxScore) {
-//     let scoreHTML = '';
-//     for (let i = 0; i < score; i++) {
-//         scoreHTML += symbol;
-//     }
-//     for (let i = score; i < maxScore; i++) {
-//         scoreHTML += '⚪';
-//     }
-//     return scoreHTML;
-// }
+const player1ScoreElement = document.getElementById('player1Score');
+const player2ScoreElement = document.getElementById('player2Score');
+
+function updateScoreDisplay() {
+    player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
+    player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+}
+
+function getScoreHTML(score, symbol, maxScore) {
+    let scoreHTML = '';
+    for (let i = 0; i < score; i++) {
+        scoreHTML += symbol;
+    }
+    for (let i = score; i < maxScore; i++) {
+        scoreHTML += '⚪';
+    }
+    return scoreHTML;
+}
+
 
 function checkEndGame() {
     if (player1Score >= maxScore || player2Score >= maxScore) {
@@ -388,13 +521,6 @@ function endGame() {
 
     const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
     const endGameMessage = document.createElement('div');
-    // endGameMessage.id = 'end-game-message';
-    // endGameMessage.style.position = 'absolute';
-    // endGameMessage.style.top = '50%';
-    // endGameMessage.style.left = '50%';
-		// endGameMessage.style.transform = 'translate(-50%, -50%)';	
-    // endGameMessage.style.fontSize = '2em';
-    // endGameMessage.style.color = '#fff';
     endGameMessage.innerHTML = `${winner} wins!<br>`;
     document.getElementById('gameCont').appendChild(endGameMessage);
 
@@ -412,7 +538,6 @@ function endGame() {
         document.body.removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
         showAllButtons();
-        // hideLayer2Btns();
         resetGame();
         controls.enabled = false;
     });
@@ -466,7 +591,7 @@ var keyState = {};
 export let shouldPreventDefault = true;
 
 document.addEventListener('keydown', function (e) {
-    if (['ArrowLeft', 'ArrowRight'].includes(e.code)) {
+    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
         keyState[e.code] = true;
         if (shouldPreventDefault) {
             e.preventDefault();
@@ -486,6 +611,7 @@ document.addEventListener('keyup', function (e) {
         }
     }
 }, true);
+
 
 
 export function movePlayer(delta) {

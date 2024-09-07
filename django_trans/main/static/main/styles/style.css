@@ -130,6 +130,9 @@ html, body
     display: none;
 }
 
+.active {
+    display: block;
+}
 
 .hud-btn {
     display: block;
