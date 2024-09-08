@@ -15,7 +15,7 @@ import { Player } from './gameplay/player.js';
 var clock = new THREE.Clock();
 export var delta;
 export let isGameOver = true;
-export let local_game = true;
+export let local_game = false;
 export let useAIForPlayer2 = false;
 
 // Configuration Three.js
@@ -51,10 +51,11 @@ let players = [];
 
 // Démarrage du jeu local
 function localPlay() {
+    local_game = true;
     players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants de la scène
     players = [];
     initializePlayers(scene, players); // Initialisation des joueurs (local)
-    updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    //updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
     startCountdown(); // Démarrer le compte à rebours
 }
 
@@ -63,7 +64,7 @@ function playAI() {
     players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants
     players = [];
     initializePlayers(scene, players, true);  // true pour indiquer qu'on joue contre une IA
-    updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    //updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
     startCountdown(); // Démarrer le compte à rebours
 }
 
@@ -81,7 +82,7 @@ async function playOnline(maxPlayers) {
         }
 
         initializePlayers(scene, players);
-        updatePlayerVisualization(players, scene);
+        //updatePlayerVisualization(players, scene);
         hideLayer2Btns();
         try {
             await checkAllPlayersConnected(maxPlayers);
@@ -96,8 +97,8 @@ async function playOnline(maxPlayers) {
 function animate() {
     requestAnimationFrame(animate);
     delta = clock.getDelta();
-    movePlayer(delta, players);
-    moveBall(delta, players, walls);
+    movePlayer(delta, scene);
+    moveBall(delta, walls, players);
     controls.update();
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);

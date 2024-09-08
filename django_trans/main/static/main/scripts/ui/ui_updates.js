@@ -1,3 +1,5 @@
+import { isGameOver } from "../pong.js";
+
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
     const tournamentRoomElement = document.getElementById('tournamentRoom');
     const connectedPlayersElement = document.getElementById('connectedPlayers');

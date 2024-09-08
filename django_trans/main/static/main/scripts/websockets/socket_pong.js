@@ -58,7 +58,7 @@ export function setupWebSocket() {
                         players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0));  
                     }
                 });
-                updatePlayerVisualization();
+                //updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
                 receiveChat(data.ident, data.data);
@@ -145,7 +145,7 @@ export function receiveSync(id, movementData) {
         player.mesh.position.x = movementData.x;
         player.mesh.position.y = movementData.y * -1;  // Inverser la position y lors de la réception
     }
-    updatePlayerVisualization();
+    //updatePlayerVisualization();
 }
 
 export function receiveConnect(id) {
@@ -159,7 +159,7 @@ export function receiveMove(id, movementData) {
     if (player) {
         if (movementData.x) player.mesh.position.x += movementData.x;
         if (movementData.y) player.mesh.position.y += movementData.y;
-        updatePlayerVisualization();
+        //updatePlayerVisualization();
     } else {
         console.error(`Player with id ${id} not found in receiveMove`);
     }
@@ -184,7 +184,7 @@ export function removePlayer(playerIdToRemove) {
     let player = players.find(p => p.id === playerIdToRemove);
     removeMeshFromScene(player.mesh, scene);
     players = players.filter(player => player.id !== playerIdToRemove);
-    updatePlayerVisualization();
+    //updatePlayerVisualization();
 }
 
 export function checkAllPlayersConnected(maxPlayers) {

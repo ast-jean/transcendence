@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
+import { local_game } from '../pong.js';
 
 export let players = [];
+export let keyState = {};
 
 export class Player {
     constructor(id, x, y, z, color) {
@@ -83,12 +85,13 @@ export function movePlayer(delta, scene) {
                 }
             }
         }
-        updatePlayerVisualization(scene);  // Met à jour l'affichage des joueurs
     }
 }
 
 // Met à jour l'affichage des joueurs
 export function updatePlayerVisualization(scene) {
+    //console.log(scene); // Devrait afficher une instance de THREE.Scene
+
     players.forEach(player => {
         scene.add(player.mesh);
     });
@@ -101,3 +104,12 @@ export function resetPlayer() {
     scene.add(local_player.mesh);
     
 }
+
+// Gestion des événements de touche
+document.addEventListener('keydown', function (e) {
+    keyState[e.code] = true; // Marque la touche comme enfoncée
+});
+
+document.addEventListener('keyup', function (e) {
+    keyState[e.code] = false; // Marque la touche comme relâchée
+});
