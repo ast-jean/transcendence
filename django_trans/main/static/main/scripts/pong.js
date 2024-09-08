@@ -51,21 +51,22 @@ let players = [];
 
 // Démarrage du jeu local
 function localPlay() {
-    players.forEach(player => scene.remove(player.mesh));
+    players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants de la scène
     players = [];
-    initializePlayers(scene, players);
-    updatePlayerVisualization(players, scene);
-    startCountdown();
+    initializePlayers(scene, players); // Initialisation des joueurs (local)
+    updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    startCountdown(); // Démarrer le compte à rebours
 }
 
 // Démarrage du jeu contre l'IA
 function playAI() {
-    players.forEach(player => scene.remove(player.mesh));
+    players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants
     players = [];
-    initializePlayers(scene, players, true);  // true pour indiquer l'IA
-    updatePlayerVisualization(players, scene);
-    startCountdown();
+    initializePlayers(scene, players, true);  // true pour indiquer qu'on joue contre une IA
+    updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    startCountdown(); // Démarrer le compte à rebours
 }
+
 
 // Démarrage du jeu en ligne
 async function playOnline(maxPlayers) {

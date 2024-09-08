@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
-//import { updatePlayerVisualization } from './visualization.js'; // Si tu mets à jour les visuels des joueurs
-
 
 export let players = [];
 
@@ -17,98 +15,89 @@ export class Player {
     }
 }
 
-export function initializePlayers(playerData) {
-    players.forEach(player => scene.remove(player.mesh));
+// Initialisation des joueurs (locale ou avec IA)
+export function initializePlayers(scene, playerData, useAI = false) {
+    players.forEach(player => scene.remove(player.mesh));  // Retirer les joueurs existants
     players = [];
-    
-    playerData.forEach(data => {
-        const player = new Player(data.id, data.x, data.y, data.z, data.color);
-        players.push(player);
+
+    // Ajout des joueurs humains
+    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00); // Joueur 1 (vert)
+    players.push(player1);
+    scene.add(player1.mesh);
+
+    if (useAI) {
+        // Ajout d'un joueur IA
+        const aiPlayer = new Player(2, 0, wallLength / 2 - 0.5, 0, 0xff0000); // IA (rouge)
+        players.push(aiPlayer);
+        scene.add(aiPlayer.mesh);
+    } else {
+        // Ajout du deuxième joueur (humain)
+        const player2 = new Player(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff); // Joueur 2 (bleu)
+        players.push(player2);
+        scene.add(player2.mesh);
+    }
+}
+
+// Fonction pour déplacer les joueurs
+export function movePlayer(delta, scene) {
+    const speed = 20;
+    let x1 = 0, x2 = 0;
+
+    if (players[0]) {        
+        if (keyState['ArrowLeft']) x1 -= speed * delta;
+        if (keyState['ArrowRight']) x1 += speed * delta;
+
+        if (local_game) {
+            if (keyState['KeyA']) x2 -= speed * delta;
+            if (keyState['KeyD']) x2 += speed * delta;
+        }
+
+        // Mise à jour de la position du joueur 1
+        if (x1 !== 0) {
+            let newX = players[0].mesh.position.x + x1;
+            if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                players[0].mesh.position.x = newX;
+                // Envoi des données de mouvement en ligne
+                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                    let cmd = "move";
+                    const movementData = { x: x1, y: 0 };
+                    let roomId = getRoomId();
+                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+                }
+            }
+        }
+
+        // Mise à jour de la position du joueur 2
+        if (x2 !== 0) {
+            let newX = players[1].mesh.position.x + x2;
+            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                players[1].mesh.position.x = newX;
+                // Envoi des données de mouvement en ligne
+                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                    let cmd = "move";
+                    const movementData = { x: x2 * -1, y: 0 };
+                    let roomId = getRoomId();
+                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+                }
+            }
+        }
+        updatePlayerVisualization(scene);  // Met à jour l'affichage des joueurs
+    }
+}
+
+// Met à jour l'affichage des joueurs
+export function updatePlayerVisualization(scene) {
+    players.forEach(player => {
         scene.add(player.mesh);
     });
 }
 
-export function movePlayer(delta) {
-    const speed = 20;
-    let x1 = 0;
-    let x2 = 0;
-
-    if (players[0]){        
-        if (keyState['ArrowLeft']) x1 -= speed * delta;
-        if (keyState['ArrowRight']) x1 += speed * delta;
-        
-        if (local_game){
-            if (keyState['KeyA']) x2 -= speed * delta;
-            if (keyState['KeyD']) x2 += speed * delta;
-        }
-        
-        if (x1 !== 0) {
-        let newX = players[0].mesh.position.x + x1;
-        if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-            newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-                players[0].mesh.position.x = newX;
-                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                    //sendMove
-                    let cmd = "move";
-                    const movementData = { x: x1, y: 0 };
-                    let roomId = getRoomId();
-                    // console.log(movementData, roomId);
-                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-                }
-            }
-            // if (socketState.socket)
-            //     console.log(socketState.socket);
-        }
-        
-        if (x2 !== 0) {
-            let newX = players[1].mesh.position.x + x2;
-            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-        newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-            players[1].mesh.position.x = newX;
-            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                let cmd = "move";
-                const movementData = { x: x2 * -1, y: 0 };
-                let roomId = getRoomId();
-                // console.log(movementData, roomId);
-                socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-            }
-        }
-        // console.log("For X2");
-        if (socketState.socket) {
-            console.log(socketState.socket);
-        } else {
-            console.error("Socket is undefined in movePlayer (X2)");
-        }
-    }
-    
-        updatePlayerVisualization();
-    }
-}
 
 export function resetPlayer() {
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(local_player);
     scene.add(local_player.mesh);
     
-}
-
-
-
-
-
-function cleanScene(){
-    hideLayer2Btns();
-    players.forEach(player => scene.remove(player.mesh));
-    players = [];
-    resetPlayer();
-    if (aiPlayer) {
-        scene.remove(aiPlayer.mesh);
-    }
-}
-
-export function updatePlayerVisualization() {
-    // console.log("Updating player visualization");
-    players.forEach(player => {
-        scene.add(player.mesh);
-    });
 }
