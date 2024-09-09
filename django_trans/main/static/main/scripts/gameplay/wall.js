@@ -11,29 +11,21 @@ const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
  * @param {Object} position - La position du mur (x, y, z)
  * @param {THREE.BoxGeometry} geometry - La géométrie du mur
  */
-function createWall(scene, position, geometry) {
+function createWall(scene, position, geometry, name) {
     const wall = new THREE.Mesh(geometry, wallMaterial);
     wall.position.set(position.x, position.y, position.z);
+    wall.name = name;
     scene.add(wall);
     walls.push(wall);
 }
 
-
-
-
 export function setupWalls(scene) {
-    // Crée le mur du haut
-    createWall(scene, { x: 0, y: wallLength / 2, z: 0 }, new THREE.BoxGeometry(wallLength, wallThickness, 1));
-
-    // Crée le mur du bas
-    createWall(scene, { x: 0, y: -wallLength / 2, z: 0 }, new THREE.BoxGeometry(wallLength, wallThickness, 1));
-
-    // Crée le mur de gauche
-    createWall(scene, { x: -wallLength / 2, y: 0, z: 0 }, new THREE.BoxGeometry(wallThickness, wallLength, 1));
-
-    // Crée le mur de droite
-    createWall(scene, { x: wallLength / 2, y: 0, z: 0 }, new THREE.BoxGeometry(wallThickness, wallLength, 1));
+    createWall(scene, { x: 0, y: wallLength / 2, z: 0 }, new THREE.BoxGeometry(wallLength, wallThickness, 1), 'topWall');
+    createWall(scene, { x: 0, y: -wallLength / 2, z: 0 }, new THREE.BoxGeometry(wallLength, wallThickness, 1), 'bottomWall');
+    createWall(scene, { x: -wallLength / 2, y: 0, z: 0 }, new THREE.BoxGeometry(wallThickness, wallLength, 1), 'leftWall');
+    createWall(scene, { x: wallLength / 2, y: 0, z: 0 }, new THREE.BoxGeometry(wallThickness, wallLength, 1), 'rightWall');
 }
+
 
 /**
  * Fonction pour changer la couleur des murs

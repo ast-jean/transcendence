@@ -5,8 +5,8 @@ import { getRoomId } from '../websockets/socket_pong.js';
 
 export let ballSpeedX = 0;
 export let ballSpeedY = 0;
-const INITIAL_BALL_SPEED_X = 5;
-const INITIAL_BALL_SPEED_Y = 5;
+export const INITIAL_BALL_SPEED_X = 5;
+export const INITIAL_BALL_SPEED_Y = 5;
 
 export const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.5, 16, 16),
@@ -29,6 +29,12 @@ export function getBallSpeedY() {
     return ballSpeedY;
 }
 
+export function addBallToScene(scene) {
+    sphere.position.set(0, 0, 0);
+    scene.add(sphere);
+}
+
+
 export function moveBall(delta, walls, players, updateScore) {
     sphere.position.x += ballSpeedX * delta;
     sphere.position.y += ballSpeedY * delta;
@@ -40,13 +46,13 @@ export function moveBall(delta, walls, players, updateScore) {
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
         if (wallBox.intersectsBox(sphereBox)) {
-            if (wall === topWall) {
+            if (wall === 'topWall') {
                 updateScore(1);
                 scored = true;
-            } else if (wall === bottomWall) {
+            } else if (wall === 'bottomWall') {
                 updateScore(2);
                 scored = true;
-            } else if (wall === leftWall || wall === rightWall) {
+            } else if (wall === 'leftWall' || wall === 'rightWall') {
                 ballSpeedX *= -1;
             }
         }

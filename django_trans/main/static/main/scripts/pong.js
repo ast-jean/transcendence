@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { initializePlayers, movePlayer, updatePlayerVisualization } from './gameplay/player.js';
-import { moveBall } from './gameplay/ball.js';
+import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { updateScoreDisplay, resetGame, checkEndGame } from './gameplay/score.js';
 import { startCountdown } from './ui/ui_updates.js';
@@ -55,7 +55,7 @@ function localPlay() {
     players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants de la scène
     players = [];
     initializePlayers(scene, players); // Initialisation des joueurs (local)
-    //updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    addBallToScene(scene);
     startCountdown(); // Démarrer le compte à rebours
 }
 

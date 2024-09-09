@@ -62,7 +62,7 @@ export function resetGame() {
     player2Score = 0;
     ballSpeedX = 0;
     ballSpeedY = 0;
-    isGameOver = true;
+    //isGameOver = true;
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
         player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);

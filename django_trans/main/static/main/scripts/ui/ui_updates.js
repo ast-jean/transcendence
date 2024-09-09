@@ -1,4 +1,4 @@
-import { isGameOver } from "../pong.js";
+import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y, setBallSpeedX, setBallSpeedY } from "../gameplay/ball.js"
 
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
     const tournamentRoomElement = document.getElementById('tournamentRoom');
@@ -57,9 +57,9 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            isGameOver = false;
-            ballSpeedX = INITIAL_BALL_SPEED_X;
-            ballSpeedY = INITIAL_BALL_SPEED_Y;
+           // isGameOver = false;
+            setBallSpeedX(INITIAL_BALL_SPEED_X);
+            setBallSpeedY(INITIAL_BALL_SPEED_Y);
         } else {
             countdownContainer.textContent = countdown;
         }
