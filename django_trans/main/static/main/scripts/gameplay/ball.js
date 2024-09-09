@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
 import { getRoomId } from '../websockets/socket_pong.js';
+import { updateScore } from './score.js';
 
 
 export let ballSpeedX = 0;
@@ -33,39 +34,102 @@ export function addBallToScene(scene) {
     sphere.position.set(0, 0, 0);
     scene.add(sphere);
 }
+function handlePlayerCollision(players, sphere) {
+    players.forEach(player => {
+        const playerBox = new THREE.Box3().setFromObject(player.mesh);
+        const sphereBox = new THREE.Box3().setFromObject(sphere);
 
+        if (playerBox.intersectsBox(sphereBox)) {
+            // Ajustement de l'angle de rebond
+            let relativeIntersectY = (sphere.position.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
+            let bounceAngle = relativeIntersectY * (Math.PI / 4);
 
-export function moveBall(delta, walls, players, updateScore) {
-    sphere.position.x += ballSpeedX * delta;
-    sphere.position.y += ballSpeedY * delta;
+            let speed = Math.sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+            ballSpeedX = speed * Math.cos(bounceAngle) * (sphere.position.x > player.mesh.position.x ? 1 : -1);
+            ballSpeedY = speed * Math.sin(bounceAngle);
 
-    // Gestion des collisions
+            // Limite pour éviter des rebonds trop faibles
+            if (Math.abs(ballSpeedX) < speed * 0.5) {
+                ballSpeedX = Math.sign(ballSpeedX) * speed * 0.5;
+            }
+        }
+    });
+}
+
+//function handlePlayerCollision(players, sphere, ballSpeed) {
+//    players.forEach(player => {
+//        const playerBox = new THREE.Box3().setFromObject(player.mesh);
+//        const sphereBox = new THREE.Box3().setFromObject(sphere);
+//
+//        if (playerBox.intersectsBox(sphereBox)) {
+//            let relativeIntersectY = (sphere.position.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
+//            let bounceAngle = relativeIntersectY * (Math.PI / 4);  // Ajuste l'angle pour limiter les rebonds
+//
+//            let speed = ballSpeed.length();
+//            if (sphere.position.x > player.mesh.position.x) {
+//                ballSpeed.set(Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
+//            } else {
+//                ballSpeed.set(-Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
+//            }
+//
+//            // Éviter les rebonds trop faibles
+//            if (Math.abs(ballSpeed.x) < speed * 0.5) {
+//                ballSpeed.x = Math.sign(ballSpeed.x) * speed * 0.5;
+//            }
+//
+//            ballSpeed.normalize().multiplyScalar(speed);
+//        }
+//    });
+//}
+
+function handleWallCollision(walls, sphere) {
     let scored = false;
+
     walls.forEach(wall => {
         const wallBox = new THREE.Box3().setFromObject(wall);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
         if (wallBox.intersectsBox(sphereBox)) {
-            if (wall === 'topWall') {
-                updateScore(1);
-                scored = true;
-            } else if (wall === 'bottomWall') {
-                updateScore(2);
-                scored = true;
-            } else if (wall === 'leftWall' || wall === 'rightWall') {
+            if (wall.name === 'topWall') {
+                scored = { player: 1 };  // Score pour le joueur 1
+            } else if (wall.name === 'bottomWall') {
+                scored = { player: 2 };  // Score pour le joueur 2
+            } else if (wall.name === 'leftWall' || wall.name === 'rightWall') {
+                // Inverser la direction sur l'axe X si la balle touche les murs gauche ou droit
                 ballSpeedX *= -1;
+                // Pour éviter que la balle "colle" au mur, on la repousse légèrement
+                sphere.position.x += ballSpeedX * delta * 2;
             }
         }
     });
 
-    if (!scored) {
-        sphere.position.set(sphere.position.x, sphere.position.y);
-    } else {
+    return scored;
+}
+
+
+
+
+export function moveBall(delta, walls, players) {
+    sphere.position.x += ballSpeedX * delta;
+    sphere.position.y += ballSpeedY * delta;
+
+    // Gestion des collisions avec les murs
+    let scored = handleWallCollision(walls, sphere);
+
+    // Gestion des collisions avec les joueurs
+    handlePlayerCollision(players, sphere);
+
+    // Si un score est marqué, réinitialise la position et la vitesse de la balle
+    if (scored) {
+        updateScore(scored.player);
         sphere.position.set(0, 0, 0);
         ballSpeedX = INITIAL_BALL_SPEED_X;
         ballSpeedY = INITIAL_BALL_SPEED_Y;
+    } else {
+        sphere.position.set(sphere.position.x, sphere.position.y);
     }
 }
+
 
 
 

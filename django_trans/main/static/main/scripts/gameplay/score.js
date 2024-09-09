@@ -5,7 +5,7 @@ let player1Score = 0;
 let player2Score = 0;
 const maxScore = 5;
 
-function updateScore(player) {
+export function updateScore(player) {
     let team = player === 1 ? "team1" : "team2";
 
     if (player === 1) {
