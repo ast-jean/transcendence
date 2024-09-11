@@ -1,5 +1,6 @@
 import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y} from "../gameplay/ball.js"
 import { setBallSpeedX, setBallSpeedY } from "../utils/setter.js";
+import { setGameOverState } from "../utils/setter.js"
 
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
     const tournamentRoomElement = document.getElementById('tournamentRoom');
@@ -32,7 +33,6 @@ export function hideAllButtons() {
     });
 }
 
-
 export function showAllButtons() {
     const buttons = document.querySelectorAll('.game-button');
     buttons.forEach(button => {
@@ -59,7 +59,7 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-           // isGameOver = false;
+            setGameOverState(true);
             setBallSpeedX(INITIAL_BALL_SPEED_X);
             setBallSpeedY(INITIAL_BALL_SPEED_Y);
         } else {
