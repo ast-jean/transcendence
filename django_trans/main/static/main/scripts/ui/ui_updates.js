@@ -25,11 +25,12 @@ export function hideLayer2Btns() {
 }
 
 export function hideAllButtons() {
-    let play_btns = document.getElementById('play_btns');
-    if (play_btns) {
-        play_btns.style.display = "none";
-    }
+    const play_btns = document.querySelectorAll('.game-button');
+    play_btns.forEach(button => {
+        button.classList.add('hidden');
+    });
 }
+
 
 export function showAllButtons() {
     const buttons = document.querySelectorAll('.game-button');

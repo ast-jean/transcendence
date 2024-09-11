@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
-import { local_game } from '../pong.js';
+import { local_game, removeAllPlayers, players, addPlayerToGame } from '../pong.js';
 
-export let players = [];
+
 export let keyState = {};
 
 export class Player {
@@ -18,27 +18,23 @@ export class Player {
 }
 
 // Initialisation des joueurs (locale ou avec IA)
-export function initializePlayers(scene, playerData, useAI = false) {
-    players.forEach(player => scene.remove(player.mesh));  // Retirer les joueurs existants
-    players = [];
+export function initializePlayers(scene, useAI = false) {
+    removeAllPlayers(scene);  // Retire tous les joueurs existants
 
-    // Ajout des joueurs humains
-    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00); // Joueur 1 (vert)
-    players.push(player1);
-    scene.add(player1.mesh);
+    // Ajoute le premier joueur
+    addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
 
     if (useAI) {
-        // Ajout d'un joueur IA
-        const aiPlayer = new Player(2, 0, wallLength / 2 - 0.5, 0, 0xff0000); // IA (rouge)
-        players.push(aiPlayer);
-        scene.add(aiPlayer.mesh);
+        // Ajoute un joueur IA
+        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene); // IA (rouge)
     } else {
-        // Ajout du deuxième joueur (humain)
-        const player2 = new Player(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff); // Joueur 2 (bleu)
-        players.push(player2);
-        scene.add(player2.mesh);
+        // Ajoute un deuxième joueur humain
+        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
     }
+
+    console.log("Joueurs après initialisation :", players);  // Debug : affichage des joueurs après l'initialisation
 }
+
 
 // Fonction pour déplacer les joueurs
 export function movePlayer(delta, scene) {

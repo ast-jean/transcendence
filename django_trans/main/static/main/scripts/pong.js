@@ -8,7 +8,7 @@ import { updateScoreDisplay, resetGame, checkEndGame } from './gameplay/score.js
 import { startCountdown } from './ui/ui_updates.js';
 import { setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
-import { showLayer2Btns, hideLayer2Btns } from './ui/ui_updates.js';
+import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { Player } from './gameplay/player.js';
 
 // Variables globales du jeu
@@ -18,6 +18,9 @@ export let isGameOver = true;
 export let local_game = false;
 export let useAIForPlayer2 = false;
 
+export function setGameOverState(state) {
+    isGameOver = state;
+}
 // Configuration Three.js
 const container = document.getElementById('gameCont');
 const width = container.clientWidth;
@@ -46,18 +49,42 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-// Initialisation des joueurs
-let players = [];
+export let players = [];
+
+// Ajoute un joueur dans le tableau global players et à la scène
+export function addPlayerToGame(id, x, y, z, color, scene) {
+    const newPlayer = new Player(id, x, y, z, color);
+    players.push(newPlayer);
+    scene.add(newPlayer.mesh);
+    console.log(`Player ${id} ajouté au jeu :`, newPlayer);  // Debug
+}
+
+// Supprime tous les joueurs existants de la scène
+export function removeAllPlayers(scene) {
+    players.forEach(player => scene.remove(player.mesh));  // Supprime les joueurs de la scène
+    players = [];  // Réinitialise le tableau de joueurs
+}
+
+
 
 // Démarrage du jeu local
 function localPlay() {
     local_game = true;
-    players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants de la scène
-    players = [];
-    initializePlayers(scene, players); // Initialisation des joueurs (local)
+    hideAllButtons();
+    
+    // Initialisation des joueurs (local)
+    initializePlayers(scene, players); 
+    
+    // Affichage de players pour le debug
+    console.log("Contenu de players après initialisation :", players); 
+    
+    // Ajouter la balle à la scène
     addBallToScene(scene);
-    startCountdown(); // Démarrer le compte à rebours
+
+    // Démarrer le compte à rebours
+    startCountdown(); 
 }
+
 
 // Démarrage du jeu contre l'IA
 function playAI() {

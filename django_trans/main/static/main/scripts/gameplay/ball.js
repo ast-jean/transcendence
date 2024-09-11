@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
 import { getRoomId } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
-import { delta } from '../pong.js';
+import { delta, players } from '../pong.js';
 
 
 export let ballSpeedX = 0;
@@ -36,16 +36,36 @@ export function addBallToScene(scene) {
     scene.add(sphere);
 }
 function handlePlayerCollision(players, sphere) {
+
+    if (players.length === 0) {
+        console.log("No players in the players array.");
+        return;
+    }
+
     players.forEach(player => {
         const playerBox = new THREE.Box3().setFromObject(player.mesh);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
 
+        // Debug : affichage des positions de la balle et du joueur
+        console.log(`Player position: x=${player.mesh.position.x}, y=${player.mesh.position.y}`);
+        console.log(`Sphere position: x=${sphere.position.x}, y=${sphere.position.y}`);
+
+        // Debug : affichage des boîtes de collision
+        console.log(`Player Box: min(${playerBox.min.x}, ${playerBox.min.y}), max(${playerBox.max.x}, ${playerBox.max.y})`);
+        console.log(`Sphere Box: min(${sphereBox.min.x}, ${sphereBox.min.y}), max(${sphereBox.max.x}, ${sphereBox.max.y})`);
+
         if (playerBox.intersectsBox(sphereBox)) {
-            // Ajustement de l'angle de rebond
+            console.log("Collision detected!");
+
+            // Calcul de l'angle de rebond
             let relativeIntersectY = (sphere.position.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
             let bounceAngle = relativeIntersectY * (Math.PI / 4);
 
+            // Calcul de la vitesse après collision
             let speed = Math.sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+            console.log(`Bounce angle: ${bounceAngle}, Speed: ${speed}`);
+
+            // Mise à jour de la vitesse de la balle après la collision
             ballSpeedX = speed * Math.cos(bounceAngle) * (sphere.position.x > player.mesh.position.x ? 1 : -1);
             ballSpeedY = speed * Math.sin(bounceAngle);
 
@@ -53,9 +73,15 @@ function handlePlayerCollision(players, sphere) {
             if (Math.abs(ballSpeedX) < speed * 0.5) {
                 ballSpeedX = Math.sign(ballSpeedX) * speed * 0.5;
             }
+
+            // Debug : affichage des nouvelles vitesses de la balle
+            console.log(`New ball speed: ballSpeedX=${ballSpeedX}, ballSpeedY=${ballSpeedY}`);
+        } else {
+            console.log("No collision.");
         }
     });
 }
+
 
 //function handlePlayerCollision(players, sphere, ballSpeed) {
 //    players.forEach(player => {
@@ -111,25 +137,44 @@ function handleWallCollision(walls, sphere) {
 
 
 export function moveBall(delta, walls, players) {
+    // Debug : Afficher les valeurs de delta et des vitesses initiales de la balle
+  //  console.log(`moveBall called: delta=${delta}, ballSpeedX=${ballSpeedX}, ballSpeedY=${ballSpeedY}`);
+
+    // Mise à jour de la position de la balle
     sphere.position.x += ballSpeedX * delta;
     sphere.position.y += ballSpeedY * delta;
+
+    // Debug : Afficher la position actuelle de la balle
+  //  console.log(`Sphere position: x=${sphere.position.x}, y=${sphere.position.y}`);
 
     // Gestion des collisions avec les murs
     let scored = handleWallCollision(walls, sphere);
 
+    // Debug : Afficher si un score a été détecté par handleWallCollision
+    if (scored) {
+        console.log(`Score detected! Player: ${scored.player}`);
+    } else {
+   //     console.log("No score detected in wall collision.");
+    }
+
     // Gestion des collisions avec les joueurs
+  //  console.log("Checking collisions with players...");
     handlePlayerCollision(players, sphere);
 
     // Si un score est marqué, réinitialise la position et la vitesse de la balle
     if (scored) {
         updateScore(scored.player);
+        console.log(`Resetting ball position and speed after score. Player ${scored.player}`);
         sphere.position.set(0, 0, 0);
         ballSpeedX = INITIAL_BALL_SPEED_X;
         ballSpeedY = INITIAL_BALL_SPEED_Y;
     } else {
+        // Debug : Afficher la position finale de la balle si aucun score n'a été marqué
+       // console.log(`No score. Ball final position: x=${sphere.position.x}, y=${sphere.position.y}`);
         sphere.position.set(sphere.position.x, sphere.position.y);
     }
 }
+
 
 
 
