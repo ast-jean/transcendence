@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
 import { getRoomId } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
+import { delta } from '../pong.js';
 
 
 export let ballSpeedX = 0;

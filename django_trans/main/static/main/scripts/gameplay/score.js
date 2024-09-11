@@ -1,6 +1,5 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
 
-
 let player1Score = 0;
 let player2Score = 0;
 const maxScore = 5;
@@ -69,3 +68,4 @@ export function resetGame() {
     });
     updateScoreDisplay();
 }
+
