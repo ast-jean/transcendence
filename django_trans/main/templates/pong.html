@@ -19,6 +19,13 @@
 <script src="{% static 'main/scripts/socket_pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/ball.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/wall.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/score.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/ui_tournament.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/ui_updates.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/websockets/socket_pong.js' %}" type="module"></script>
 <div id="editor">
 	<div id="view" class="container">
 		<!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
@@ -26,6 +33,40 @@
 		<div class="row">
 			<div class="col align-items-center align-self-center">
 				<div id="gameCont" class="three-js-canvas d-flex justify-content-center align-items-center"></div>
+				<div id="tournament-info" class="hud">
+					<p id="tournamentRoom">Tournament Room: </p>
+					<p id="connectedPlayers">Players Connected: 0/4</p>
+				</div>
+								<!-- Placeholder pour afficher les informations du tournoi -->
+				<div id="tournament-info" class="tournament-section">
+					<p id="tournamentRoom">Tournament Room: </p>
+					<p id="connectedPlayers">Players Connected: 0/4</p>
+				</div>
+
+				<!-- Placeholder pour afficher la liste des joueurs dans le lobby -->
+				<div id="playersList" class="tournament-section">
+					<h3>Players in the lobby:</h3>
+					<ul id="playerListUl">
+						<!-- Les joueurs seront ajoutés ici dynamiquement -->
+					</ul>
+				</div>
+
+				<!-- Placeholder pour entrer l'ID du tournoi pour rejoindre -->
+				<div id="tournamentRoomSearch" class="hidden tournament-section">
+					<form id="roomSearchForm">
+						<input type="text" id="roomIdInput" placeholder="Enter Tournament Room ID" />
+						<button type="submit">Join Tournament</button>
+					</form>
+				</div>
+
+				<!-- Placeholder pour afficher les scores -->
+				<div id="tournament-scores" class="tournament-section hidden">
+					<h3>Tournament Scores</h3>
+					<div id="scoreboard">
+						<!-- Les scores et résultats seront affichés ici -->
+					</div>
+				</div>
+
 				<div id="play_btns" class="hud"> <!-- text-center align-items-center align-self-center -->
 					<div id="onlineplay_btn" class="hud-btn game-button">
 							<b>Play online</b> <br>
@@ -46,7 +87,26 @@
 						<button id="menu-btn" class="btn btn-secondary">Menu</button>
 						<p id="endGameMessage"></p>
 					</div>
+					<div id="tournament_btn" class="hud-btn game-button">
+						<b>Tournament</b>
+						<br>
+						<small>(4 players)</small>
+					</div>
+					
 				</div>
+				<div id="playersList"></div>
+				<div id="tournamentOptions" class="hidden">
+					<button id="startTournament">Commencer un tournoi</button>
+					<button id="joinTournament">Rejoindre un tournoi</button>
+				</div>
+				<div id="tournamentRoomSearch" class="hidden">
+					<h3>Enter Tournament Room ID</h3>
+					<form id="roomSearchForm">
+						<input type="text" id="roomIdInput" placeholder="Enter Room ID" required />
+						<button type="submit">Join Tournament</button>
+					</form>
+				</div>
+				
                 <div id="layer2Btns" class="hidden">
                     <div id="OneVsOne" class="hud-btn">
                         <small>Create new (1vs1)</small>
