@@ -1,5 +1,4 @@
-import { setupWebSocket, sendCmd } from '../websockets/socket_pong.js'; // Pour les actions liées aux tournois
-import { updateTournamentInfo } from './ui_updates.js'; // Pour mettre à jour l'affichage du tournoi
+
 
 
 export function showTournamentOptions() {
@@ -14,20 +13,20 @@ export function hideTournamentOptions() {
     tournamentOptions.classList.add('hidden');
 }
 
-function showLobbyPlayers() {
+export function showLobbyPlayers() {
     const playersList = document.getElementById('playersList');
     playersList.innerHTML = '<h3>Players in the lobby:</h3>';
     playersList.style.display = 'block';
 }
 
-function showRoomSearch() {
+export function showRoomSearch() {
     const roomSearchDiv = document.getElementById('tournamentRoomSearch');
     if (roomSearchDiv) {
         roomSearchDiv.classList.remove('hidden');
     }
 }
 
-function hideRoomSearch() {
+export function hideRoomSearch() {
     const roomSearchDiv = document.getElementById('tournamentRoomSearch');
     if (roomSearchDiv) {
         roomSearchDiv.classList.add('hidden');

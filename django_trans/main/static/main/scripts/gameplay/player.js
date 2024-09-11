@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
+import { socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, players} from '../pong.js';
 import { addPlayerToGame, removeAllPlayers } from '../utils/setter.js';
-
 
 export let keyState = {};
 
@@ -32,10 +31,7 @@ export function initializePlayers(scene, useAI = false) {
         // Ajoute un deuxième joueur humain
         addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
     }
-
-    console.log("Joueurs après initialisation :", players);  // Debug : affichage des joueurs après l'initialisation
 }
-
 
 // Fonction pour déplacer les joueurs
 export function movePlayer(delta, scene) {
@@ -87,13 +83,10 @@ export function movePlayer(delta, scene) {
 
 // Met à jour l'affichage des joueurs
 export function updatePlayerVisualization(scene) {
-    //console.log(scene); // Devrait afficher une instance de THREE.Scene
-
     players.forEach(player => {
         scene.add(player.mesh);
     });
 }
-
 
 export function resetPlayer() {
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
