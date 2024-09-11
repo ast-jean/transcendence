@@ -1,5 +1,5 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setGameOverState } from '../pong.js';
+import { setGameOverState } from '../utils/setter.js';
 
 let player1Score = 0;
 let player2Score = 0;

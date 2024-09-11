@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
-import { local_game, removeAllPlayers, players, addPlayerToGame } from '../pong.js';
+import { local_game, players} from '../pong.js';
+import { addPlayerToGame, removeAllPlayers } from '../utils/setter.js';
 
 
 export let keyState = {};

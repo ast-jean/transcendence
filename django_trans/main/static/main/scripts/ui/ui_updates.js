@@ -1,4 +1,5 @@
-import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y, setBallSpeedX, setBallSpeedY } from "../gameplay/ball.js"
+import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y} from "../gameplay/ball.js"
+import { setBallSpeedX, setBallSpeedY } from "../utils/setter.js";
 
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
     const tournamentRoomElement = document.getElementById('tournamentRoom');

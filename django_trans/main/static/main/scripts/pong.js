@@ -14,13 +14,10 @@ import { Player } from './gameplay/player.js';
 // Variables globales du jeu
 var clock = new THREE.Clock();
 export var delta;
-export let isGameOver = true;
 export let local_game = false;
 export let useAIForPlayer2 = false;
 
-export function setGameOverState(state) {
-    isGameOver = state;
-}
+
 // Configuration Three.js
 const container = document.getElementById('gameCont');
 const width = container.clientWidth;
@@ -49,21 +46,9 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-export let players = [];
 
-// Ajoute un joueur dans le tableau global players et à la scène
-export function addPlayerToGame(id, x, y, z, color, scene) {
-    const newPlayer = new Player(id, x, y, z, color);
-    players.push(newPlayer);
-    scene.add(newPlayer.mesh);
-    console.log(`Player ${id} ajouté au jeu :`, newPlayer);  // Debug
-}
 
-// Supprime tous les joueurs existants de la scène
-export function removeAllPlayers(scene) {
-    players.forEach(player => scene.remove(player.mesh));  // Supprime les joueurs de la scène
-    players = [];  // Réinitialise le tableau de joueurs
-}
+
 
 
 

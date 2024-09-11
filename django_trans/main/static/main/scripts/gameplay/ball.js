@@ -5,8 +5,7 @@ import { updateScore } from './score.js';
 import { delta, players } from '../pong.js';
 
 
-export let ballSpeedX = 0;
-export let ballSpeedY = 0;
+
 export const INITIAL_BALL_SPEED_X = 5;
 export const INITIAL_BALL_SPEED_Y = 5;
 
@@ -15,21 +14,7 @@ export const sphere = new THREE.Mesh(
     new THREE.MeshPhongMaterial({ color: 0xffffff })
 );
 
-export function setBallSpeedX(value) {
-    ballSpeedX = value;
-}
 
-export function setBallSpeedY(value) {
-    ballSpeedY = value;
-}
-
-export function getBallSpeedX() {
-    return ballSpeedX;
-}
-
-export function getBallSpeedY() {
-    return ballSpeedY;
-}
 
 export function addBallToScene(scene) {
     sphere.position.set(0, 0, 0);
