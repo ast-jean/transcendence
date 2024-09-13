@@ -1,7 +1,7 @@
 // Import des modules nécessaires
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { initializePlayers, movePlayer, updatePlayerVisualization } from './gameplay/player.js';
+import { AIPlayer, initializePlayers, movePlayer, updatePlayerVisualization } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { updateScoreDisplay, resetGame, checkEndGame } from './gameplay/score.js';
@@ -61,9 +61,6 @@ function localPlay() {
     // Initialisation des joueurs (local)
     initializePlayers(scene, players); 
     
-    // Affichage de players pour le debug
-    console.log("Contenu de players après initialisation :", players); 
-    
     // Ajouter la balle à la scène
     addBallToScene(scene);
 
@@ -74,10 +71,10 @@ function localPlay() {
 
 // Démarrage du jeu contre l'IA
 function playAI() {
-    players.forEach(player => scene.remove(player.mesh)); // Supprimer les joueurs existants
-    players = [];
     initializePlayers(scene, players, true);  // true pour indiquer qu'on joue contre une IA
-    //updatePlayerVisualization(scene); // Mise à jour visuelle des joueurs
+    addBallToScene(scene);
+    //useAIForPlayer2 = true;
+
     startCountdown(); // Démarrer le compte à rebours
 }
 
@@ -85,8 +82,6 @@ function playAI() {
 // Démarrage du jeu en ligne
 async function playOnline(maxPlayers) {
     if (socketState.isSocketReady) {
-        players.forEach(player => scene.remove(player.mesh));
-        players = [];
         sendCmd(`roomCreate${maxPlayers}`);
         try {
             await waitForRoomId();
@@ -115,10 +110,15 @@ function animate() {
     controls.update();
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
+    const player2 = players[1];
+    if(player2 instanceof AIPlayer)
+    {
 
-    if (useAIForPlayer2 && aiPlayer) {
-        aiPlayer.update(delta); // Mettre à jour l'IA si nécessaire
+        console.log("Updating AI Player...");
+        player2.update(delta);
     }
+
+
 }
 
 // Redimensionnement du canvas

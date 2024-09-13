@@ -2,9 +2,12 @@ import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY } from '../utils/setter.js';
+import { sphere } from './ball.js';
 
 export let keyState = {};
+
+
 
 export class Player {
     constructor(id, x, y, z, color) {
@@ -26,7 +29,7 @@ export function initializePlayers(scene, useAI = false) {
 
     if (useAI) {
         // Ajoute un joueur IA
-        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene); // IA (rouge)
+        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
     } else {
         // Ajoute un deuxième joueur humain
         addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
@@ -103,3 +106,59 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('keyup', function (e) {
     keyState[e.code] = false; // Marque la touche comme relâchée
 });
+
+
+
+
+export class AIPlayer extends Player {
+    constructor(id, x, y, z, color) {
+        console.log('AIPlayer is being initialized');
+        super(id, x, y, z, color);
+        this.targetX = 0;
+        this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
+    }
+
+    predictBallImpact() {
+        let predictedPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
+        let predictedSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
+        const ballRadius = sphere.geometry.parameters.radius;
+        const maxIterations = 1000;
+        let iterations = 0;
+
+        while (predictedPosition.y > -wallLength / 2 && predictedPosition.y < wallLength / 2 && iterations < maxIterations) {
+            predictedPosition.add(predictedSpeed);
+
+            if (predictedPosition.x - ballRadius <= -wallLength / 2 || predictedPosition.x + ballRadius >= wallLength / 2) {
+                predictedSpeed.x *= -1;
+            }
+
+            iterations++;
+        }
+
+        return predictedPosition.x;
+    }
+
+    calculateMovement() {
+        this.targetX = this.predictBallImpact();
+    }
+
+    update(delta) {
+        const speed = 20;
+        const aiPosition = this.mesh.position.x;
+        const tolerance = 1;
+
+        if (Math.abs(this.targetX - aiPosition) > tolerance) {
+            let moveDirection = (this.targetX - aiPosition) > 0 ? speed * delta : -speed * delta;
+
+            let newX = this.mesh.position.x + moveDirection;
+            if (newX - this.mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + this.mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                this.mesh.position.x = newX;
+            }
+        }
+    }
+
+    destroy() {
+        clearInterval(this.aiInterval);
+    }
+}
