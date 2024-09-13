@@ -141,8 +141,7 @@ document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
 document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
-
-
+document.getElementById('tournament_btn').addEventListener('click',);
 
 
 
