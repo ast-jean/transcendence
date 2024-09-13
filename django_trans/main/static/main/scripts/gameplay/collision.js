@@ -1,5 +1,6 @@
-
-import { delta } from "../pong";
+import * as THREE from 'three';
+import { delta } from "../pong.js";
+import { getBallSpeedX, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 
 export function handleWallCollision(walls, sphere) {
     let scored = false;
@@ -15,9 +16,9 @@ export function handleWallCollision(walls, sphere) {
                 scored = { player: 2 };  // Score pour le joueur 2
             } else if (wall.name === 'leftWall' || wall.name === 'rightWall') {
                 // Inverser la direction sur l'axe X si la balle touche les murs gauche ou droit
-                ballSpeedX *= -1;
+                setBallSpeedX(getBallSpeedX() * -1)
                 // Pour éviter que la balle "colle" au mur, on la repousse légèrement
-                sphere.position.x += ballSpeedX * delta * 2;
+                sphere.position.x += getBallSpeedX() * delta * 2;
             }
         }
     });
@@ -28,30 +29,39 @@ export function handleWallCollision(walls, sphere) {
 
 
 export function handlePlayerCollision(players, sphere, ballSpeed) {
-    players.forEach(player => {
+
+    players.forEach((player, index) => {
         const playerBox = new THREE.Box3().setFromObject(player.mesh);
         const sphereBox = new THREE.Box3().setFromObject(sphere);
- 
+
         if (playerBox.intersectsBox(sphereBox)) {
+
+            // Calcul de l'angle de rebond
             let relativeIntersectY = (sphere.position.y - player.mesh.position.y) / (player.mesh.geometry.parameters.height / 2);
             let bounceAngle = relativeIntersectY * (Math.PI / 4);  // Ajuste l'angle pour limiter les rebonds
- 
+
+            // Calcul de la vitesse après collision
             let speed = ballSpeed.length();
+
             if (sphere.position.x > player.mesh.position.x) {
                 ballSpeed.set(Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             } else {
                 ballSpeed.set(-Math.abs(speed * Math.cos(bounceAngle)), speed * Math.sin(bounceAngle));
             }
- 
-            // Éviter les rebonds trop faibles
+
+            // Limite pour éviter des rebonds trop faibles
             if (Math.abs(ballSpeed.x) < speed * 0.5) {
                 ballSpeed.x = Math.sign(ballSpeed.x) * speed * 0.5;
             }
- 
+
             ballSpeed.normalize().multiplyScalar(speed);
+
+            setBallSpeedX(ballSpeed.x);
+            setBallSpeedY(ballSpeed.y);
         }
     });
- }
+}
+
 
 
 

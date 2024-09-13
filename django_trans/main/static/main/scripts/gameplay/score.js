@@ -1,5 +1,5 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setGameOverState } from '../utils/setter.js';
+import { setBallSpeedX, setBallSpeedY, setGameOverState } from '../utils/setter.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -93,8 +93,8 @@ function getScoreHTML(score, symbol, maxScore) {
 export function resetGame() {
     player1Score = 0;
     player2Score = 0;
-    ballSpeedX = 0;
-    ballSpeedY = 0;
+    setBallSpeedX(0);
+    setBallSpeedY(0);
     setGameOverState(true);
     sphere.position.set(0, 0, 0);
     players.forEach(player => {

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
+import { getBallSpeedX, getBallSpeedY, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 
 export const INITIAL_BALL_SPEED_X = 5;
 export const INITIAL_BALL_SPEED_Y = 5;
@@ -18,21 +19,24 @@ export function addBallToScene(scene) {
 
 export function moveBall(delta, walls, players) {
     // Mise à jour de la position de la balle
-    sphere.position.x += ballSpeedX * delta;
-    sphere.position.y += ballSpeedY * delta;
+    sphere.position.x += getBallSpeedX() * delta;
+    sphere.position.y += getBallSpeedY() * delta;
+
+    let ballSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
 
     // Gestion des collisions avec les murs
     let scored = handleWallCollision(walls, sphere);
 
     // Gestion des collisions avec les joueurs
-    handlePlayerCollision(players, sphere);
+    handlePlayerCollision(players, sphere, ballSpeed);
 
     // Si un score est marqué, réinitialise la position et la vitesse de la balle
     if (scored) {
         updateScore(scored.player);
         sphere.position.set(0, 0, 0);
-        ballSpeedX = INITIAL_BALL_SPEED_X;
-        ballSpeedY = INITIAL_BALL_SPEED_Y;
+
+        setBallSpeedX(INITIAL_BALL_SPEED_X);
+        setBallSpeedY(INITIAL_BALL_SPEED_Y);
     } else {
         sphere.position.set(sphere.position.x, sphere.position.y);
     }

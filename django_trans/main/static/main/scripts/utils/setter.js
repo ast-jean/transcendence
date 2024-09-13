@@ -1,4 +1,4 @@
-
+import { Player } from "../gameplay/player.js";
 
 export let ballSpeedX = 0;
 export let ballSpeedY = 0;

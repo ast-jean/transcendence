@@ -1,6 +1,6 @@
 import { initializePlayers, resetPlayer } from '../gameplay/player.js'; // Gestion des joueurs
 import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
-import { players } from '../pong.js';
+import { players } from '../utils/setter.js';
 
 
 export const socketState = {

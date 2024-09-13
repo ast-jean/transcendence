@@ -10,6 +10,7 @@ import { setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { Player } from './gameplay/player.js';
+import { players } from './utils/setter.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
