@@ -7,7 +7,6 @@ const maxScore = 5;
 
 export function updateScore(player) {
     let team = player === 1 ? "team1" : "team2";
-
     if (player === 1) {
         if (player1Score < maxScore) {
             player1Score++;
@@ -17,10 +16,8 @@ export function updateScore(player) {
             player2Score++;
         }
     }
-
-    updateScoreDisplay();  // Met à jour l'affichage des scores
-    checkEndGame();        // Vérifie si la partie doit se terminer
-
+    updateScoreDisplay();
+    checkEndGame();
     // Envoie les scores au serveur si on est en ligne
     if (socketState.socket && socketState.isSocketReady) {
         let cmd = "score";
@@ -36,7 +33,6 @@ export function updateScoreDisplay() {
     player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
 }
-
 
 export function checkEndGame() {
     if (player1Score >= maxScore || player2Score >= maxScore) {
@@ -65,17 +61,16 @@ export function endGame() {
     document.getElementById('replay-btn').addEventListener('click', () => {
         document.getElementById('gameCont').removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
-        resetGame();  // Réinitialise la partie
-        startCountdown();  // Redémarre le compte à rebours
+        resetGame();
+        startCountdown();
     });
-
     // Bouton pour retourner au menu principal
     document.getElementById('menu-btn').addEventListener('click', () => {
         document.getElementById('gameCont').removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
-        showAllButtons();  // Montre les options du menu principal
-        resetGame();  // Réinitialise la partie
-        controls.enabled = false;  // Désactive les contrôles, si nécessaire
+        showAllButtons();
+        resetGame();
+        controls.enabled = false;
     });
 }
 
@@ -102,4 +97,3 @@ export function resetGame() {
     });
     updateScoreDisplay();
 }
-

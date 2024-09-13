@@ -2,7 +2,6 @@ import { initializePlayers, resetPlayer } from '../gameplay/player.js'; // Gesti
 import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
 import { players } from '../utils/setter.js';
 
-
 export const socketState = {
     socket: null,
     isSocketReady: false,

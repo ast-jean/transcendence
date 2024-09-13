@@ -42,7 +42,6 @@ export function addPlayerToGame(id, x, y, z, color, scene, AI = false) {
     }
 }
 
-
 // Supprime tous les joueurs existants de la scène
 export function removeAllPlayers(scene) {
     players.forEach(player => scene.remove(player.mesh));  // Supprime les joueurs de la scène
