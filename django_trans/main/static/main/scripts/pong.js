@@ -69,9 +69,7 @@ async function playOnline(maxPlayers) {
         } catch {
             location.reload();
         }
-
         initializePlayers(scene, players);
-        //updatePlayerVisualization(players, scene);
         hideLayer2Btns();
         try {
             await checkAllPlayersConnected(maxPlayers);
@@ -130,6 +128,7 @@ animate();
 // Gestion des événements
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
+document.getElementById('onlineplay_btn').addEventListener('click', playOnline);
 document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 

@@ -1,6 +1,4 @@
 
-
-
 export function randomizeColors() {
     const randomColor = () => Math.floor(Math.random() * 16777215);
 
