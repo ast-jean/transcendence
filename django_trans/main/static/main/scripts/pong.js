@@ -60,24 +60,48 @@ function playAI() {
     startCountdown();
 }
 
-// Démarrage du jeu en ligne
+// Fonction principale pour gérer la création et le lancement d'une partie en ligne
 async function playOnline(maxPlayers) {
+    // Vérifie si le socket est prêt
     if (socketState.isSocketReady) {
         sendCmd(`roomCreate${maxPlayers}`);
         try {
             await waitForRoomId();
         } catch {
-            location.reload();
+            location.reload();  // Recharge la page en cas d'échec
         }
+        
         initializePlayers(scene, players);
+        
         hideLayer2Btns();
+        
         try {
             await checkAllPlayersConnected(maxPlayers);
         } catch (error) {
             console.error("Error waiting for players:", error);
             location.reload();
-        }
+        
+        startCountdown();
     }
+    }
+}
+
+// Function to wait until room_id changes from null
+function waitForRoomId() {
+   return new Promise((resolve, reject) => {
+       const checkInterval = setInterval(() => {
+           if (getRoomId() !== null) {
+               clearInterval(checkInterval);
+               resolve(getRoomId());
+           }
+       }, 100); // Check every 100 milliseconds
+
+       // Optional: Set a timeout to reject the promise if it takes too long
+       setTimeout(() => {
+           clearInterval(checkInterval);
+           reject(new Error("Timed out waiting for room_id to change from null"));
+       }, 10000); // 10 seconds timeout
+   });
 }
 
 // Animation principale
