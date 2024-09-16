@@ -5,10 +5,11 @@ import { AIPlayer, initializePlayers, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { startCountdown } from './ui/ui_updates.js';
-import { checkAllPlayersConnected, sendCmd } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { players } from './utils/setter.js';
+import { setupWebSocket } from './websockets/socket_pong.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -48,43 +49,57 @@ scene.add(ambientLight);
 function localPlay() {
     local_game = true;
     hideAllButtons();
-    initializePlayers(scene, players); 
+    initializePlayers(scene, false, false); 
     addBallToScene(scene);
     startCountdown(); 
 }
 
 // Démarrage du jeu contre l'IA
 function playAI() {
-    initializePlayers(scene, players, true);  // true pour indiquer qu'on joue contre une IA
+    initializePlayers(scene, true, false);  // true pour indiquer qu'on joue contre une IA
     addBallToScene(scene);
     startCountdown();
 }
 
-// Démarrage du jeu en ligne
 async function playOnline(maxPlayers) {
-    // Vérifie si le socket est prêt
+
+    // Si le WebSocket est prêt, continuer avec la création de la room
     if (socketState.isSocketReady) {
+        console.log(`Création de la room pour ${maxPlayers} joueurs.`);
         sendCmd(`roomCreate${maxPlayers}`);
+        
         try {
+            // Attend la confirmation de la création de la room (par exemple, room ID)
             await waitForRoomId();
+            console.log("Room créée avec succès.");
         } catch {
+            console.error("Échec de la récupération de l'ID de la room.");
             location.reload();  // Recharge la page en cas d'échec
+            return;
         }
-        
-        initializePlayers(scene, players);
-        
-        hideLayer2Btns();
-        
+
+        // Initialise les joueurs après avoir rejoint une room
+        initializePlayers(scene, false, true);
+        addBallToScene(scene);
+        hideLayer2Btns();  // Cache les boutons après la configuration
+
         try {
+            // Vérifie que tous les joueurs sont connectés avant de commencer la partie
             await checkAllPlayersConnected(maxPlayers);
+            console.log("Tous les joueurs sont connectés.");
         } catch (error) {
-            console.error("Error waiting for players:", error);
-            location.reload();
-        
+            console.error("Erreur lors de la connexion des joueurs :", error);
+            location.reload();  // Recharge la page si un problème survient
+            return;
+        }
+
+        // Démarre le compte à rebours après la connexion des joueurs
         startCountdown();
-    }
+    } else {
+        console.error("Le WebSocket n'est pas prêt.");
     }
 }
+
 
 // Function to wait until room_id changes from null
 function waitForRoomId() {
@@ -150,13 +165,43 @@ function resizeRendererToDisplaySize(renderer) {
 animate();
 
 // Gestion des événements
+document.getElementById('onlineplay_btn').addEventListener('click', async () => {
+    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
+    
+    try {
+        await setupWebSocket();
+        console.log("WebSocket prêt.");
+        showLayer2Btns();
+        
+    } catch (error) {
+        console.error("Erreur lors de l'établissement du WebSocket :", error);
+        return;
+    }
+});
+
+
+
+
+function handleSubmit(event) {
+    event.preventDefault(); // Prevents the default form submission
+    let input = document.querySelector('input[name="searchRoom"]');
+    const roomId = input.value;
+    if (!roomId) {
+        event.preventDefault();
+        alert("Please fill in all required fields.");
+    } else {
+        sendCmd("roomSearch", roomId);
+        console.log("Searching for Room #"+ roomId);
+    }
+}
+
+document.querySelector('form').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
-document.getElementById('onlineplay_btn').addEventListener('click', playOnline);
-document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
-document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2));
 document.getElementById('TwoVsTwo').addEventListener('click', () => playOnline(4));
+document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
+document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
 ///* Btns layer 1     Btns layer 2
 //

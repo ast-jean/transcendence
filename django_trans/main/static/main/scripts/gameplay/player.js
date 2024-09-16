@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
+import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game } from '../pong.js';
 import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY } from '../utils/setter.js';
@@ -19,18 +19,20 @@ export class Player {
 }
 
 // Initialisation des joueurs (locale ou avec IA)
-export function initializePlayers(scene, useAI = false) {
+export function initializePlayers(scene, useAI, isOnline ) {
     removeAllPlayers(scene);  // Retire tous les joueurs existants
 
     // Ajoute le premier joueur
     addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
-
-    if (useAI) {
-        // Ajoute un joueur IA
-        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
-    } else {
-        // Ajoute un deuxième joueur humain
-        addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
+    if (!isOnline)
+    {
+        if (useAI) {
+            // Ajoute un joueur IA
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
+        } else {
+            // Ajoute un deuxième joueur humain
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
+        }
     }
 }
 

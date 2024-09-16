@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // Pour créer les murs
+import * as THREE from 'three';
 
 const wallThickness = 0.5;
 export const wallLength = 20;

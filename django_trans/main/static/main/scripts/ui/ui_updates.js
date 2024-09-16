@@ -27,6 +27,7 @@ export function hideLayer2Btns() {
 }
 
 export function hideAllButtons() {
+    console.log()
     const play_btns = document.querySelectorAll('.game-button');
     play_btns.forEach(button => {
         button.classList.add('hidden');

@@ -1,5 +1,14 @@
+import * as THREE from 'three';
 import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
 import { players } from '../utils/setter.js';
+import { startCountdown } from '../ui/ui_updates.js';
+import { removeMeshFromScene } from '../utils/utils.js';
+import { sphere } from '../gameplay/ball.js';
+import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
+
+
+
+export var room_id;
 
 export const socketState = {
     socket: null,
@@ -181,7 +190,8 @@ export function sendSync() {
 export function removePlayer(playerIdToRemove) {
     console.log("Removing player");
     let player = players.find(p => p.id === playerIdToRemove);
-    removeMeshFromScene(player.mesh, scene);
+    if (player)
+        removeMeshFromScene(player.mesh, scene);
     players = players.filter(player => player.id !== playerIdToRemove);
     //updatePlayerVisualization();
 }
@@ -204,3 +214,20 @@ export function checkAllPlayersConnected(maxPlayers) {
         }, 60000); // Délai d'attente de 30 secondes
     });
 }
+
+export function receiveBallSync(ballData) {
+
+    let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
+    let serverPos = new THREE.Vector2(ballData.x, ballData.y);
+    
+    let smoothingFactor = 0.5;
+    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
+    
+    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
+    
+    
+    // Synchroniser les vitesses de la balle également
+    setBallSpeedX(ballData.vx)
+    setBallSpeedY(ballData.vy)
+ }
+

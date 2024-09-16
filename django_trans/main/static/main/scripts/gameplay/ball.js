@@ -47,8 +47,8 @@ export function sendBallState() {
         const ballData = {
             x: sphere.position.x,
             y: sphere.position.y,
-            vx: ballSpeedX,
-            vy: ballSpeedY
+            vx: getBallSpeedX(),
+            vy: getBallSpeedY()
         };
         socketState.socket.send(JSON.stringify({ cmd, ballData }));
     }
