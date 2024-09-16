@@ -1,15 +1,13 @@
 // Import des modules nécessaires
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { AIPlayer, initializePlayers, movePlayer, updatePlayerVisualization } from './gameplay/player.js';
+import { AIPlayer, initializePlayers, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { updateScoreDisplay, resetGame, checkEndGame } from './gameplay/score.js';
 import { startCountdown } from './ui/ui_updates.js';
-import { setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, sendCmd } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
-import { Player } from './gameplay/player.js';
 import { players } from './utils/setter.js';
 
 // Variables globales du jeu
@@ -17,7 +15,6 @@ var clock = new THREE.Clock();
 export var delta;
 export let local_game = false;
 export let useAIForPlayer2 = false;
-
 
 // Configuration Three.js
 const container = document.getElementById('gameCont');
@@ -31,8 +28,8 @@ renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
 
 // Configuration des murs
-setupWalls(scene);  // Crée les murs dans la scène
-setWallColor(0x00ff00);  // Met les murs en vert
+setupWalls(scene);
+setWallColor(0x00ff00);
 
 // Contrôles de caméra
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -51,14 +48,8 @@ scene.add(ambientLight);
 function localPlay() {
     local_game = true;
     hideAllButtons();
-    
-    // Initialisation des joueurs (local)
     initializePlayers(scene, players); 
-    
-    // Ajouter la balle à la scène
     addBallToScene(scene);
-
-    // Démarrer le compte à rebours
     startCountdown(); 
 }
 
@@ -66,31 +57,51 @@ function localPlay() {
 function playAI() {
     initializePlayers(scene, players, true);  // true pour indiquer qu'on joue contre une IA
     addBallToScene(scene);
-    //useAIForPlayer2 = true;
-
-    startCountdown(); // Démarrer le compte à rebours
+    startCountdown();
 }
 
 // Démarrage du jeu en ligne
 async function playOnline(maxPlayers) {
+    // Vérifie si le socket est prêt
     if (socketState.isSocketReady) {
         sendCmd(`roomCreate${maxPlayers}`);
         try {
             await waitForRoomId();
         } catch {
-            location.reload();
+            location.reload();  // Recharge la page en cas d'échec
         }
-
+        
         initializePlayers(scene, players);
-        //updatePlayerVisualization(players, scene);
+        
         hideLayer2Btns();
+        
         try {
             await checkAllPlayersConnected(maxPlayers);
         } catch (error) {
             console.error("Error waiting for players:", error);
             location.reload();
-        }
+        
+        startCountdown();
     }
+    }
+}
+
+// Function to wait until room_id changes from null
+function waitForRoomId() {
+   return new Promise((resolve, reject) => {
+       const checkInterval = setInterval(() => {
+           if (getRoomId() !== null) {
+               clearInterval(checkInterval);
+               resolve(getRoomId());
+           }
+       }, 100); // Check every 100 milliseconds
+
+       // Optional: Set a timeout to reject the promise if it takes too long
+       setTimeout(() => {
+           clearInterval(checkInterval);
+           reject(new Error("Timed out waiting for room_id to change from null"));
+       }, 10000); // 10 seconds timeout
+   });
 }
 
 // Animation principale
@@ -105,7 +116,6 @@ function animate() {
     const player2 = players[1];
     if(player2 instanceof AIPlayer)
     {
-
         console.log("Updating AI Player...");
         player2.update(delta);
     }
@@ -124,17 +134,17 @@ function resizeRendererToDisplaySize(renderer) {
     }
 }
 
-// Gestion des scores
-function updateScore(player) {
-    let team = player === 1 ? "team1" : "team2";
-    if (player === 1) {
-        player1Score++;
-    } else if (player === 2) {
-        player2Score++;
-    }
-    updateScoreDisplay(player1Score, player2Score);
-    checkEndGame(player1Score, player2Score);
-}
+// // Gestion des scores
+// function updateScore(player) {
+//     let team = player === 1 ? "team1" : "team2";
+//     if (player === 1) {
+//         player1Score++;
+//     } else if (player === 2) {
+//         player2Score++;
+//     }
+//     updateScoreDisplay(player1Score, player2Score);
+//     checkEndGame(player1Score, player2Score);
+// }
 
 // Lancement de l'animation
 animate();
@@ -142,6 +152,7 @@ animate();
 // Gestion des événements
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
+document.getElementById('onlineplay_btn').addEventListener('click', playOnline);
 document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2));

@@ -11,9 +11,9 @@ export function handleWallCollision(walls, sphere) {
 
         if (wallBox.intersectsBox(sphereBox)) {
             if (wall.name === 'topWall') {
-                scored = { player: 1 };  // Score pour le joueur 1
+                scored = { player: 1 };
             } else if (wall.name === 'bottomWall') {
-                scored = { player: 2 };  // Score pour le joueur 2
+                scored = { player: 2 };
             } else if (wall.name === 'leftWall' || wall.name === 'rightWall') {
                 // Inverser la direction sur l'axe X si la balle touche les murs gauche ou droit
                 setBallSpeedX(getBallSpeedX() * -1)
@@ -22,14 +22,10 @@ export function handleWallCollision(walls, sphere) {
             }
         }
     });
-
     return scored;
 }
 
-
-
 export function handlePlayerCollision(players, sphere, ballSpeed) {
-
     players.forEach((player, index) => {
         const playerBox = new THREE.Box3().setFromObject(player.mesh);
         const sphereBox = new THREE.Box3().setFromObject(sphere);

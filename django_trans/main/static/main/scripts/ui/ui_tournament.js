@@ -1,6 +1,5 @@
 
 
-
 export function showTournamentOptions() {
     const tournamentOptions = document.getElementById('tournamentOptions');
     tournamentOptions.classList.add('active');

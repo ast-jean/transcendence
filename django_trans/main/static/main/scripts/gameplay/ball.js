@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState } from '../websockets/socket_pong.js'; // Si la position de la balle est synchronisée avec le serveur
+import { socketState } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
 import { getBallSpeedX, getBallSpeedY, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
@@ -26,7 +26,6 @@ export function moveBall(delta, walls, players) {
 
     // Gestion des collisions avec les murs
     let scored = handleWallCollision(walls, sphere);
-
     // Gestion des collisions avec les joueurs
     handlePlayerCollision(players, sphere, ballSpeed);
 
@@ -34,7 +33,6 @@ export function moveBall(delta, walls, players) {
     if (scored) {
         updateScore(scored.player);
         sphere.position.set(0, 0, 0);
-
         setBallSpeedX(INITIAL_BALL_SPEED_X);
         setBallSpeedY(INITIAL_BALL_SPEED_Y);
     } else {
