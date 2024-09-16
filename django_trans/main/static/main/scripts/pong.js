@@ -11,6 +11,7 @@ import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.
 import { players } from './utils/setter.js';
 import { setupWebSocket } from './websockets/socket_pong.js';
 import { displayPlayersInScene } from './gameplay/add_scene.js';
+import { room_id } from './websockets/socket_pong.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -22,7 +23,7 @@ export let useAIForPlayer2 = false;
 const container = document.getElementById('gameCont');
 const width = container.clientWidth;
 const height = container.clientWidth * 0.666;
-const scene = new THREE.Scene();
+export const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
@@ -198,8 +199,11 @@ function handleSubmit(event) {
 
 
 document.getElementById('startGameButton').addEventListener('click', () => {
-    displayPlayersInScene(players, scene);  // players est ta liste de joueurs
+    displayPlayersInScene(players, scene);  // Appelle la fonction pour afficher les joueurs
+    console.log("La partie a commencé, joueurs ajoutés à la scène");
 });
+
+
 
 document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);

@@ -7,6 +7,9 @@ import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
+import { displayPlayersInScene } from '../gameplay/add_scene.js';
+
+
 
 
 export var room_id;
@@ -64,7 +67,7 @@ export function setupWebSocket() {
             if (data.cmd === "existingPlayers") {
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
-                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0));  
+                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  
                         console.log("Existing player added: ", player.ident);    
                     }
                     });
@@ -138,8 +141,8 @@ export function receiveSync(id, movementData) {
         console.log("Creating new player in receiveSync");
         if (!movementData.x) movementData.x = 0;
         if (!movementData.y) movementData.y = 0;
-        player = new Player(id, movementData.x, movementData.y * -1, 0);  // Inverser la position y lors de la réception
-        players.push(player);
+        // player = new Player(id, movementData.x, movementData.y * -1, 0, 0x0000ff);  // Inverser la position y lors de la réception
+        // players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
