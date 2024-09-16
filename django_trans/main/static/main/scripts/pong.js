@@ -10,6 +10,7 @@ import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { players } from './utils/setter.js';
 import { setupWebSocket } from './websockets/socket_pong.js';
+import { displayPlayersInScene } from './gameplay/add_scene.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -48,17 +49,13 @@ scene.add(ambientLight);
 // Démarrage du jeu local
 function localPlay() {
     local_game = true;
-    hideAllButtons();
+    // hideAllButtons();
     initializePlayers(scene, false, false); 
-    addBallToScene(scene);
-    startCountdown(); 
 }
 
 // Démarrage du jeu contre l'IA
 function playAI() {
     initializePlayers(scene, true, false);  // true pour indiquer qu'on joue contre une IA
-    addBallToScene(scene);
-    startCountdown();
 }
 
 async function playOnline(maxPlayers) {
@@ -199,7 +196,11 @@ function handleSubmit(event) {
     }
 }
 
-// Attache l'événement à un formulaire précis
+
+document.getElementById('startGameButton').addEventListener('click', () => {
+    displayPlayersInScene(players, scene);  // players est ta liste de joueurs
+});
+
 document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
