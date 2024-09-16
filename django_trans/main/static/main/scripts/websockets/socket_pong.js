@@ -5,7 +5,8 @@ import { startCountdown } from '../ui/ui_updates.js';
 import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
-
+import { Player } from '../gameplay/player.js';
+import { wallLength } from '../gameplay/wall.js';
 
 
 export var room_id;
@@ -64,8 +65,9 @@ export function setupWebSocket() {
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
                         players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0));  
+                        console.log("Existing player added: ", player.ident);    
                     }
-                });
+                    });
                 //updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
@@ -81,21 +83,11 @@ export function setupWebSocket() {
                 receiveBallSync(data.ballData);
             }
             if (data.cmd === "connect") {
-                if (!players.find(p => p.id === data.ident)) {
-                    players.push(new Player(data.ident, 0, wallLength / 2 - 0.5, 0));
-                }
-                sendSync();
                 receiveConnect(data.ident);
-                checkAllPlayersConnected();
             }
             if (data.cmd === "disconnect") {
                 removePlayer(data.ident);
                 receiveDisconnect(data.ident);
-            }
-            if (data.cmd === "scoreUpdate") {
-                player1Score = data.scoreTeam1;
-                player2Score = data.scoreTeam2;
-                updateScoreDisplay();
             }
 
             if (data.cmd === "joinLobby") {
@@ -158,8 +150,17 @@ export function receiveSync(id, movementData) {
 
 export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
-    // Optionnel: ajouter une vérification pour ne pas dupliquer les joueurs
+
+    // Ajouter le joueur s'il n'existe pas déjà dans la liste
+    if (!players.find(p => p.id === id)) {
+        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+        console.log("new player push");
+    }
+
+    // Envoyer la synchronisation du nouveau joueur
+    sendSync();
 }
+
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
@@ -202,7 +203,7 @@ export function checkAllPlayersConnected(maxPlayers) {
             if (socketState.isSocketReady && players.length === maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
-                startCountdown();
+                // startCountdown();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms

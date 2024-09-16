@@ -94,7 +94,7 @@ async function playOnline(maxPlayers) {
         }
 
         // Démarre le compte à rebours après la connexion des joueurs
-        startCountdown();
+        // startCountdown();
     } else {
         console.error("Le WebSocket n'est pas prêt.");
     }
@@ -182,20 +182,25 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
 
 
 
+// Fonction de gestion du submit
 function handleSubmit(event) {
-    event.preventDefault(); // Prevents the default form submission
+    event.preventDefault(); // Prevent the default form submission
+    console.log('handleSubmit called'); // Vérifie si la fonction est appelée
+    
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
+    console.log('Room ID:', roomId); // Vérifie la valeur du champ
+
     if (!roomId) {
-        event.preventDefault();
         alert("Please fill in all required fields.");
     } else {
         sendCmd("roomSearch", roomId);
-        console.log("Searching for Room #"+ roomId);
+        console.log("Searching for Room #" + roomId);
     }
 }
 
-document.querySelector('form').addEventListener('submit', handleSubmit);
+// Attache l'événement à un formulaire précis
+document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
 document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2));
