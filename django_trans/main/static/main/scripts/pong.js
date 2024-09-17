@@ -4,14 +4,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { startCountdown } from './ui/ui_updates.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { players } from './utils/setter.js';
-import { setupWebSocket } from './websockets/socket_pong.js';
 import { displayPlayersInScene } from './gameplay/add_scene.js';
-import { room_id } from './websockets/socket_pong.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();

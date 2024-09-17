@@ -1,16 +1,10 @@
 import * as THREE from 'three';
-import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
 import { players } from '../utils/setter.js';
-import { startCountdown } from '../ui/ui_updates.js';
 import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-import { displayPlayersInScene } from '../gameplay/add_scene.js';
-
-
-
 
 export var room_id;
 
@@ -44,11 +38,9 @@ export function setupWebSocket() {
             reject(error);
         };
 
-
         function changeRoomIdElement(roomId) {
             document.getElementById("roomId").textContent = "Room:" + roomId;
         }
-        
         
         socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
@@ -71,7 +63,6 @@ export function setupWebSocket() {
                         console.log("Existing player added: ", player.ident);    
                     }
                     });
-                //updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
                 receiveChat(data.ident, data.data);
@@ -148,7 +139,6 @@ export function receiveSync(id, movementData) {
         player.mesh.position.x = movementData.x;
         player.mesh.position.y = movementData.y * -1;  // Inverser la position y lors de la réception
     }
-    //updatePlayerVisualization();
 }
 
 export function receiveConnect(id) {
@@ -163,7 +153,6 @@ export function receiveConnect(id) {
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
-
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
@@ -234,4 +223,3 @@ export function receiveBallSync(ballData) {
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)
  }
-
