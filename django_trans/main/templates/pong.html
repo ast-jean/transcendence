@@ -20,12 +20,15 @@
 <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/chat.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/collision.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/ball.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/wall.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/score.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/ui/ui_tournament.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/ui/ui_updates.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/utils/setter.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/websockets/socket_pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/AIplayer.js' %}" type="module"></script>
 <div id="editor">
 	<div id="view" class="container">
 		<!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
@@ -37,7 +40,7 @@
 					<p id="tournamentRoom">Tournament Room: </p>
 					<p id="connectedPlayers">Players Connected: 0/4</p>
 				</div>
-								<!-- Placeholder pour afficher les informations du tournoi -->
+				<!-- Placeholder pour afficher les informations du tournoi -->
 				<div id="tournament-info" class="tournament-section">
 					<p id="tournamentRoom">Tournament Room: </p>
 					<p id="connectedPlayers">Players Connected: 0/4</p>
@@ -49,6 +52,11 @@
 					<ul id="playerListUl">
 						<!-- Les joueurs seront ajoutés ici dynamiquement -->
 					</ul>
+				</div>
+
+				<!-- Bouton pour démarrer la partie -->
+				<div id="startGameDiv" class="game-controls">
+					<button id="startGameButton" class="game-button">Start Game</button>
 				</div>
 
 				<!-- Placeholder pour entrer l'ID du tournoi pour rejoindre -->
@@ -148,7 +156,11 @@
 					</svg>
 				</button>
 	        </div>
+<<<<<<< HEAD
 		</div>
 	</div>
 </div>
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> main

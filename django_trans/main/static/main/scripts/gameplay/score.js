@@ -1,5 +1,5 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-
+import { setBallSpeedX, setBallSpeedY, setGameOverState } from '../utils/setter.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -7,7 +7,6 @@ const maxScore = 5;
 
 export function updateScore(player) {
     let team = player === 1 ? "team1" : "team2";
-
     if (player === 1) {
         if (player1Score < maxScore) {
             player1Score++;
@@ -17,10 +16,8 @@ export function updateScore(player) {
             player2Score++;
         }
     }
-
-    updateScoreDisplay();  // Met à jour l'affichage des scores
-    checkEndGame();        // Vérifie si la partie doit se terminer
-
+    updateScoreDisplay();
+    checkEndGame();
     // Envoie les scores au serveur si on est en ligne
     if (socketState.socket && socketState.isSocketReady) {
         let cmd = "score";
@@ -37,14 +34,45 @@ export function updateScoreDisplay() {
     player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
 }
 
-
 export function checkEndGame() {
     if (player1Score >= maxScore || player2Score >= maxScore) {
         endGame();
     }
 }
 
+// Fonction pour mettre fin à la partie et afficher des options
+export function endGame() {
+    // Déclare que le jeu est terminé
+    setGameOverState(true);
 
+    // Détermine le gagnant
+    const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
+
+    // Crée un message pour afficher le gagnant
+    const endGameMessage = document.createElement('div');
+    endGameMessage.innerHTML = `${winner} wins!<br>`;
+    document.getElementById('gameCont').appendChild(endGameMessage);
+
+    // Affiche les boutons de fin de jeu (rejouer ou retourner au menu)
+    const endGameButtons = document.getElementById('end-game-buttons');
+    endGameButtons.style.display = 'block';
+
+    // Bouton pour rejouer la partie
+    document.getElementById('replay-btn').addEventListener('click', () => {
+        document.getElementById('gameCont').removeChild(endGameMessage);
+        endGameButtons.style.display = 'none';
+        resetGame();
+        startCountdown();
+    });
+    // Bouton pour retourner au menu principal
+    document.getElementById('menu-btn').addEventListener('click', () => {
+        document.getElementById('gameCont').removeChild(endGameMessage);
+        endGameButtons.style.display = 'none';
+        showAllButtons();
+        resetGame();
+        controls.enabled = false;
+    });
+}
 
 function getScoreHTML(score, symbol, maxScore) {
     let scoreHTML = '';
@@ -60,9 +88,9 @@ function getScoreHTML(score, symbol, maxScore) {
 export function resetGame() {
     player1Score = 0;
     player2Score = 0;
-    ballSpeedX = 0;
-    ballSpeedY = 0;
-    //isGameOver = true;
+    setBallSpeedX(0);
+    setBallSpeedY(0);
+    setGameOverState(true);
     sphere.position.set(0, 0, 0);
     players.forEach(player => {
         player.mesh.position.set(0, player.id === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);

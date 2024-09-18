@@ -134,21 +134,7 @@
 //
 //
 //
-//export function receiveBallSync(ballData) {
-//
-//    let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
-//    let serverPos = new THREE.Vector2(ballData.x, ballData.y);
-//    
-//    let smoothingFactor = 0.5;
-//    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
-//    
-//    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
-//    
-//    
-//    // Synchroniser les vitesses de la balle également
-//    setBallSpeedX(ballData.vx)
-//    setBallSpeedY(ballData.vy)
-//}
+
 //
 //
 //// let player1Score = 0;
@@ -196,18 +182,5 @@
 //}
 //
 //
-//document.querySelector('form').addEventListener('submit', handleSubmit);
-//function handleSubmit(event) {
-//    event.preventDefault(); // Prevents the default form submission
-//    let input = document.querySelector('input[name="searchRoom"]');
-//    const roomId = input.value;
-//    if (!roomId) {
-//        event.preventDefault();
-//        alert("Please fill in all required fields.");
-//    } else {
-//        hideLayer2Btns();
-//        sendCmd("roomSearch", roomId);
-//        console.log("Searching for Room #"+ roomId);
-//    }
-//}
+
 //

@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // Pour créer les murs
+import * as THREE from 'three';
 
 const wallThickness = 0.5;
 export const wallLength = 20;
@@ -26,7 +26,6 @@ export function setupWalls(scene) {
     createWall(scene, { x: wallLength / 2, y: 0, z: 0 }, new THREE.BoxGeometry(wallThickness, wallLength, 1), 'rightWall');
 }
 
-
 /**
  * Fonction pour changer la couleur des murs
  * @param {Number} color - La nouvelle couleur des murs en format hexadécimal
@@ -36,7 +35,6 @@ export function setWallColor(color) {
         wall.material.color.set(color);
     });
 }
-
 /**
  * Fonction pour enlever les murs de la scène
  * @param {THREE.Scene} scene - La scène Three.js

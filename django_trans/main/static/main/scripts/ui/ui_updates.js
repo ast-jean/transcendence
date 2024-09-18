@@ -1,4 +1,6 @@
-import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y, setBallSpeedX, setBallSpeedY } from "../gameplay/ball.js"
+import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y} from "../gameplay/ball.js"
+import { setBallSpeedX, setBallSpeedY } from "../utils/setter.js";
+import { setGameOverState } from "../utils/setter.js"
 
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
     const tournamentRoomElement = document.getElementById('tournamentRoom');
@@ -25,10 +27,11 @@ export function hideLayer2Btns() {
 }
 
 export function hideAllButtons() {
-    let play_btns = document.getElementById('play_btns');
-    if (play_btns) {
-        play_btns.style.display = "none";
-    }
+    console.log()
+    const play_btns = document.querySelectorAll('.game-button');
+    play_btns.forEach(button => {
+        button.classList.add('hidden');
+    });
 }
 
 export function showAllButtons() {
@@ -57,7 +60,7 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-           // isGameOver = false;
+            setGameOverState(true);
             setBallSpeedX(INITIAL_BALL_SPEED_X);
             setBallSpeedY(INITIAL_BALL_SPEED_Y);
         } else {

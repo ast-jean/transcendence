@@ -1,6 +1,18 @@
-import { players, initializePlayers, resetPlayer } from '../gameplay/player.js'; // Gestion des joueurs
+import * as THREE from 'three';
 import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
+import { players } from '../utils/setter.js';
+import { startCountdown } from '../ui/ui_updates.js';
+import { removeMeshFromScene } from '../utils/utils.js';
+import { sphere } from '../gameplay/ball.js';
+import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
+import { Player } from '../gameplay/player.js';
+import { wallLength } from '../gameplay/wall.js';
+import { displayPlayersInScene } from '../gameplay/add_scene.js';
 
+
+
+
+export var room_id;
 
 export const socketState = {
     socket: null,
@@ -55,9 +67,10 @@ export function setupWebSocket() {
             if (data.cmd === "existingPlayers") {
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
-                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0));  
+                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  
+                        console.log("Existing player added: ", player.ident);    
                     }
-                });
+                    });
                 //updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
@@ -73,21 +86,11 @@ export function setupWebSocket() {
                 receiveBallSync(data.ballData);
             }
             if (data.cmd === "connect") {
-                if (!players.find(p => p.id === data.ident)) {
-                    players.push(new Player(data.ident, 0, wallLength / 2 - 0.5, 0));
-                }
-                sendSync();
                 receiveConnect(data.ident);
-                checkAllPlayersConnected();
             }
             if (data.cmd === "disconnect") {
                 removePlayer(data.ident);
                 receiveDisconnect(data.ident);
-            }
-            if (data.cmd === "scoreUpdate") {
-                player1Score = data.scoreTeam1;
-                player2Score = data.scoreTeam2;
-                updateScoreDisplay();
             }
 
             if (data.cmd === "joinLobby") {
@@ -138,8 +141,8 @@ export function receiveSync(id, movementData) {
         console.log("Creating new player in receiveSync");
         if (!movementData.x) movementData.x = 0;
         if (!movementData.y) movementData.y = 0;
-        player = new Player(id, movementData.x, movementData.y * -1, 0);  // Inverser la position y lors de la réception
-        players.push(player);
+        // player = new Player(id, movementData.x, movementData.y * -1, 0, 0x0000ff);  // Inverser la position y lors de la réception
+        // players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
@@ -150,8 +153,17 @@ export function receiveSync(id, movementData) {
 
 export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
-    // Optionnel: ajouter une vérification pour ne pas dupliquer les joueurs
+
+    // Ajouter le joueur s'il n'existe pas déjà dans la liste
+    if (!players.find(p => p.id === id)) {
+        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+        console.log("new player push");
+    }
+
+    // Envoyer la synchronisation du nouveau joueur
+    sendSync();
 }
+
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
@@ -182,7 +194,8 @@ export function sendSync() {
 export function removePlayer(playerIdToRemove) {
     console.log("Removing player");
     let player = players.find(p => p.id === playerIdToRemove);
-    removeMeshFromScene(player.mesh, scene);
+    if (player)
+        removeMeshFromScene(player.mesh, scene);
     players = players.filter(player => player.id !== playerIdToRemove);
     //updatePlayerVisualization();
 }
@@ -193,7 +206,7 @@ export function checkAllPlayersConnected(maxPlayers) {
             if (socketState.isSocketReady && players.length === maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
-                startCountdown();
+                // startCountdown();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms
@@ -205,3 +218,20 @@ export function checkAllPlayersConnected(maxPlayers) {
         }, 60000); // Délai d'attente de 30 secondes
     });
 }
+
+export function receiveBallSync(ballData) {
+
+    let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
+    let serverPos = new THREE.Vector2(ballData.x, ballData.y);
+    
+    let smoothingFactor = 0.5;
+    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
+    
+    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
+    
+    
+    // Synchroniser les vitesses de la balle également
+    setBallSpeedX(ballData.vx)
+    setBallSpeedY(ballData.vy)
+ }
+

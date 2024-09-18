@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { socketState, sendSync } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
+import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game } from '../pong.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY } from '../utils/setter.js';
+import { sphere } from './ball.js';
 
-export let players = [];
 export let keyState = {};
 
 export class Player {
@@ -18,25 +19,20 @@ export class Player {
 }
 
 // Initialisation des joueurs (locale ou avec IA)
-export function initializePlayers(scene, playerData, useAI = false) {
-    players.forEach(player => scene.remove(player.mesh));  // Retirer les joueurs existants
-    players = [];
+export function initializePlayers(scene, useAI, isOnline ) {
+    removeAllPlayers(scene);  // Retire tous les joueurs existants
 
-    // Ajout des joueurs humains
-    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00); // Joueur 1 (vert)
-    players.push(player1);
-    scene.add(player1.mesh);
-
-    if (useAI) {
-        // Ajout d'un joueur IA
-        const aiPlayer = new Player(2, 0, wallLength / 2 - 0.5, 0, 0xff0000); // IA (rouge)
-        players.push(aiPlayer);
-        scene.add(aiPlayer.mesh);
-    } else {
-        // Ajout du deuxième joueur (humain)
-        const player2 = new Player(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff); // Joueur 2 (bleu)
-        players.push(player2);
-        scene.add(player2.mesh);
+    // Ajoute le premier joueur
+    addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    if (!isOnline)
+    {
+        if (useAI) {
+            // Ajoute un joueur IA
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
+        } else {
+            // Ajoute un deuxième joueur humain
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
+        }
     }
 }
 
@@ -90,19 +86,15 @@ export function movePlayer(delta, scene) {
 
 // Met à jour l'affichage des joueurs
 export function updatePlayerVisualization(scene) {
-    //console.log(scene); // Devrait afficher une instance de THREE.Scene
-
     players.forEach(player => {
         scene.add(player.mesh);
     });
 }
 
-
 export function resetPlayer() {
     let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
     players.push(local_player);
     scene.add(local_player.mesh);
-    
 }
 
 // Gestion des événements de touche
@@ -113,3 +105,56 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('keyup', function (e) {
     keyState[e.code] = false; // Marque la touche comme relâchée
 });
+
+export class AIPlayer extends Player {
+    constructor(id, x, y, z, color) {
+        console.log('AIPlayer is being initialized');
+        super(id, x, y, z, color);
+        this.targetX = 0;
+        this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
+    }
+
+    predictBallImpact() {
+        let predictedPosition = new THREE.Vector2(sphere.position.x, sphere.position.y);
+        let predictedSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
+        const ballRadius = sphere.geometry.parameters.radius;
+        const maxIterations = 1000;
+        let iterations = 0;
+
+        while (predictedPosition.y > -wallLength / 2 && predictedPosition.y < wallLength / 2 && iterations < maxIterations) {
+            predictedPosition.add(predictedSpeed);
+
+            if (predictedPosition.x - ballRadius <= -wallLength / 2 || predictedPosition.x + ballRadius >= wallLength / 2) {
+                predictedSpeed.x *= -1;
+            }
+
+            iterations++;
+        }
+
+        return predictedPosition.x;
+    }
+
+    calculateMovement() {
+        this.targetX = this.predictBallImpact();
+    }
+
+    update(delta) {
+        const speed = 20;
+        const aiPosition = this.mesh.position.x;
+        const tolerance = 1;
+
+        if (Math.abs(this.targetX - aiPosition) > tolerance) {
+            let moveDirection = (this.targetX - aiPosition) > 0 ? speed * delta : -speed * delta;
+
+            let newX = this.mesh.position.x + moveDirection;
+            if (newX - this.mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + this.mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                this.mesh.position.x = newX;
+            }
+        }
+    }
+
+    destroy() {
+        clearInterval(this.aiInterval);
+    }
+}
