@@ -207,6 +207,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await client.send(json.dumps(data))
 
     async def broadcast_chat(self, data):
+        print(f"{data}")
+
         room = await self.find_room(data['roomId'])
         if room is not None:
             for client in room.clients:

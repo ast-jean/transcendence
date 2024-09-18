@@ -12,6 +12,7 @@ import { players } from './utils/setter.js';
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { sphere } from './gameplay/ball.js';
 import { ballSpeedX, ballSpeedY } from './utils/setter.js';
+import { showChat } from './ui/chat.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -126,7 +127,7 @@ function animate() {
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
     const player2 = players[1];
-    if(player2 instanceof AIPlayer)
+    if( player2 instanceof AIPlayer )
     {
         console.log("Updating AI Player...");
         player2.update(delta);
@@ -160,24 +161,6 @@ function resizeRendererToDisplaySize(renderer) {
 
 // Lancement de l'animation
 animate();
-
-// Gestion des événements
-document.getElementById('onlineplay_btn').addEventListener('click', async () => {
-    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
-    
-    try {
-        await setupWebSocket();
-        console.log("WebSocket prêt.");
-        showLayer2Btns();
-        
-    } catch (error) {
-        console.error("Erreur lors de l'établissement du WebSocket :", error);
-        return;
-    }
-});
-
-
-
 
 // Fonction de gestion du submit
 function handleSubmit(event) {
@@ -267,9 +250,25 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
-document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2));
-document.getElementById('TwoVsTwo').addEventListener('click', () => playOnline(4));
-document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
+document.getElementById('OneVsOne').addEventListener('click', () => {
+    playOnline(2);
+    showChat();
+});
+document.getElementById('TwoVsTwo').addEventListener('click', () => {
+    playOnline(4);
+    showChat();
+});
+document.getElementById('onlineplay_btn').addEventListener('click', async () => {
+    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");    
+    try {
+        await setupWebSocket();
+        console.log("WebSocket prêt.");
+        showLayer2Btns();
+    } catch (error) {
+        console.error("Erreur lors de l'établissement du WebSocket :", error);
+        return;
+    }
+});
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
 ///* Btns layer 1     Btns layer 2
