@@ -58,12 +58,7 @@ export function handlePlayerCollision(players, sphere, ballSpeed) {
     });
 }
 
-
-
-
 // export function handlePlayerCollision(players, sphere) {
-
-
 //     players.forEach(player => {
 //         const playerBox = new THREE.Box3().setFromObject(player.mesh);
 //         const sphereBox = new THREE.Box3().setFromObject(sphere);
