@@ -1,4 +1,5 @@
 import { Player, AIPlayer} from "../gameplay/player.js";
+import { scene } from "../pong.js";
 
 export let ballSpeedX = 0;
 export let ballSpeedY = 0;
@@ -46,4 +47,13 @@ export function addPlayerToGame(id, x, y, z, color, scene, AI = false) {
 export function removeAllPlayers(scene) {
     players.forEach(player => scene.remove(player.mesh));  // Supprime les joueurs de la scène
     players = [];  // Réinitialise le tableau de joueurs
+}
+
+export function removePlayer(playerIdToRemove) {
+    console.log("Removing player");
+    let player = players.find(p => p.id === playerIdToRemove);
+    if (player){
+        removeMeshFromScene(player.mesh, scene);
+        players = players.filter(player => player.id !== playerIdToRemove);
+    } 
 }
