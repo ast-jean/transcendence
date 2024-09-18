@@ -535,6 +535,8 @@ body {
     border: 39px black;
     border-color: #000;
     text-align: center;
+    height: auto;
+    width: auto;
 }
 
 #p1-row {
