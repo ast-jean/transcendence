@@ -72,7 +72,6 @@ function setupWebSocket() {
         if (data.cmd === "disconnect") {
             removePlayer(data.ident);
             receiveDisconnect(data.ident);
-            removePlayer(data.ident);
         }
         if (data.cmd === 'resetLocations') {
             //sync location -> add non existing players
