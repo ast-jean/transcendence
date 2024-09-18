@@ -51,7 +51,7 @@ scene.add(ambientLight);
 function localPlay() {
     local_game = true;
     // hideAllButtons();
-    initializePlayers(scene, false, false); 
+    initializePlayers(scene, false, false);
 }
 
 // Démarrage du jeu contre l'IA
@@ -65,7 +65,7 @@ async function playOnline(maxPlayers) {
     if (socketState.isSocketReady) {
         console.log(`Création de la room pour ${maxPlayers} joueurs.`);
         sendCmd(`roomCreate${maxPlayers}`);
-        
+
         try {
             // Attend la confirmation de la création de la room (par exemple, room ID)
             await waitForRoomId();
@@ -101,20 +101,20 @@ async function playOnline(maxPlayers) {
 
 // Function to wait until room_id changes from null
 function waitForRoomId() {
-   return new Promise((resolve, reject) => {
-       const checkInterval = setInterval(() => {
-           if (getRoomId() !== null) {
-               clearInterval(checkInterval);
-               resolve(getRoomId());
-           }
-       }, 100); // Check every 100 milliseconds
+    return new Promise((resolve, reject) => {
+        const checkInterval = setInterval(() => {
+            if (getRoomId() !== null) {
+                clearInterval(checkInterval);
+                resolve(getRoomId());
+            }
+        }, 100); // Check every 100 milliseconds
 
-       // Optional: Set a timeout to reject the promise if it takes too long
-       setTimeout(() => {
-           clearInterval(checkInterval);
-           reject(new Error("Timed out waiting for room_id to change from null"));
-       }, 10000); // 10 seconds timeout
-   });
+        // Optional: Set a timeout to reject the promise if it takes too long
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            reject(new Error("Timed out waiting for room_id to change from null"));
+        }, 10000); // 10 seconds timeout
+    });
 }
 
 // Animation principale
@@ -127,8 +127,7 @@ function animate() {
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
     const player2 = players[1];
-    if(player2 instanceof AIPlayer)
-    {
+    if (player2 instanceof AIPlayer) {
         console.log("Updating AI Player...");
         player2.update(delta);
     }
@@ -165,12 +164,12 @@ animate();
 // Gestion des événements
 document.getElementById('onlineplay_btn').addEventListener('click', async () => {
     console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
-    
+
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
         showLayer2Btns();
-        
+
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
@@ -184,7 +183,7 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
 function handleSubmit(event) {
     event.preventDefault(); // Prevent the default form submission
     console.log('handleSubmit called'); // Vérifie si la fonction est appelée
-    
+
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
@@ -212,23 +211,8 @@ document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2
 document.getElementById('TwoVsTwo').addEventListener('click', () => playOnline(4));
 document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
-<<<<<<< HEAD
-document.getElementById('tournament_btn').addEventListener('click',);
 
 
-
-//
-//
-//
-//
-//
-//import * as THREE from 'three';
-//import { socketState, setupWebSocket, checkAllPlayersConnected, sendCmd, getRoomId, room_id } from './socket_pong.js';
-//import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-//
-=======
-
->>>>>>> main
 ///* Btns layer 1     Btns layer 2
 //
 //    [ ONLINE ]  --->   [ New 1v1 ]

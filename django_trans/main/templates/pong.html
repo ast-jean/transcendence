@@ -90,12 +90,49 @@
 						<br>
 							🤖
 					</div>
-					<div id="tournament_btn" class="hud-btn game-button">
-						<b>Tournament</b>
-						<br>
+
+					<button type="button" id="tournament_btn" class="hud-btn game-button btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+						<b>Tournament</b><br>
 						<small>(4 players)</small>
+					</button>
+					<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="exampleModalLabel">Waiting for players...</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<!-- <div class="container-fluid"></div> -->
+									<div class="col-md-4" id="first-col"> <!-- 4 players --> 
+										<div class="row-md-1"> 
+											<div class="bracket" id="p1-row">player 1</div>
+										</div>
+										<div class="row-md-1"> 
+											<div class="bracket" id="p2-row">player 2</div>
+										</div>
+										<div class="row-md-1"> 
+											<div class="bracket" id="p3-row">player 3</div>
+										</div>
+										<div class="row-md-1"> 
+											<div class="bracket" id="p4-row">player 4</div>
+										</div>
+									</div>
+									<div class="col-md-4" id="second-col"> <!-- 2 winners --> 
+										<div class="row-md-1" id="W1-row"> winner 1</div>
+										<div class="row-md-1" id="W2-row"> winner 2</div>
+									</div>
+									<div class="col-md-4" id="third-col"> <!-- winner final --> 
+										<div class="row-md-1" id="WF-row"> winner final</div>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<!-- FOOTER BUTTON NECESSARY ?? -->
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close </button>
+								</div>
+							</div>
+						</div>
 					</div>
-					
 				</div>
 				<div id="playersList"></div>
 				<div id="tournamentOptions" class="hidden">
@@ -109,7 +146,6 @@
 						<button type="submit">Join Tournament</button>
 					</form>
 				</div>
-				
                 <div id="layer2Btns" class="hidden">
                     <div id="OneVsOne" class="hud-btn">
                         <small>Create new (1vs1)</small>
@@ -156,11 +192,7 @@
 					</svg>
 				</button>
 	        </div>
-<<<<<<< HEAD
 		</div>
 	</div>
 </div>
 {% endblock %}
-=======
-{% endblock %}
->>>>>>> main
