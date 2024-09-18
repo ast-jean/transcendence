@@ -47,3 +47,12 @@ export function removeAllPlayers(scene) {
     players.forEach(player => scene.remove(player.mesh));  // Supprime les joueurs de la scène
     players = [];  // Réinitialise le tableau de joueurs
 }
+
+export function removePlayer(playerIdToRemove) {
+    console.log("Removing player");
+    let player = players.find(p => p.id === playerIdToRemove);
+    if (player){
+        removeMeshFromScene(player.mesh, scene);
+        players = players.filter(player => player.id !== playerIdToRemove);
+    } 
+}
