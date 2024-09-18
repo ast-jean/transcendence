@@ -18,5 +18,11 @@ export function displayPlayersInScene(players, scene) {
         }
     });
     addBallToScene(scene);
-    startCountdown();
+    // startCountdown();
 }
+
+
+
+
+
+

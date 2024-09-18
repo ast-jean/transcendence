@@ -32,13 +32,13 @@ export function addPlayerToGame(id, x, y, z, color, scene, AI = false) {
         const newAIPlayer = new AIPlayer(id, x, y, z, color);
         players.push(newAIPlayer);
         // scene.add(newAIPlayer.mesh);
-        console.log(`AI Player ${id} ajouté au jeu :`, newAIPlayer);  // Debug
+        //console.log(`AI Player ${id} ajouté au jeu :`, newAIPlayer);  // Debug
     } else {
         // Ajouter un joueur humain
         const newPlayer = new Player(id, x, y, z, color);
         players.push(newPlayer);
         // scene.add(newPlayer.mesh);
-        console.log(`Player ${id} ajouté au jeu :`, newPlayer);  // Debug
+        //console.log(`Player ${id} ajouté au jeu :`, newPlayer);  // Debug
     }
 }
 

@@ -146,8 +146,14 @@ export function receiveConnect(id) {
 
     // Ajouter le joueur s'il n'existe pas déjà dans la liste
     if (!players.find(p => p.id === id)) {
-        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
-        console.log("new player push");
+        if (players.length == 0 ){    
+            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+            console.log("new player 1 push");
+        }
+        else{
+            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x00ffff));  // Ajout du nouveau joueur
+            console.log("new player 2 push");
+        }
     }
 
     // Envoyer la synchronisation du nouveau joueur
@@ -183,9 +189,10 @@ export function sendSync() {
 export function removePlayer(playerIdToRemove) {
     console.log("Removing player");
     let player = players.find(p => p.id === playerIdToRemove);
-    if (player)
+    if (player){
         removeMeshFromScene(player.mesh, scene);
-    players = players.filter(player => player.id !== playerIdToRemove);
+        players = players.filter(player => player.id !== playerIdToRemove);
+    } 
     //updatePlayerVisualization();
 }
 

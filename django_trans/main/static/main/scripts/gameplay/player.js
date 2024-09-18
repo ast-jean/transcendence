@@ -23,7 +23,7 @@ export function initializePlayers(scene, useAI, isOnline ) {
     removeAllPlayers(scene);  // Retire tous les joueurs existants
 
     // Ajoute le premier joueur
-    addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    //addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
     if (!isOnline)
     {
         if (useAI) {
@@ -92,9 +92,9 @@ export function updatePlayerVisualization(scene) {
 }
 
 export function resetPlayer() {
-    let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
-    players.push(local_player);
-    scene.add(local_player.mesh);
+    // let local_player = new Player(1, 0, -wallLength / 2 + 0.5, 0);
+    // players.push(local_player);
+    // scene.add(local_player.mesh);
 }
 
 // Gestion des événements de touche

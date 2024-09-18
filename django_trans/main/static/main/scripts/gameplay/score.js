@@ -62,7 +62,7 @@ export function endGame() {
         document.getElementById('gameCont').removeChild(endGameMessage);
         endGameButtons.style.display = 'none';
         resetGame();
-        startCountdown();
+        // startCountdown();
     });
     // Bouton pour retourner au menu principal
     document.getElementById('menu-btn').addEventListener('click', () => {
