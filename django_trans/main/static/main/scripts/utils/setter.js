@@ -1,4 +1,5 @@
 import { Player, AIPlayer} from "../gameplay/player.js";
+import { scene } from "../pong.js";
 
 export let ballSpeedX = 0;
 export let ballSpeedY = 0;

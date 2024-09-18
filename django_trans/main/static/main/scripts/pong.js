@@ -25,6 +25,7 @@ const width = container.clientWidth;
 const height = container.clientWidth * 0.666;
 export const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
@@ -32,7 +33,7 @@ container.appendChild(renderer.domElement);
 
 // Configuration des murs
 setupWalls(scene);
-setWallColor(0x00ff00);
+setWallColor(808080);
 
 // Contrôles de caméra
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -122,7 +123,7 @@ function animate() {
     delta = clock.getDelta();
     movePlayer(delta, scene);
     moveBall(delta, walls, players);
-    controls.update();
+    //controls.update();
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
     const player2 = players[1];
@@ -254,6 +255,42 @@ function displayDebugInfo() {
 
 
 
+function setCameraPlayer1() {
+    camera.position.set(0, -15, 10);  // Caméra du côté du joueur 1
+    camera.lookAt(0, 0, 0); 
+    camera.up.set(0, 0, 1);  // Orientation vers le haut (z positif)
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Caméra Joueur 1 activée");
+}
+
+// Fonction pour changer la caméra sur le joueur 2
+function setCameraPlayer2() {
+    camera.position.set(0, 15, -10);   // Caméra du côté du joueur 2
+    camera.lookAt(0, 0, 0);   
+    camera.up.set(0, 0, -1);    
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Caméra Joueur 2 activée");
+}
+
+// Fonction pour la vue de dessus
+function setCameraTopView() {
+    camera.position.set(0, 0, 20);    // Caméra positionnée au-dessus
+    camera.lookAt(0, 0, 0);  
+    camera.up.set(0, 1, 0);  // Pour la vue de dessus, l'axe y est orienté vers le haut
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Vue de dessus activée");
+}
+
+// Ajout d'événements pour les boutons
+document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
+document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
+document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
 
 
 
