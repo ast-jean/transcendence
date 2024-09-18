@@ -78,7 +78,6 @@ async function playOnline(maxPlayers) {
 
         // Initialise les joueurs après avoir rejoint une room
         initializePlayers(scene, false, true);
-        addBallToScene(scene);
         hideLayer2Btns();  // Cache les boutons après la configuration
 
         try {
