@@ -1,4 +1,4 @@
-import { socketState } from '../websockets/socket_pong.js'
+import { getRoomId, socketState } from '../websockets/socket_pong.js'
 
 export let shouldPreventDefault = true;
 
@@ -11,6 +11,15 @@ export function setShouldPreventDefault(boolean){
    shouldPreventDefault = boolean;
 }
 
+export function showChat() {
+    var chatContainer = document.getElementById('chat-container');
+    chatContainer.style.display = 'block'; // or 'flex', depending on your layout
+}
+
+export function hideChat() {
+    var chatContainer = document.getElementById('chat-container');
+    chatContainer.style.display = 'none';
+}
 
 function pageLoaded() {
     //    alert("PAge loaded");
@@ -31,9 +40,6 @@ function pageLoaded() {
            // event.preventDefault();
            sendMessage();
        }
-       else {
-           console.log("another key is pressed");
-       }
    }, true);
    chatInput.addEventListener('keyup', function(event){
        shouldPreventDefault = true;
@@ -43,46 +49,61 @@ function pageLoaded() {
 //Listening the button click
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
-//Receiving message from server
-export function receiveConnect(client_id){
-   var chatBox = document.getElementById('chat-messages');
-   var li = document.createElement('li');
+export function addChat(client_id, msg) {
+    console.log("In addChat()")
+    var chatBox = document.getElementById('chat-messages');
+    var li = document.createElement('li');
 
-   li.textContent = client_id + " has joined.";
-   chatBox.appendChild(li);
+    if (client_id) {
+        li.textContent = client_id + msg;
+    } else {
+        li.textContent = "Server: " + msg;
+    }
+    chatBox.appendChild(li);
 }
 
-export function receiveDisconnect(client_id){
-   var chatBox = document.getElementById('chat-messages');
-   var li = document.createElement('li');
-   li.textContent = client_id + " left the game.";
-   chatBox.appendChild(li);
-}
+// //Receiving message from server
+// export function receiveConnect(client_id){
+//    var chatBox = document.getElementById('chat-messages');
+//    var li = document.createElement('li');
 
-//Receiving message from server
-export function receiveChat(client_id, client_msg){
-   var chatBox = document.getElementById('chat-messages');
-   var li = document.createElement('li');
-   li.textContent = client_id + ": " + client_msg;
-   chatBox.appendChild(li);
-}
+//    li.textContent = client_id + " has joined.";
+//    chatBox.appendChild(li);
+// }
+
+// export function receiveDisconnect(client_id){
+//    var chatBox = document.getElementById('chat-messages');
+//    var li = document.createElement('li');
+//    li.textContent = client_id + " left the game.";
+//    chatBox.appendChild(li);
+// }
+
+// //Receiving message from server
+// export function receiveChat(client_id, client_msg){
+//    var chatBox = document.getElementById('chat-messages');
+//    var li = document.createElement('li');
+//    li.textContent = client_id + ": " + client_msg;
+//    chatBox.appendChild(li);
+// }
 
 function sendMessage() {
    console.log("in sendMessage()")
    var input = document.getElementById('chat-input');
-   var data = input.value.trim();
+   var msg = input.value.trim();
    var name = "Me";
 
-   if (data !== "") {
-       console.log("sendMsg(): ",socket.readyState);
-       var chatBox = document.getElementById('chat-messages');
-       var li = document.createElement('li');
-       li.textContent = name + ": " + data;
-       chatBox.appendChild(li);
-       input.value = "";
-       chatBox.scrollTop = chatBox.scrollHeight; 
+    if (msg !== "") {
+        console.log("sendMsg(): ",socketState.socket.readyState);
+        var chatBox = document.getElementById('chat-messages');
+        var li = document.createElement('li');
+        li.textContent = name + ": " + msg;
+        chatBox.appendChild(li);
+        input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight; 
 
-       var cmd = "chat"
-       socketState.socket.send(JSON.stringify({ cmd, data }));     
-   }
+        var cmd = "chat"
+        var roomId = getRoomId();
+        var data = msg;
+        socketState.socket.send(JSON.stringify({ cmd, data, roomId }));     
+    }
 }

@@ -5,7 +5,7 @@ import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-
+import { hideChat, showChat, addChat } from '../ui/chat.js'
 export var room_id;
 
 export const socketState = {
@@ -54,6 +54,8 @@ export function setupWebSocket() {
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
+                showChat();
+                addChat(null, "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
@@ -65,7 +67,7 @@ export function setupWebSocket() {
                     });
             }
             if (data.cmd === "chat") {
-                receiveChat(data.ident, data.data);
+                addChat(data.ident, ": " + data.data)
             }
             if (data.cmd === "move") {
                 receiveMove(data.ident, data.movementData);
@@ -78,17 +80,18 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 receiveConnect(data.ident);
+                addChat(data.ident, " has joined")
             }
             if (data.cmd === "disconnect") {
+                addChat(data.ident, " has disconnected")
                 removePlayer(data.ident);
-                receiveDisconnect(data.ident);
             }
 
             if (data.cmd === "joinLobby") {
                 // Mise à jour du room_id après la création du lobby
                 room_id = data.roomId;
+                showChat();
                 console.log("Tournament lobby created, room ID:", room_id);
-        
                 // Mise à jour des informations du tournoi avec le room_id reçu
                 updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
             }
@@ -106,6 +109,7 @@ export function setupWebSocket() {
                 const playerCount = data.playerCount;
                 const maxPlayers = data.maxPlayers;
                 const roomId = data.roomId;
+                showChat();
                 onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
             }
         };
