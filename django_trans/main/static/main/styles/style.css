@@ -529,18 +529,21 @@ body {
     margin-left: 25px;
 }
 
-.bracket {
+.modal-content {
     display: flex;
-    padding: 15 px;
-    border: 39px black;
-    border-color: #000;
-    text-align: center;
-    height: auto;
-    width: auto;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+    width: 1000px;
+}
+
+.bracket {
+    width: 100px;
+    background-color: #6c52ee;
 }
 
 #p1-row {
     background-color: rgb(248, 98, 98);
+
 }
 
 #p2-row {
@@ -549,6 +552,7 @@ body {
 
 #p3-row {
     background-color: rgb(255, 255, 79);
+
 }
 
 #p4-row {
