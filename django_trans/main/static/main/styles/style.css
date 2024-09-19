@@ -529,22 +529,21 @@ body {
     margin-left: 25px;
 }
 
-.modal-content {
+/* .modal-content {
     display: flex;
     align-items: center;
     min-height: calc(100% - 1rem);
-    width: 1000px;
-}
+    width: 100px;
+} */
 
 .bracket {
-
     width: 100px;
-    max-width: 100px;
-    background-color: #6c52ee;
+    background-color: #d3caff;
 }
 
 #p1-row {
     background-color: rgb(248, 98, 98);
+
 
 }
 
