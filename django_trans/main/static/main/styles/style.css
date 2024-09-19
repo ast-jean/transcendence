@@ -537,7 +537,9 @@ body {
 }
 
 .bracket {
+
     width: 100px;
+    max-width: 100px;
     background-color: #6c52ee;
 }
 
