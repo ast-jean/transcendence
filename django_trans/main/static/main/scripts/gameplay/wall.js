@@ -3,7 +3,7 @@ import * as THREE from 'three';
 const wallThickness = 0.5;
 export const wallLength = 20;
 export const walls = [];
-const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 808080 });
 
 /**
  * Crée et place un mur dans la scène

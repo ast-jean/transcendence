@@ -4,14 +4,15 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { startCountdown } from './ui/ui_updates.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
 import { players } from './utils/setter.js';
-import { setupWebSocket } from './websockets/socket_pong.js';
+
 import { displayPlayersInScene } from './gameplay/add_scene.js';
-import { room_id } from './websockets/socket_pong.js';
+import { sphere } from './gameplay/ball.js';
+import { ballSpeedX, ballSpeedY } from './utils/setter.js';
+import { showChat } from './ui/chat.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -25,6 +26,7 @@ const width = container.clientWidth;
 const height = container.clientWidth * 0.666;
 export const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
@@ -32,7 +34,7 @@ container.appendChild(renderer.domElement);
 
 // Configuration des murs
 setupWalls(scene);
-setWallColor(0x00ff00);
+setWallColor(808080);
 
 // Contrôles de caméra
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -78,7 +80,6 @@ async function playOnline(maxPlayers) {
 
         // Initialise les joueurs après avoir rejoint une room
         initializePlayers(scene, false, true);
-        addBallToScene(scene);
         hideLayer2Btns();  // Cache les boutons après la configuration
 
         try {
@@ -123,7 +124,7 @@ function animate() {
     delta = clock.getDelta();
     movePlayer(delta, scene);
     moveBall(delta, walls, players);
-    controls.update();
+    //controls.update();
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
     const player2 = players[1];
@@ -161,24 +162,6 @@ function resizeRendererToDisplaySize(renderer) {
 // Lancement de l'animation
 animate();
 
-// Gestion des événements
-document.getElementById('onlineplay_btn').addEventListener('click', async () => {
-    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
-
-    try {
-        await setupWebSocket();
-        console.log("WebSocket prêt.");
-        showLayer2Btns();
-
-    } catch (error) {
-        console.error("Erreur lors de l'établissement du WebSocket :", error);
-        return;
-    }
-});
-
-
-
-
 // Fonction de gestion du submit
 function handleSubmit(event) {
     event.preventDefault(); // Prevent the default form submission
@@ -187,7 +170,7 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
-
+    hideLayer2Btns();
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
@@ -195,6 +178,102 @@ function handleSubmit(event) {
         console.log("Searching for Room #" + roomId);
     }
 }
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'i') {
+        displayDebugInfo();
+    }
+});
+
+function displayDebugInfo() {
+    console.log("%c--- Debug Information ---", "color: #00ff00; font-weight: bold;");
+
+    // Afficher la liste des joueurs
+    if (players && players.length > 0) {
+        console.log("%cPlayers Connected:", "color: #00ffff; font-weight: bold;");
+        players.forEach((player, index) => {
+            console.log(`Player ${index + 1} - ID: ${player.id}, Position: (${player.mesh.position.x.toFixed(2)}, ${player.mesh.position.y.toFixed(2)}, ${player.mesh.position.z.toFixed(2)})`);
+        });
+    } else {
+        console.log("%cNo players connected.", "color: #ff0000; font-weight: bold;");
+    }
+
+    // Afficher l'état du WebSocket
+    console.log("%cWebSocket Status:", "color: #00ffff; font-weight: bold;");
+    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        console.log("%cConnected", "color: #00ff00;");
+    } else if (socketState.socket && socketState.socket.readyState === WebSocket.CONNECTING) {
+        console.log("%cConnecting...", "color: #ffff00;");
+    } else {
+        console.log("%cDisconnected", "color: #ff0000;");
+    }
+
+    // Afficher l'ID de la room si disponible
+    if (room_id) {
+        console.log(`%cRoom ID: ${room_id}`, "color: #00f0ff;");
+    } else {
+        console.log("%cRoom ID not set.", "color: #ff0000;");
+    }
+
+    // Afficher d'autres informations utiles (ex: vitesse de la balle, état des murs, etc.)
+    if (sphere) {
+        console.log("%cBall Info:", "color: #00ffff; font-weight: bold;");
+        console.log(`Position: (${sphere.position.x.toFixed(2)}, ${sphere.position.y.toFixed(2)}, ${sphere.position.z.toFixed(2)})`);
+        console.log(`Speed: X=${ballSpeedX.toFixed(2)}, Y=${ballSpeedY.toFixed(2)}`);
+    }
+
+    // Afficher les informations sur les murs
+    if (walls && walls.length > 0) {
+        console.log("%cWalls Info:", "color: #00ffff; font-weight: bold;");
+        walls.forEach((wall, index) => {
+            console.log(`Wall ${index + 1} - Position: (${wall.position.x.toFixed(2)}, ${wall.position.y.toFixed(2)}, ${wall.position.z.toFixed(2)})`);
+        });
+    } else {
+        console.log("%cNo walls defined.", "color: #ff0000;");
+    }
+
+    console.log("%c--------------------------", "color: #00ff00; font-weight: bold;");
+}
+
+
+
+function setCameraPlayer1() {
+    camera.position.set(0, -15, 10);  // Caméra du côté du joueur 1
+    camera.lookAt(0, 0, 0);
+    camera.up.set(0, 0, 1);  // Orientation vers le haut (z positif)
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Caméra Joueur 1 activée");
+}
+
+// Fonction pour changer la caméra sur le joueur 2
+function setCameraPlayer2() {
+    camera.position.set(0, 15, -10);   // Caméra du côté du joueur 2
+    camera.lookAt(0, 0, 0);
+    camera.up.set(0, 0, -1);
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Caméra Joueur 2 activée");
+}
+
+// Fonction pour la vue de dessus
+function setCameraTopView() {
+    camera.position.set(0, 0, 20);    // Caméra positionnée au-dessus
+    camera.lookAt(0, 0, 0);
+    camera.up.set(0, 1, 0);  // Pour la vue de dessus, l'axe y est orienté vers le haut
+    camera.updateProjectionMatrix();
+    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
+    controls.update();  // Met à jour les contrôles
+    console.log("Vue de dessus activée");
+}
+
+// Ajout d'événements pour les boutons
+document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
+document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
+document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
+
 
 
 document.getElementById('startGameButton').addEventListener('click', () => {
@@ -207,9 +286,25 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
 document.getElementById('localplay_btn').addEventListener('click', localPlay);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
-document.getElementById('OneVsOne').addEventListener('click', () => playOnline(2));
-document.getElementById('TwoVsTwo').addEventListener('click', () => playOnline(4));
-document.getElementById('onlineplay_btn').addEventListener('click', () => showLayer2Btns());
+document.getElementById('OneVsOne').addEventListener('click', () => {
+    playOnline(2);
+    showChat();
+});
+document.getElementById('TwoVsTwo').addEventListener('click', () => {
+    playOnline(4);
+    showChat();
+});
+document.getElementById('onlineplay_btn').addEventListener('click', async () => {
+    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
+    try {
+        await setupWebSocket();
+        console.log("WebSocket prêt.");
+        showLayer2Btns();
+    } catch (error) {
+        console.error("Erreur lors de l'établissement du WebSocket :", error);
+        return;
+    }
+});
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
 

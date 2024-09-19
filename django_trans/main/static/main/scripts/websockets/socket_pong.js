@@ -1,16 +1,12 @@
 import * as THREE from 'three';
-import { updateScoreDisplay } from '../gameplay/score.js'; // Synchronisation des scores via WebSocket
-import { players } from '../utils/setter.js';
-import { startCountdown } from '../ui/ui_updates.js';
+import { addPlayerToGame, players } from '../utils/setter.js';
 import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
-import { setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
+import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-import { displayPlayersInScene } from '../gameplay/add_scene.js';
-
-
-
+import { hideChat, showChat, addChat } from '../ui/chat.js'
+import { scene } from '../pong.js';
 
 export var room_id;
 
@@ -44,11 +40,9 @@ export function setupWebSocket() {
             reject(error);
         };
 
-
         function changeRoomIdElement(roomId) {
             document.getElementById("roomId").textContent = "Room:" + roomId;
         }
-        
         
         socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
@@ -62,19 +56,20 @@ export function setupWebSocket() {
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
+                showChat();
+                addChat(null, "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
-                        players.push(new Player(player.ident, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  
+                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
                         console.log("Existing player added: ", player.ident);    
                     }
                     });
-                //updatePlayerVisualization();
             }
             if (data.cmd === "chat") {
-                receiveChat(data.ident, data.data);
+                addChat(data.ident, ": " + data.data)
             }
             if (data.cmd === "move") {
                 receiveMove(data.ident, data.movementData);
@@ -87,17 +82,18 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 receiveConnect(data.ident);
+                addChat(data.ident, " has joined")
             }
             if (data.cmd === "disconnect") {
+                addChat(data.ident, " has disconnected")
                 removePlayer(data.ident);
-                receiveDisconnect(data.ident);
             }
 
             if (data.cmd === "joinLobby") {
                 // Mise à jour du room_id après la création du lobby
                 room_id = data.roomId;
+                showChat();
                 console.log("Tournament lobby created, room ID:", room_id);
-        
                 // Mise à jour des informations du tournoi avec le room_id reçu
                 updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
             }
@@ -115,6 +111,7 @@ export function setupWebSocket() {
                 const playerCount = data.playerCount;
                 const maxPlayers = data.maxPlayers;
                 const roomId = data.roomId;
+                showChat();
                 onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
             }
         };
@@ -141,29 +138,35 @@ export function receiveSync(id, movementData) {
         console.log("Creating new player in receiveSync");
         if (!movementData.x) movementData.x = 0;
         if (!movementData.y) movementData.y = 0;
-        // player = new Player(id, movementData.x, movementData.y * -1, 0, 0x0000ff);  // Inverser la position y lors de la réception
-        // players.push(player);
+        player = new Player(id, movementData.x, movementData.y, 0, 0x0000ff);
+        players.push(player);
     } else {
         console.log("Updating player position in receiveSync");
         player.mesh.position.x = movementData.x;
-        player.mesh.position.y = movementData.y * -1;  // Inverser la position y lors de la réception
+        player.mesh.position.y = movementData.y;
     }
-    //updatePlayerVisualization();
 }
 
 export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
 
     // Ajouter le joueur s'il n'existe pas déjà dans la liste
+    if (players.length == 0)
+        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));
     if (!players.find(p => p.id === id)) {
-        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
-        console.log("new player push");
+        if (players.length == 0 ){    
+            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+            console.log("new player 1 push");
+        }
+        else{
+            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x00ffff));  // Ajout du nouveau joueur
+            console.log("new player 2 push");
+        }
     }
 
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
-
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
@@ -181,7 +184,7 @@ export function sendSync() {
     if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         let cmd = "sync";
         let x = players[0].mesh.position.x;
-        let y = players[0].mesh.position.y * -1;  // Inverser la position y
+        let y = players[0].mesh.position.y;  // Inverser la position y
         let roomId = getRoomId();
         const movementData = { x, y };
         // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
@@ -191,14 +194,6 @@ export function sendSync() {
     }
 }
 
-export function removePlayer(playerIdToRemove) {
-    console.log("Removing player");
-    let player = players.find(p => p.id === playerIdToRemove);
-    if (player)
-        removeMeshFromScene(player.mesh, scene);
-    players = players.filter(player => player.id !== playerIdToRemove);
-    //updatePlayerVisualization();
-}
 
 export function checkAllPlayersConnected(maxPlayers) {
     return new Promise((resolve, reject) => {
@@ -234,4 +229,3 @@ export function receiveBallSync(ballData) {
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)
  }
-
