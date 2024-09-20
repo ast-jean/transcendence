@@ -64,7 +64,7 @@ function localPlay4Players() {
 function localPlay() {
     local_game = true;
     // hideAllButtons();
-    initializePlayers(scene, false, false); 
+    initializePlayers(scene, false, false);
 }
 
 // Démarrage du jeu contre l'IA
@@ -78,7 +78,7 @@ async function playOnline(maxPlayers) {
     if (socketState.isSocketReady) {
         console.log(`Création de la room pour ${maxPlayers} joueurs.`);
         sendCmd(`roomCreate${maxPlayers}`);
-        
+
         try {
             // Attend la confirmation de la création de la room (par exemple, room ID)
             await waitForRoomId();
@@ -113,20 +113,20 @@ async function playOnline(maxPlayers) {
 
 // Function to wait until room_id changes from null
 function waitForRoomId() {
-   return new Promise((resolve, reject) => {
-       const checkInterval = setInterval(() => {
-           if (getRoomId() !== null) {
-               clearInterval(checkInterval);
-               resolve(getRoomId());
-           }
-       }, 100); // Check every 100 milliseconds
+    return new Promise((resolve, reject) => {
+        const checkInterval = setInterval(() => {
+            if (getRoomId() !== null) {
+                clearInterval(checkInterval);
+                resolve(getRoomId());
+            }
+        }, 100); // Check every 100 milliseconds
 
-       // Optional: Set a timeout to reject the promise if it takes too long
-       setTimeout(() => {
-           clearInterval(checkInterval);
-           reject(new Error("Timed out waiting for room_id to change from null"));
-       }, 10000); // 10 seconds timeout
-   });
+        // Optional: Set a timeout to reject the promise if it takes too long
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            reject(new Error("Timed out waiting for room_id to change from null"));
+        }, 10000); // 10 seconds timeout
+    });
 }
 
 // Animation principale
@@ -139,8 +139,7 @@ function animate() {
     resizeRendererToDisplaySize(renderer);
     renderer.render(scene, camera);
     const player2 = players[1];
-    if( player2 instanceof AIPlayer )
-    {
+    if (player2 instanceof AIPlayer) {
         console.log("Updating AI Player...");
         player2.update(delta);
     }
@@ -178,11 +177,11 @@ animate();
 function handleSubmit(event) {
     event.preventDefault(); // Prevent the default form submission
     console.log('handleSubmit called'); // Vérifie si la fonction est appelée
-    
+
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
-    hideLayer2Btns(); 
+    hideLayer2Btns();
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
@@ -191,7 +190,7 @@ function handleSubmit(event) {
     }
 }
 
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
     if (event.key === 'i') {
         displayDebugInfo();
     }
@@ -251,7 +250,7 @@ function displayDebugInfo() {
 
 function setCameraPlayer1() {
     camera.position.set(0, -15, 10);  // Caméra du côté du joueur 1
-    camera.lookAt(0, 0, 0); 
+    camera.lookAt(0, 0, 0);
     camera.up.set(0, 0, 1);  // Orientation vers le haut (z positif)
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
@@ -262,8 +261,8 @@ function setCameraPlayer1() {
 // Fonction pour changer la caméra sur le joueur 2
 function setCameraPlayer2() {
     camera.position.set(0, 15, -10);   // Caméra du côté du joueur 2
-    camera.lookAt(0, 0, 0);   
-    camera.up.set(0, 0, -1);    
+    camera.lookAt(0, 0, 0);
+    camera.up.set(0, 0, -1);
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
     controls.update();  // Met à jour les contrôles
@@ -273,7 +272,7 @@ function setCameraPlayer2() {
 // Fonction pour la vue de dessus
 function setCameraTopView() {
     camera.position.set(0, 0, 20);    // Caméra positionnée au-dessus
-    camera.lookAt(0, 0, 0);  
+    camera.lookAt(0, 0, 0);
     camera.up.set(0, 1, 0);  // Pour la vue de dessus, l'axe y est orienté vers le haut
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
@@ -307,7 +306,7 @@ document.getElementById('TwoVsTwo').addEventListener('click', () => {
     showChat();
 });
 document.getElementById('onlineplay_btn').addEventListener('click', async () => {
-    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");    
+    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
@@ -318,6 +317,7 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
     }
 });
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
+
 
 ///* Btns layer 1     Btns layer 2
 //

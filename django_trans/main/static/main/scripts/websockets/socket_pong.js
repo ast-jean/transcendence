@@ -18,8 +18,8 @@ export const socketState = {
 
 export function setupWebSocket() {
     return new Promise((resolve, reject) => {
-        const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
+        // const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws_path = `wss://${window.location.host}/ws/pong/`;
         socketState.socket = new WebSocket(ws_path);
         console.log("Creating WebSocket:", socketState.socket);
 

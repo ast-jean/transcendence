@@ -97,12 +97,89 @@
 						<br>
 							🤖
 					</div>
-					<div id="tournament_btn" class="hud-btn game-button">
-						<b>Tournament</b>
-						<br>
+
+					<button type="button" id="tournament_btn" class="hud-btn game-button btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+						<b>Tournament</b><br>
 						<small>(4 players)</small>
+					</button>
+					<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="exampleModalLabel">Waiting for players...</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body row">
+									<!-- <div class="container-fluid"></div> -->
+
+									<div class="col" id="first-col"> 
+										<div class="row"> 
+											<div class="m-2">
+												<div class="bracket mx-auto border border-black rounded" id="p1-row">
+													<p class="my-auto mx-2 overflow-hidden mb-1">  player 1 </p>
+												</div>
+											</div>
+										</div>
+										<div class="row"> 
+											<div class="m-2">
+												<div class="bracket mx-auto border border-black rounded" id="p2-row">
+													<p class="my-auto mx-2 overflow-hidden mb-1"> player 2 </p>
+												</div>
+											</div>
+										</div>
+										<div class="row"> 
+											<div class="m-2">
+												<div class="bracket mx-auto border border-black rounded" id="p3-row">
+													<p class="my-auto mx-2 overflow-hidden mb-1"> player 3 </p>
+												</div>
+											</div>
+										</div>
+										<div class="row"> 
+											<div class="m-2">
+												<div class="bracket mx-auto border border-black rounded" id="p4-row">
+													<p class="my-auto mx-2 overflow-hidden mb-1"> player 4 </p>
+												</div>
+											</div>
+										</div>
+									</div>
+							
+									<!-- Second column: 2 winners -->
+									<div class="col align-self-center" id="second-col"> 
+										<!-- <div class=""> -->
+											<div class="row ">
+												<div class="m-2">
+													<div class="bracket mx-auto border border-black rounded" id="W1-row">
+														<p class="my-auto mx-2 mb-1"> semi 1 </p>
+													</div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="m-2">
+													<div class="bracket mx-auto border border-black rounded" id="W2-row">
+														<p class="my-auto mx-2  mb-1"> semi 2 </p>
+													</div>
+												</div>
+											</div>
+										<!-- </div> -->
+									</div>
+							
+									<!-- Third column: winner final -->
+									<div class="col align-self-center" id="third-col">
+										<div class="row">
+											<div class="m-2">
+												<div class="bracket mx-auto border border-black rounded" id="WF-row">
+													<p class="my-auto mx-2 mb-1"> winner </p>
+												</div>
+											</div>
+										</div>
+									</div>
+								<div class="modal-footer">
+									<!-- FOOTER BUTTON NECESSARY ?? -->
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close </button>
+								</div>
+							</div>
+						</div>
 					</div>
-					
 				</div>
 				<div id="playersList"></div>
 				<div id="tournamentOptions" class="hidden">
@@ -116,7 +193,6 @@
 						<button type="submit">Join Tournament</button>
 					</form>
 				</div>
-				
                 <div id="layer2Btns" class="hidden">
                     <div id="OneVsOne" class="hud-btn">
                         <small>Create new (1vs1)</small>
@@ -163,4 +239,7 @@
 					</svg>
 				</button>
 	        </div>
+		</div>
+	</div>
+</div>
 {% endblock %}
