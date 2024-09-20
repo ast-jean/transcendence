@@ -5,6 +5,11 @@ export let ballSpeedX = 0;
 export let ballSpeedY = 0;
 export let players = [];
 export let isGameOver = true;
+export let isFourPlayerMode = false;
+
+export function setPlayerMode(value){
+    isFourPlayerMode = value;
+}
 
 export function setBallSpeedX(value) {
     ballSpeedX = value;
@@ -27,7 +32,7 @@ export function setGameOverState(state) {
 }
 
 // Ajoute un joueur dans le tableau global players et à la scène
-export function addPlayerToGame(id, x, y, z, color, scene, AI = false) {
+export function addPlayerToGame(id, x, y, z, color, scene, AI = false, isVertical = false) {
     if (AI) {
         // Ajouter un joueur IA
         const newAIPlayer = new AIPlayer(id, x, y, z, color);

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { socketState } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
-import { getBallSpeedX, getBallSpeedY, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
+import { getBallSpeedX, getBallSpeedY, isFourPlayerMode, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 
 export const INITIAL_BALL_SPEED_X = 5;
 export const INITIAL_BALL_SPEED_Y = 5;
@@ -25,7 +25,8 @@ export function moveBall(delta, walls, players) {
     let ballSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
 
     // Gestion des collisions avec les murs
-    let scored = handleWallCollision(walls, sphere);
+
+    let scored = handleWallCollision(walls, sphere, isFourPlayerMode);
     // Gestion des collisions avec les joueurs
     handlePlayerCollision(players, sphere, ballSpeed);
 

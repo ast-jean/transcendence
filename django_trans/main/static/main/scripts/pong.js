@@ -1,13 +1,13 @@
 // Import des modules nécessaires
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { AIPlayer, initializePlayers, movePlayer } from './gameplay/player.js';
+import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
-import { players } from './utils/setter.js';
+import { players, setPlayerMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { sphere } from './gameplay/ball.js';
@@ -36,6 +36,7 @@ container.appendChild(renderer.domElement);
 setupWalls(scene);
 setWallColor(808080);
 
+
 // Contrôles de caméra
 const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(0, -15, 10);  // Position initiale de la caméra
@@ -48,6 +49,16 @@ scene.add(directionalLight);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
+
+
+function localPlay4Players() {
+    console.log("Initialisation du mode Local Play à 4 joueurs");
+    initializePlayers4()
+    setPlayerMode(true);
+
+}
+
+
 
 // Démarrage du jeu local
 function localPlay() {
@@ -274,7 +285,7 @@ function setCameraTopView() {
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
 document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
-
+document.getElementById('localplay_4players_btn').addEventListener('click', localPlay4Players);
 
 
 document.getElementById('startGameButton').addEventListener('click', () => {

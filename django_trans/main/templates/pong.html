@@ -35,13 +35,14 @@
 		<!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
 		<div class="row">
 			<div class="col align-items-center align-self-center">
+				
+				<div id="gameCont" class="three-js-canvas d-flex justify-content-center align-items-center"></div>
 				<div id="cameraControls">
 					<button id="player1CameraBtn">Caméra Joueur 1</button>
 					<button id="player2CameraBtn">Caméra Joueur 2</button>
 					<button id="topViewCameraBtn">Vue de dessus</button>
+					<button id="localplay_4players_btn"> Local 4 players</button>
 				</div>
-				
-				<div id="gameCont" class="three-js-canvas d-flex justify-content-center align-items-center"></div>
 				<div id="tournament-info" class="hud">
 					<p id="tournamentRoom">Tournament Room: </p>
 					<p id="connectedPlayers">Players Connected: 0/4</p>
