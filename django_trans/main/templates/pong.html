@@ -17,6 +17,7 @@
     }
 </script>
 <script src="{% static 'main/scripts/socket_pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/camera.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/collision.js' %}" type="module"></script>
@@ -61,12 +62,13 @@
 				</div>
 
 				<!-- Placeholder pour afficher la liste des joueurs dans le lobby -->
-				<div id="playersList" class="tournament-section">
+				<div id="playersList">
 					<h3>Players in the lobby:</h3>
 					<ul id="playerListUl">
 						<!-- Les joueurs seront ajoutés ici dynamiquement -->
 					</ul>
 				</div>
+				
 
 				<!-- Bouton pour démarrer la partie  STEVEN -->
 				<!-- <div id="startGameDiv" class="game-controls">

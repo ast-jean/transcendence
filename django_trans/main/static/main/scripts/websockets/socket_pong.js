@@ -6,7 +6,7 @@ import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { hideChat, showChat, addChat } from '../ui/chat.js'
-import { scene } from '../pong.js';
+import { initTournament, tournament } from '../pong.js';
 
 export var room_id;
 
@@ -68,6 +68,13 @@ export function setupWebSocket() {
                     }
                     });
             }
+            if (data.cmd === "updateTournament") {
+                tournament.addPlayer(data.player);
+            } else if (data.cmd === "startMatch") {
+                tournament.createMatches();
+            } else if (data.cmd === "reportMatchResult") {
+                tournament.reportMatchResult(data.matchId, data.winner);
+            }
             if (data.cmd === "chat") {
                 addChat(data.ident, ": " + data.data)
             }
@@ -90,22 +97,23 @@ export function setupWebSocket() {
             }
 
             if (data.cmd === "joinLobby") {
-                // Mise à jour du room_id après la création du lobby
-                room_id = data.roomId;
-                showChat();
-                console.log("Tournament lobby created, room ID:", room_id);
-                // Mise à jour des informations du tournoi avec le room_id reçu
-                updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
+                console.log(`Player joined lobby for tournament ${data.tournamentId}`);
+                initTournament(data.tournamentId, data.maxPlayers);
+                
+                // Vérifie si data.players est défini et est bien un tableau
+                if (Array.isArray(data.players)) {
+                    data.players.forEach(player => {
+                        tournament.addPlayer(player);
+                    });
+                } else {
+                    console.log("Aucun joueur trouvé dans le lobby.");
+                }
             }
-
+            
             if (data.cmd === "updateLobbyPlayers") {
-                const playersList = document.getElementById('playersList');
-                playersList.innerHTML = "";  // Clear the existing list
-                data.players.forEach(player => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `Player: ${player.ident}`;
-                    playersList.appendChild(listItem);
-                });
+                tournament.handleBackendUpdate(data);
+            }
+        
             if (data.cmd === "playerJoinedTournament") {
                 // Mettre à jour le nombre de joueurs connectés
                 const playerCount = data.playerCount;
@@ -114,7 +122,21 @@ export function setupWebSocket() {
                 showChat();
                 onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
             }
-        };
+            if (data.cmd === "backendInfo") {
+                console.log("%c--- Backend Information ---", "color: #ff00ff; font-weight: bold;");
+                console.log(`Server Time: ${data.serverTime}`);
+                console.log(`Connected Clients: ${data.connected_clients.length}`);
+                data.connected_clients.forEach((client, index) => {
+                    console.log(`Client ${index + 1} - ID: ${client}`);
+                });
+        
+                console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
+                data.rooms.forEach((room, index) => {
+                    console.log(`Room ${index + 1} - Room ID: ${room.roomId}, Players: ${room.players.join(", ")}`);
+                    console.log(`Score Team 1: ${room.scoreTeam1}, Score Team 2: ${room.scoreTeam2}`);
+                });
+                console.log("%c--------------------------", "color: #ff00ff; font-weight: bold;");
+            }
         };
     });
 }
@@ -228,4 +250,4 @@ export function receiveBallSync(ballData) {
     // Synchroniser les vitesses de la balle également
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)
- }
+}

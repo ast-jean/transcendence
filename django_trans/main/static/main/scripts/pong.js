@@ -10,9 +10,9 @@ import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.
 import { players, setPlayerMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
-import { sphere } from './gameplay/ball.js';
-import { ballSpeedX, ballSpeedY } from './utils/setter.js';
 import { showChat } from './ui/chat.js';
+import { setCameraPlayer1, setCameraPlayer2, setCameraTopView } from './ui/camera.js';
+import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -25,7 +25,7 @@ const container = document.getElementById('gameCont');
 const width = container.clientWidth;
 const height = container.clientWidth * 0.666;
 export const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+export const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
@@ -38,7 +38,7 @@ setWallColor(808080);
 
 
 // Contrôles de caméra
-const controls = new OrbitControls(camera, renderer.domElement);
+export const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(0, -15, 10);  // Position initiale de la caméra
 camera.lookAt(0, 0, 0);           // Assure qu'elle regarde le centre de la scène
 
@@ -57,8 +57,6 @@ function localPlay4Players() {
     setPlayerMode(true);
 
 }
-
-
 
 // Démarrage du jeu local
 function localPlay() {
@@ -110,6 +108,13 @@ async function playOnline(maxPlayers) {
     }
 }
 
+// Créer une instance de tournoi lors de la réception des informations du backend
+export let tournament;
+
+export function initTournament(tournamentId, maxPlayers) {
+    tournament = new Tournament(tournamentId, maxPlayers);
+    console.log(`Tournament ${tournamentId} initialized with max ${maxPlayers} players`);
+}
 
 // Function to wait until room_id changes from null
 function waitForRoomId() {
@@ -196,90 +201,6 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-function displayDebugInfo() {
-    console.log("%c--- Debug Information ---", "color: #00ff00; font-weight: bold;");
-
-    // Afficher la liste des joueurs
-    if (players && players.length > 0) {
-        console.log("%cPlayers Connected:", "color: #00ffff; font-weight: bold;");
-        players.forEach((player, index) => {
-            console.log(`Player ${index + 1} - ID: ${player.id}, Position: (${player.mesh.position.x.toFixed(2)}, ${player.mesh.position.y.toFixed(2)}, ${player.mesh.position.z.toFixed(2)})`);
-        });
-    } else {
-        console.log("%cNo players connected.", "color: #ff0000; font-weight: bold;");
-    }
-
-    // Afficher l'état du WebSocket
-    console.log("%cWebSocket Status:", "color: #00ffff; font-weight: bold;");
-    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-        console.log("%cConnected", "color: #00ff00;");
-    } else if (socketState.socket && socketState.socket.readyState === WebSocket.CONNECTING) {
-        console.log("%cConnecting...", "color: #ffff00;");
-    } else {
-        console.log("%cDisconnected", "color: #ff0000;");
-    }
-
-    // Afficher l'ID de la room si disponible
-    if (room_id) {
-        console.log(`%cRoom ID: ${room_id}`, "color: #00f0ff;");
-    } else {
-        console.log("%cRoom ID not set.", "color: #ff0000;");
-    }
-
-    // Afficher d'autres informations utiles (ex: vitesse de la balle, état des murs, etc.)
-    if (sphere) {
-        console.log("%cBall Info:", "color: #00ffff; font-weight: bold;");
-        console.log(`Position: (${sphere.position.x.toFixed(2)}, ${sphere.position.y.toFixed(2)}, ${sphere.position.z.toFixed(2)})`);
-        console.log(`Speed: X=${ballSpeedX.toFixed(2)}, Y=${ballSpeedY.toFixed(2)}`);
-    }
-
-    // Afficher les informations sur les murs
-    if (walls && walls.length > 0) {
-        console.log("%cWalls Info:", "color: #00ffff; font-weight: bold;");
-        walls.forEach((wall, index) => {
-            console.log(`Wall ${index + 1} - Position: (${wall.position.x.toFixed(2)}, ${wall.position.y.toFixed(2)}, ${wall.position.z.toFixed(2)})`);
-        });
-    } else {
-        console.log("%cNo walls defined.", "color: #ff0000;");
-    }
-
-    console.log("%c--------------------------", "color: #00ff00; font-weight: bold;");
-}
-
-
-
-function setCameraPlayer1() {
-    camera.position.set(0, -15, 10);  // Caméra du côté du joueur 1
-    camera.lookAt(0, 0, 0);
-    camera.up.set(0, 0, 1);  // Orientation vers le haut (z positif)
-    camera.updateProjectionMatrix();
-    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
-    controls.update();  // Met à jour les contrôles
-    console.log("Caméra Joueur 1 activée");
-}
-
-// Fonction pour changer la caméra sur le joueur 2
-function setCameraPlayer2() {
-    camera.position.set(0, 15, -10);   // Caméra du côté du joueur 2
-    camera.lookAt(0, 0, 0);
-    camera.up.set(0, 0, -1);
-    camera.updateProjectionMatrix();
-    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
-    controls.update();  // Met à jour les contrôles
-    console.log("Caméra Joueur 2 activée");
-}
-
-// Fonction pour la vue de dessus
-function setCameraTopView() {
-    camera.position.set(0, 0, 20);    // Caméra positionnée au-dessus
-    camera.lookAt(0, 0, 0);
-    camera.up.set(0, 1, 0);  // Pour la vue de dessus, l'axe y est orienté vers le haut
-    camera.updateProjectionMatrix();
-    controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
-    controls.update();  // Met à jour les contrôles
-    console.log("Vue de dessus activée");
-}
-
 // Ajout d'événements pour les boutons
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
@@ -291,7 +212,6 @@ document.getElementById('startGameButton').addEventListener('click', () => {
     displayPlayersInScene(players, scene);  // Appelle la fonction pour afficher les joueurs
     console.log("La partie a commencé, joueurs ajoutés à la scène");
 });
-
 
 
 document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
@@ -316,6 +236,14 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
         return;
     }
 });
+
+//document.getElementById('tournament_btn').addEventListener('click', initTournament);
+// Appel au backend pour créer un tournoi
+document.getElementById('tournament_btn').addEventListener('click', () => {
+    createTournamentLobby('tourney123', 4);  // Exemple d'appel pour créer un tournoi avec 4 joueurs max
+});
+
+
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
 

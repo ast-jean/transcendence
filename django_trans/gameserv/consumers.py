@@ -4,6 +4,7 @@ import json
 from typing import List, Optional
 import random
 
+
 class Client:
     def __init__(self, ident, index, websocket):
         self.ident = ident
@@ -11,12 +12,19 @@ class Client:
         self.websocket = websocket
         self.team = "team1" if index % 2 == 0 else "team2"
 
+    def to_dict(self):
+        return {
+            'ident': self.ident,
+            'index': self.index,
+            'team': self.team
+        }
+
 class Room:
     def __init__(self, player_total, existing_room_ids, is_lobby=False):
         self.roomId = self.generate_room_id(existing_room_ids)
         self.clients: List[Client] = []
         self.playerIn = 0 
-        self.playerTotal = player_total,
+        self.playerTotal = player_total
         self.scoreTeam1 = 0
         self.scoreTeam2 = 0
         self.host_ident = None  # Identifiant de l'hôte
@@ -41,45 +49,6 @@ class Room:
         return self.playerIn == self.playerTotal and self.isLobby
 
 
-    async def check_and_start_tournament(self, room):
-        if room.check_all_players_ready():
-            # Crée deux nouvelles rooms de jeu
-            match_1_room = Room(2, self.existing_room_ids)
-            match_2_room = Room(2, self.existing_room_ids)
-
-            self.rooms.append(match_1_room)
-            self.rooms.append(match_2_room)
-
-            # Répartit les joueurs dans les deux rooms
-            match_1_players = room.clients[:2]
-            match_2_players = room.clients[2:]
-
-            # Envoie chaque joueur dans leur nouvelle room
-            for client in match_1_players:
-                match_1_room.add_client(client)
-                await client.websocket.send(json.dumps({
-                    "cmd": "joinRoom",
-                    "roomId": match_1_room.roomId,
-                    "playerIn": match_1_room.playerIn,
-                    "playerTotal": match_1_room.playerTotal,
-                }))
-
-            for client in match_2_players:
-                match_2_room.add_client(client)
-                await client.websocket.send(json.dumps({
-                    "cmd": "joinRoom",
-                    "roomId": match_2_room.roomId,
-                    "playerIn": match_2_room.playerIn,
-                    "playerTotal": match_2_room.playerTotal,
-                }))
-            
-            # Supprime la room du lobby une fois les matchs lancés
-            self.rooms.remove(room)
-
-
-
-
-
 
 
 
@@ -100,7 +69,7 @@ class Room:
         return room_id
     
     def add_client(self, client) -> Optional[Client]:
-        if self.playerIn < self.playerTotal[0]:
+        if self.playerIn < self.playerTotal:
             self.clients.append(client)
             self.playerIn += 1
             if self.playerIn == 1:
@@ -114,6 +83,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     connected_clients = []
     rooms = []
     existing_room_ids = []
+    tournaments = {}
 
     async def find_room(self, room_id):
         for room in self.rooms:
@@ -134,19 +104,23 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def create_tournament_lobby(self):
         print("Creating new tournament lobby")
-        new_room = Room(4, self.existing_room_ids, is_lobby=True)  # Room de lobby
+        new_room = Room(4, self.existing_room_ids, is_lobby=True)  # Création du lobby avec 4 joueurs
         self.rooms.append(new_room)
-
+        
         # Ajouter le joueur qui a créé le lobby comme premier client et hôte
         new_client = Client(self.ident, 0, self)
         new_room.add_client(new_client)
+        
+        # Créer une liste des joueurs à partir des clients du room
+        players_list = [client.to_dict() for client in new_room.clients]
 
         # Envoie la room_id au client après la création
         data = {
             "cmd": "joinLobby",
-            "roomId": new_room.roomId,
+            "tournamentId": new_room.roomId,
+            "maxPlayers": 4,
             "playerIn": new_room.playerIn,
-            "playerTotal": new_room.playerTotal,
+            "players": players_list,  # Inclure la liste des joueurs
             "host": True  # Marque ce client comme l'hôte
         }
         await self.send(json.dumps(data))
@@ -154,6 +128,53 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Notifie les autres joueurs du lobby des mises à jour
         await self.notify_players_in_lobby(new_room)
 
+
+    async def notify_players_in_lobby(self, room):
+        players_in_lobby = [{"ident": client.ident} for client in room.clients]
+        data = {
+            "cmd": "updateLobbyPlayers",
+            "players": players_in_lobby
+        }
+        for client in room.clients:
+            await client.websocket.send(json.dumps(data))
+
+
+    async def end_match(self, room, winner_client):
+        print(f"Match terminé, gagnant : {winner_client.ident}")
+
+        # Le gagnant avance à l'étape suivante
+        winner_data = {
+            "cmd": "matchWinner",
+            "winner": winner_client.ident
+        }
+
+        for client in room.clients:
+            await client.websocket.send(json.dumps(winner_data))
+        
+        # Supprimer la room une fois le match terminé
+        self.rooms.remove(room)
+
+    async def join_lobby(self, tournament_id):
+        """Ajoute un joueur au lobby d'un tournoi."""
+        if tournament_id in self.tournaments:
+            tournament = self.tournaments[tournament_id]
+            new_client = Client(self.ident, len(tournament.players), self)
+            tournament.add_player(new_client)
+
+            # Mise à jour du frontend
+            data = {
+                "cmd": "joinLobby",
+                "tournamentId": new_room.roomId,
+                "maxPlayers": 4,
+                "playerIn": new_room.playerIn,
+                "host": True,  # Marque ce client comme l'hôte
+                "players": [{"ident": client.ident} for client in new_room.clients]  # Inclure les joueurs existants
+            }
+
+            await self.send(json.dumps(data))
+
+            # Notifie tous les autres joueurs
+            await self.notify_players_in_lobby(tournament_id)
 
 
     async def receive(self, text_data):
@@ -163,7 +184,30 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             cmd = text_data_json.get("cmd")
 
-            if cmd == "chat":
+            if cmd == "getBackendInfo":
+                room = await self.find_room(text_data_json.get("room_id"))
+
+                if room is None:
+                    # Si la room n'est pas trouvée, renvoie un message d'erreur ou gère le cas différemment
+                    await self.send(json.dumps({
+                        "cmd": "error",
+                        "message": "Room not found"
+                    }))
+                    return
+                response = {
+                    "cmd": "backendInfo",
+                    "connected_clients": [client.ident for client in GameConsumer.connected_clients],
+                    "rooms": {
+                        "roomId": room.roomId,
+                        "players": [client.ident for client in room.clients],
+                        "scoreTeam1": room.scoreTeam1,
+                        "scoreTeam2": room.scoreTeam2,
+                        "playerIn": room.playerIn,
+                        "playerTotal": room.playerTotal[0],
+                    }
+                }
+                await self.send(json.dumps(response))
+            elif cmd == "chat":
                 await self.broadcast_chat(text_data_json)
             elif cmd == "move":
                 await self.broadcast_move(text_data_json)
@@ -181,7 +225,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.createRoom(2)
             elif cmd == "roomCreate4":
                 await self.createRoom(4)
-            elif cmd == "tournamentLobby":
+            elif cmd == "createTournamentLobby":
                 await self.create_tournament_lobby() 
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
@@ -250,6 +294,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "roomId": new_room.roomId,
                 "playerIn": new_room.playerIn,
                 "playerTotal": new_room.playerTotal,
+                "players": new_room.connected_clients,
                 "clientId": 0
             }
             await self.send(json.dumps(data))
@@ -297,15 +342,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"Error searching room: {str(e)}")
             await self.send(json.dumps({'cmd':'roomNotFound'}))
 
-
-    async def notify_players_in_lobby(self, room):
-        players_in_lobby = [{"ident": client.ident} for client in room.clients]
-        data = {
-            "cmd": "updateLobbyPlayers",
-            "players": players_in_lobby
-        }
-        for client in room.clients:
-            await client.websocket.send(json.dumps(data))
 # Exemple de donnees dans data
 # {
 #     "cmd": "endGame",

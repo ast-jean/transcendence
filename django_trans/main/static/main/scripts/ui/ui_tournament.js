@@ -31,3 +31,5 @@ export function hideRoomSearch() {
         roomSearchDiv.classList.add('hidden');
     }
 }
+
+

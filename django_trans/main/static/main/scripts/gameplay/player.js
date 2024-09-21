@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, scene } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode } from '../utils/setter.js';
 import { sphere } from './ball.js';
 
 export let keyState = {};
 
 export class Player {
-    constructor(id, x, y, z, color, isVertical) {
-        this.id = id;
+    constructor(ident, x, y, z, color, isVertical) {
+        this.ident = ident;
         this.lives = 3;
         this.isVertical = isVertical;
 
@@ -119,7 +119,7 @@ function movePlayerVertical(player, delta, speed, direction, socketSync = false)
 }
 
 // Fonction principale pour déplacer les joueurs
-export function movePlayer(delta) {
+export function movePlayer4(delta) {
     const speed = 20;
 
     // Déplacer le joueur 1 (horizontal)
@@ -167,53 +167,58 @@ export function movePlayer(delta) {
 
 
 
-// Fonction pour déplacer les joueurs
-//export function movePlayer(delta, scene) {
-//    const speed = 20;
-//    let x1 = 0, x2 = 0;
-//
-//    if (players[0]) {        
-//        if (keyState['ArrowLeft']) x1 -= speed * delta;
-//        if (keyState['ArrowRight']) x1 += speed * delta;
-//
-//        if (local_game) {
-//            if (keyState['KeyA']) x2 -= speed * delta;
-//            if (keyState['KeyD']) x2 += speed * delta;
-//        }
-//
-//        // Mise à jour de la position du joueur 1
-//        if (x1 !== 0) {
-//            let newX = players[0].mesh.position.x + x1;
-//            if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-//                newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-//                players[0].mesh.position.x = newX;
-//                // Envoi des données de mouvement en ligne
-//                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-//                    let cmd = "move";
-//                    const movementData = { x: x1, y: 0 };
-//                    let roomId = getRoomId();
-//                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-//                }
-//            }
-//        }
-//
-//        // Mise à jour de la position du joueur 2
-//        if (x2 !== 0) {
-//            let newX = players[1].mesh.position.x + x2;
-//            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-//                newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-//                players[1].mesh.position.x = newX;
-//                // Envoi des données de mouvement en ligne
-//                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-//                    let cmd = "move";
-//                    const movementData = { x: x2 * -1, y: 0 };
-//                    let roomId = getRoomId();
-//                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-//                }
-//            }
-//        }
-//    }
-//}
+ //Fonction pour déplacer les joueurs
+export function movePlayer(delta, scene) {
+
+    if (isFourPlayerMode){
+        movePlayer4(delta);
+        return ;
+    }
+    const speed = 20;
+    let x1 = 0, x2 = 0;
+
+    if (players[0]) {        
+        if (keyState['ArrowLeft']) x1 -= speed * delta;
+        if (keyState['ArrowRight']) x1 += speed * delta;
+
+        if (local_game) {
+            if (keyState['KeyA']) x2 -= speed * delta;
+            if (keyState['KeyD']) x2 += speed * delta;
+        }
+
+        // Mise à jour de la position du joueur 1
+        if (x1 !== 0) {
+            let newX = players[0].mesh.position.x + x1;
+            if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                players[0].mesh.position.x = newX;
+                // Envoi des données de mouvement en ligne
+                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                    let cmd = "move";
+                    const movementData = { x: x1, y: 0 };
+                    let roomId = getRoomId();
+                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+                }
+            }
+        }
+
+        // Mise à jour de la position du joueur 2
+        if (x2 !== 0) {
+            let newX = players[1].mesh.position.x + x2;
+            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+                newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+                players[1].mesh.position.x = newX;
+                // Envoi des données de mouvement en ligne
+                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+                    let cmd = "move";
+                    const movementData = { x: x2 * -1, y: 0 };
+                    let roomId = getRoomId();
+                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+                }
+            }
+        }
+    }
+}
 
 // Met à jour l'affichage des joueurs
 export function updatePlayerVisualization(scene) {
@@ -238,9 +243,9 @@ document.addEventListener('keyup', function (e) {
 });
 
 export class AIPlayer extends Player {
-    constructor(id, x, y, z, color) {
+    constructor(ident, x, y, z, color) {
         console.log('AIPlayer is being initialized');
-        super(id, x, y, z, color);
+        super(ident, x, y, z, color);
         this.targetX = 0;
         this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
     }
