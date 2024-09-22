@@ -2,7 +2,6 @@ import { getRoomId, socketState } from '../websockets/socket_pong.js'
 
 export let shouldPreventDefault = true;
 
-
 export function getShouldPreventDefault(){
    return shouldPreventDefault;
 }
@@ -49,17 +48,20 @@ function pageLoaded() {
 //Listening the button click
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
-export function addChat(client_id, msg) {
-    console.log("In addChat()")
+export function addChat(name, msg) {
     var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
-
-    if (client_id) {
-        li.textContent = client_id + msg;
-    } else {
-        li.textContent = "Server: " + msg;
+    
+    console.log("In addChat() => " + name);
+    if (!name || name.trim().toLowerCase() === 'none') {
+        name = 'Guest';
     }
+    li.textContent = name +" " + msg;
     chatBox.appendChild(li);
+}
+
+export function parsingChat(name, msg) {
+
 }
 
 // //Receiving message from server
@@ -104,6 +106,7 @@ function sendMessage() {
         var cmd = "chat"
         var roomId = getRoomId();
         var data = msg;
-        socketState.socket.send(JSON.stringify({ cmd, data, roomId }));     
+        var name = document.getElementById('name');
+        socketState.socket.send(JSON.stringify({ cmd, data, roomId, name }));     
     }
 }

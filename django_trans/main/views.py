@@ -4,12 +4,14 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth import logout
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from requests_oauthlib import OAuth2Session
 from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
 from .models import CustomUser, Game
+import jwt
+from jwt.exceptions import ExpiredSignatureError
 import os
 
 load_dotenv()
@@ -18,12 +20,35 @@ CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 AUTHORIZATION_BASE_URL = 'https://api.intra.42.fr/oauth/authorize'
 TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 
+def token_saver(token):
+    request.session['oauth_token'] = token
+
 def home(request):
     token = request.session.get('oauth_token')
-    # if not token:
-    #     return redirect('oauth_login')
-    oauth = OAuth2Session(CLIENT_ID, token=token)
-    response = oauth.get('https://api.intra.42.fr/v2/me')
+    if not token:
+        return redirect('oauth_login')
+
+    # Create an OAuth2 session with auto-refresh capability
+    oauth = OAuth2Session(
+        CLIENT_ID,
+        token=token,
+        auto_refresh_url=TOKEN_URL,
+        auto_refresh_kwargs={
+            'client_id': CLIENT_ID,
+            'client_secret': CLIENT_SECRET,
+        },
+        token_updater=lambda t: request.session.update({'oauth_token': t})
+    )
+    try:
+        response = oauth.get('https://api.intra.42.fr/v2/me')
+        response.raise_for_status()
+    except TokenExpiredError:
+        # Token has expired; redirect to OAuth login
+        return redirect('oauth_login')
+    except Exception as e:
+        # Handle other exceptions or errors
+        return HttpResponse(f'An error occurred: {e}')
+
     profile_data = response.json()
     return render(request, "home.html", {'profile': profile_data})
 
@@ -104,3 +129,15 @@ def profile(request):
     user = request.user
     games = Game.objects.filter(players__user=user).distinct()
     return render(request, 'profile.html', {'user' : user , 'profile' : user.profile_data, 'games' : games})
+
+def userProfile(request, playername):
+    you = request.user
+    them = get_object_or_404(CustomUser, username=playername)
+    theirgames = Game.objects.filter(players__user=them).distinct()
+    context =  {
+        'them' : them,
+        'user' : you,
+        'profile' : you.profile_data,
+        'theirprofile' : them.profile_data,
+        'games' : theirgames }
+    return render(request, 'profile.html', context)

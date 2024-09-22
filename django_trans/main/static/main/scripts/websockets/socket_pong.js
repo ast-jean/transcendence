@@ -5,7 +5,7 @@ import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-import { hideChat, showChat, addChat } from '../ui/chat.js'
+import { hideChat, showChat, addChat, parsingChat } from '../ui/chat.js'
 import { scene } from '../pong.js';
 
 export var room_id;
@@ -57,19 +57,22 @@ export function setupWebSocket() {
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
                 showChat();
-                addChat(null, "Room id = "+ room_id)
+                addChat("Server", "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
+                addChat("Server", "Player connected:")
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
                         addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
                         console.log("Existing player added: ", player.ident);    
+                        addChat("->", player.name)
                     }
                     });
             }
             if (data.cmd === "chat") {
-                addChat(data.ident, ": " + data.data)
+                parsingChat(data);
+                // addChat(data.name, ": " + data.data)
             }
             if (data.cmd === "move") {
                 receiveMove(data.ident, data.movementData);
@@ -82,10 +85,10 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 receiveConnect(data.ident);
-                addChat(data.ident, " has joined")
+                addChat(data.name, " has joined")
             }
             if (data.cmd === "disconnect") {
-                addChat(data.ident, " has disconnected")
+                addChat(data.name, " has disconnected")
                 removePlayer(data.ident);
             }
 
@@ -119,9 +122,27 @@ export function setupWebSocket() {
     });
 }
 
+function getName(){
+    var name; 
+    try {
+        var nameValue = document.getElementById('name'); 
+        name = nameValue.textContent || nameValue.innerText;
+        if (!name || name === 'null' || name == 'None')
+            name = 'Guest'
+    } 
+    catch {
+        name = "Guest"
+    }
+    return name;
+    
+    console.log(name);
+}
+
+
 export function sendCmd(cmd, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
-        socketState.socket.send(JSON.stringify({ cmd, roomId }));
+        var name = getName();
+        socketState.socket.send(JSON.stringify({ cmd, roomId, name }));
     } else {
         console.error("WebSocket is not ready. Unable to send command.");
     }
@@ -188,7 +209,8 @@ export function sendSync() {
         let roomId = getRoomId();
         const movementData = { x, y };
         // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
-        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+        var name = getName();
+        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
@@ -210,7 +232,7 @@ export function checkAllPlayersConnected(maxPlayers) {
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
-        }, 60000); // Délai d'attente de 30 secondes
+        }, 600000); // Délai d'attente de 30 secondes
     });
 }
 
