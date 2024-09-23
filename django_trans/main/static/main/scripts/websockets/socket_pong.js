@@ -5,7 +5,7 @@ import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-import { hideChat, showChat, addChat, parsingChat } from '../ui/chat.js'
+import { hideChat, showChat, addChat } from '../ui/chat.js'
 import { scene } from '../pong.js';
 
 export var room_id;
@@ -26,6 +26,7 @@ export function setupWebSocket() {
         socketState.socket.onopen = function() {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
+            sendCmd(null,null);
             resolve();
         };
 
@@ -56,7 +57,6 @@ export function setupWebSocket() {
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
-                showChat();
                 addChat("Server", "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
@@ -71,8 +71,20 @@ export function setupWebSocket() {
                     });
             }
             if (data.cmd === "chat") {
-                parsingChat(data);
-                // addChat(data.name, ": " + data.data)
+                // parsingChat(data);
+                addChat(data.name, ": " + data.data, 'primary')
+                //receiving error if bad command
+            }
+            if (data.cmd === "profile") {
+                // parsingChat(data);
+                addChatProfile(data.name, ": " + data.data, 'primary')
+                //receiving error if bad command
+            }
+            if (data.cmd === "badChat") {
+                // parsingChat(data);
+                console.log(data);
+                addChat('Server', ": " + data.msg, 'warning')
+                //receiving error if bad command
             }
             if (data.cmd === "move") {
                 receiveMove(data.ident, data.movementData);
@@ -95,7 +107,6 @@ export function setupWebSocket() {
             if (data.cmd === "joinLobby") {
                 // Mise à jour du room_id après la création du lobby
                 room_id = data.roomId;
-                showChat();
                 console.log("Tournament lobby created, room ID:", room_id);
                 // Mise à jour des informations du tournoi avec le room_id reçu
                 updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
@@ -114,7 +125,6 @@ export function setupWebSocket() {
                 const playerCount = data.playerCount;
                 const maxPlayers = data.maxPlayers;
                 const roomId = data.roomId;
-                showChat();
                 onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
             }
         };
@@ -122,20 +132,20 @@ export function setupWebSocket() {
     });
 }
 
-function getName(){
+export function getName(){
     var name; 
     try {
-        var nameValue = document.getElementById('name'); 
-        name = nameValue.textContent || nameValue.innerText;
+        var nameElement = document.getElementById('name'); 
+        name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
-            name = 'Guest'
+            name = 'Guest';
+        console.log("Name found is >"+name+"<");
     } 
     catch {
-        name = "Guest"
+        name = "Guest";
     }
     return name;
     
-    console.log(name);
 }
 
 

@@ -3,7 +3,7 @@ class connectedClient:
 Takes an id string and a name string as parameters on construction'''
 	def __init__(self, ide: str, nam: str) -> None:
 		self.ident = ide
-		self.name = nam
+		self.name = name
 		self.blocklist = list
 	@classmethod
 	def addClientToBlockList(self, block: any)  -> bool:

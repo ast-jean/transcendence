@@ -1,4 +1,4 @@
-import { getRoomId, socketState } from '../websockets/socket_pong.js'
+import { getRoomId, socketState, getName } from '../websockets/socket_pong.js'
 
 export let shouldPreventDefault = true;
 
@@ -48,21 +48,40 @@ function pageLoaded() {
 //Listening the button click
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
-export function addChat(name, msg) {
+export function addChat(name, msg, textColor = 'black') {
     var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
     
-    console.log("In addChat() => " + name);
     if (!name || name.trim().toLowerCase() === 'none') {
         name = 'Guest';
     }
+    li.classList.add("text-" + textColor);
     li.textContent = name +" " + msg;
     chatBox.appendChild(li);
 }
 
-export function parsingChat(name, msg) {
+export function addChatProfile(name, msg, textColor = 'black') {
+    var chatBox = document.getElementById('chat-messages');
+    var li = document.createElement('li');
+    
+    if (!name || name.trim().toLowerCase() === 'none') {
+        name = 'Guest';
+    }
+    // Create anchor (hyperlink) element
+    var link = document.createElement('a');
+    var baseUrl = window.location.origin; // Dynamically fetch base URL
+    link.href = baseUrl + msg;            // Concatenate base URL with the provided message (e.g., /profile/username)
+    link.textContent = msg;               // Display the msg as the link text
+    link.style.color = 'blue';         // Apply the text color to the hyperlink
 
+    // Append the name and the hyperlink to the list item
+    li.textContent = name + " ";
+    li.appendChild(link); // Append the hyperlink to the list item
+
+    // Add the styled list item to the chat box
+    chatBox.appendChild(li);
 }
+
 
 // //Receiving message from server
 // export function receiveConnect(client_id){
@@ -106,7 +125,7 @@ function sendMessage() {
         var cmd = "chat"
         var roomId = getRoomId();
         var data = msg;
-        var name = document.getElementById('name');
+        var name = getName();
         socketState.socket.send(JSON.stringify({ cmd, data, roomId, name }));     
     }
 }

@@ -67,7 +67,6 @@ async function playOnline(maxPlayers) {
     if (socketState.isSocketReady) {
         console.log(`Création de la room pour ${maxPlayers} joueurs.`);
         sendCmd(`roomCreate${maxPlayers}`);
-
         try {
             // Attend la confirmation de la création de la room (par exemple, room ID)
             await waitForRoomId();
@@ -299,6 +298,7 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
+        showChat();
         showLayer2Btns();
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
