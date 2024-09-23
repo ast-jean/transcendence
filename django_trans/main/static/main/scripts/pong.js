@@ -13,6 +13,9 @@ import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { showChat } from './ui/chat.js';
 import { setCameraPlayer1, setCameraPlayer2, setCameraTopView } from './ui/camera.js';
 import { Tournament, createTournamentLobby } from './tournament/tournament.js';
+import { tournament } from './utils/setter.js';
+import { displayDebugInfo } from './utils/utils.js';
+import { showTournamentOptions } from './ui/ui_tournament.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -108,8 +111,7 @@ async function playOnline(maxPlayers) {
     }
 }
 
-// Créer une instance de tournoi lors de la réception des informations du backend
-export let tournament;
+
 
 export function initTournament(tournamentId, maxPlayers) {
     tournament = new Tournament(tournamentId, maxPlayers);
@@ -201,6 +203,44 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
+
+
+
+
+
+const tournamentOptions = document.getElementById('tournamentOptions');
+
+
+
+
+// Gestionnaire d'événements pour le bouton Créer un tournoi
+document.getElementById('createTournamentBtn').addEventListener('click', async () => {
+    console.log("Création d'un nouveau tournoi");
+
+    // Envoyer la commande au serveur pour créer un tournoi
+    const cmd = {
+        cmd: "createTournamentLobby",
+    };
+    try {
+        await setupWebSocket();
+        console.log("WebSocket prêt.");
+        socketState.socket.send(JSON.stringify(cmd));
+        console.log(`Commande envoyée pour créer le tournoi`);
+    } catch (error) {
+        console.error("Erreur lors de l'établissement du WebSocket :", error);
+        return;
+    }
+
+
+});
+
+// Gestionnaire d'événements pour le bouton Rejoindre un tournoi
+document.getElementById('joinTournamentBtn').addEventListener('click', () => {
+    console.log("Rejoindre un tournoi existant");
+    // Logique pour rejoindre un tournoi ici...
+});
+
+
 // Ajout d'événements pour les boutons
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
@@ -240,7 +280,12 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
 //document.getElementById('tournament_btn').addEventListener('click', initTournament);
 // Appel au backend pour créer un tournoi
 document.getElementById('tournament_btn').addEventListener('click', () => {
-    createTournamentLobby('tourney123', 4);  // Exemple d'appel pour créer un tournoi avec 4 joueurs max
+    // Basculer la classe hidden
+    if (tournamentOptions.classList.contains('hidden')) {
+        tournamentOptions.classList.remove('hidden');
+    } else {
+        tournamentOptions.classList.add('hidden');
+    }
 });
 
 

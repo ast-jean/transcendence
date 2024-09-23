@@ -1,11 +1,13 @@
 import { Player, AIPlayer} from "../gameplay/player.js";
 import { scene } from "../pong.js";
+import { Tournament } from "../tournament/tournament.js";
 
 export let ballSpeedX = 0;
 export let ballSpeedY = 0;
 export let players = [];
 export let isGameOver = true;
 export let isFourPlayerMode = false;
+export let tournament;
 
 export function setPlayerMode(value){
     isFourPlayerMode = value;
@@ -62,3 +64,8 @@ export function removePlayer(playerIdToRemove) {
         players = players.filter(player => player.id !== playerIdToRemove);
     } 
 }
+
+export function setTournament(tournamentId, maxPlayers)
+{
+    tournament = new Tournament(tournamentId, maxPlayers);
+} 

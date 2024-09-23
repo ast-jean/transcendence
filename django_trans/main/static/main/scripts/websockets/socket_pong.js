@@ -6,7 +6,10 @@ import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { hideChat, showChat, addChat } from '../ui/chat.js'
-import { initTournament, tournament } from '../pong.js';
+import { initTournament } from '../pong.js';
+import { showLayer2Btns } from '../ui/ui_updates.js';
+import { Tournament } from '../tournament/tournament.js';
+import { tournament, setTournament } from '../utils/setter.js';
 
 export var room_id;
 
@@ -98,7 +101,10 @@ export function setupWebSocket() {
 
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
-                initTournament(data.tournamentId, data.maxPlayers);
+                if (data.host === true ){
+                    setTournament(data.tournamentId, data.maxPlayers)
+                    console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
+                }
                 
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
@@ -124,17 +130,19 @@ export function setupWebSocket() {
             }
             if (data.cmd === "backendInfo") {
                 console.log("%c--- Backend Information ---", "color: #ff00ff; font-weight: bold;");
-                console.log(`Server Time: ${data.serverTime}`);
+                console.log("Data received from backend:", data);
+
                 console.log(`Connected Clients: ${data.connected_clients.length}`);
+                console.log(`TournamentIds: ${data.tournamentId}`)
                 data.connected_clients.forEach((client, index) => {
                     console.log(`Client ${index + 1} - ID: ${client}`);
                 });
         
-                console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
-                data.rooms.forEach((room, index) => {
-                    console.log(`Room ${index + 1} - Room ID: ${room.roomId}, Players: ${room.players.join(", ")}`);
-                    console.log(`Score Team 1: ${room.scoreTeam1}, Score Team 2: ${room.scoreTeam2}`);
-                });
+                //console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
+                //data.rooms.forEach((room, index) => {
+                //    console.log(`Room ${index + 1} - Room ID: ${room.roomId}, Players: ${room.players.join(", ")}`);
+                //    console.log(`Score Team 1: ${room.scoreTeam1}, Score Team 2: ${room.scoreTeam2}`);
+                //});
                 console.log("%c--------------------------", "color: #ff00ff; font-weight: bold;");
             }
         };
@@ -192,7 +200,7 @@ export function receiveConnect(id) {
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
-    const player = players.find(p => p.id === id);
+    const player = players.find(p => p.ident === id);
     if (player) {
         if (movementData.x) player.mesh.position.x += movementData.x;
         if (movementData.y) player.mesh.position.y += movementData.y;

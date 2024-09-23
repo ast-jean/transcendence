@@ -3,6 +3,7 @@ import { socketState } from "../websockets/socket_pong.js";
 import { room_id } from "../websockets/socket_pong.js";
 import { sphere } from "../gameplay/ball.js";
 import { walls } from "../gameplay/wall.js";
+import { tournament } from "./setter.js";
 
 export function removeMeshFromScene(mesh, scene) {
     scene.remove(mesh);
@@ -64,12 +65,30 @@ export function displayDebugInfo() {
         console.log("%cNo walls defined.", "color: #ff0000;");
     }
 
+    // Afficher les informations spécifiques au tournoi
+    if (tournament) {
+        console.log("%cTournament Info:", "color: #00ffff; font-weight: bold;");
+        console.log(`Tournament ID: ${tournament.tournamentId}`);
+        console.log(`Max Players: ${tournament.maxPlayers}`);
+        console.log(`Players Registered: ${tournament.players.length}`);
+        tournament.players.forEach((player, index) => {
+            console.log(`Player ${index + 1}: ${player.ident}`);
+        });
+        console.log(`Is Lobby: ${tournament.isLobby}`);
+        if (tournament.matches.length > 0) {
+            console.log(`Matches in Progress: ${tournament.matches.length}`);
+            tournament.matches.forEach((match, index) => {
+                console.log(`Match ${index + 1} - Player 1: ${match.player1.id}, Player 2: ${match.player2.id}, Winner: ${match.winner ? match.winner.id : "TBD"}`);
+            });
+        }
+    } else {
+        console.log("%cNo tournament information available.", "color: #ff0000;");
+    }
+
     // Envoyer une commande au backend pour obtenir des informations supplémentaires
     if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         console.log("%cRequesting backend info...", "color: #00ffff; font-weight: bold;");
         let cmd = "getBackendInfo";
-        //let roomId = getRoomId();
-        console.log(room_id);
         socketState.socket.send(JSON.stringify({ cmd, room_id }));
     }
 

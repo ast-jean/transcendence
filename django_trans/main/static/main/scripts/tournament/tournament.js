@@ -1,4 +1,3 @@
-import { tournament } from "../pong.js";
 import { setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
 export class Tournament {
