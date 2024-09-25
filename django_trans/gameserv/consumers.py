@@ -102,9 +102,9 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        GameConsumer.connected_clients.remove(self)
-        await self.broadcast_disconnect({"ident": "user_%s" % self.ident, 'cmd' : "disconnect"})
         print(f"Client {self.ident} has disconnected.")
+        await self.broadcast_disconnect({"ident": "user_%s" % self.ident, 'cmd' : "disconnect"})
+        GameConsumer.connected_clients.remove(self)
 
 
     async def create_tournament_lobby(self, name = "Default"):
@@ -425,6 +425,13 @@ class GameConsumer(AsyncWebsocketConsumer):
                 return client
         return None
 
+    async def find_room_by_client_ident(self, ident):
+        for room in self.rooms:
+            for client in room.clients:
+                if client.ident == ident:
+                    return room
+        return None
+        
     async def broadcast_move(self, data):
         room = await self.find_room(data['roomId'])
         if room is not None:
@@ -440,7 +447,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     await client.websocket.send(json.dumps(data))
 
     async def broadcast_disconnect(self, data):
-        room = await self.find_room(data['roomId'])
+        room = await self.find_room_by_client_ident(self.ident)
         if room is not None:
             for client in room.clients:
                 if client.ident != self.ident:

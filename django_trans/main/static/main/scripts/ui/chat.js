@@ -24,6 +24,9 @@ function pageLoaded() {
     //    alert("PAge loaded");
     const sendButton = document.getElementById('chat-btn');
     const chatInput = document.getElementById('chat-input');
+
+    addChat("FYI","Click play Online to connect to the server",'black')
+
    if (sendButton !== null) {
        sendButton.addEventListener('click', () => {
            console.log("Button is pressed");
@@ -57,7 +60,9 @@ export function addChat(name, msg, textColor = 'black') {
     }
     li.classList.add("text-" + textColor);
     li.textContent = name +" " + msg;
+    //auto scroll
     chatBox.appendChild(li);
+    li.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
 export function addChatProfile(name, msg, textColor = 'black') {
@@ -71,15 +76,20 @@ export function addChatProfile(name, msg, textColor = 'black') {
     var link = document.createElement('a');
     var baseUrl = window.location.origin; // Dynamically fetch base URL
     link.href = baseUrl + msg;            // Concatenate base URL with the provided message (e.g., /profile/username)
+    console.log("BaseUrl = >"+baseUrl+"<");
+    console.log("Msg = >"+msg+"<");
+    console.log("link = >"+link.href+"<");
+
     link.textContent = msg;               // Display the msg as the link text
     link.style.color = 'blue';         // Apply the text color to the hyperlink
 
     // Append the name and the hyperlink to the list item
-    li.textContent = name + " ";
+    li.textContent = "Link to profile ->" + " ";
     li.appendChild(link); // Append the hyperlink to the list item
 
     // Add the styled list item to the chat box
     chatBox.appendChild(li);
+    li.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
 

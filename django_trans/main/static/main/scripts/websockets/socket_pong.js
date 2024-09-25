@@ -5,7 +5,7 @@ import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
-import { hideChat, showChat, addChat } from '../ui/chat.js'
+import { hideChat, showChat, addChat, addChatProfile } from '../ui/chat.js'
 import { initTournament } from '../pong.js';
 import { showLayer2Btns } from '../ui/ui_updates.js';
 import { Tournament } from '../tournament/tournament.js';
@@ -30,12 +30,18 @@ export function setupWebSocket() {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
             sendCmd(null,null);
+            addChat("Server:", "You are connected", 'success')
+            document.getElementById('chat-btn').disabled = false;
+            document.getElementById('chat-input').disabled = false;
             resolve();
         };
 
         socketState.socket.onclose = function() {
             console.log('WebSocket connection closed');
             socketState.isSocketReady = false;
+            addChat("Server:", "you are offline", 'danger');
+            document.getElementById('chat-btn').disabled = true;
+            document.getElementById('chat-input').disabled = true;
             reject(new Error('WebSocket connection closed'));
         };
 
@@ -87,7 +93,7 @@ export function setupWebSocket() {
             }
             if (data.cmd === "profile") {
                 // parsingChat(data);
-                addChatProfile(data.name, ": " + data.data, 'primary')
+                addChatProfile(data.name, data.data, 'primary')
                 //receiving error if bad command
             }
             if (data.cmd === "badChat") {
@@ -146,11 +152,11 @@ export function setupWebSocket() {
                 console.log("%c--- Backend Information ---", "color: #ff00ff; font-weight: bold;");
                 console.log("Data received from backend:", data);
 
-                console.log(`Connected Clients: ${data.connected_clients.length}`);
+                // console.log(`Connected Clients: ${data.connected_clients.length}`);
                 console.log(`TournamentIds: ${data.tournamentId}`)
-                data.connected_clients.forEach((client, index) => {
-                    console.log(`Client ${index + 1} - ID: ${client}`);
-                });
+                // data.connected_clients.forEach((client, index) => {
+                    // console.log(`Client ${index + 1} - ID: ${client}`);
+                // });
         
                 //console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
                 //data.rooms.forEach((room, index) => {
@@ -163,6 +169,16 @@ export function setupWebSocket() {
     });
 }
 
+export function disconnectWebSocket() {
+    if (socketState.socket && socketState.isSocketReady) {
+        socketState.socket.close();
+        console.log('WebSocket connection closed by disconnectWebSocket function');
+        socketState.isSocketReady = false;
+    } else {
+        console.log('No active WebSocket connection to close');
+    }
+}
+
 export function getName(){
     var name; 
     try {
@@ -170,7 +186,6 @@ export function getName(){
         name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
             name = 'Guest';
-        console.log("Name found is >"+name+"<");
     } 
     catch {
         name = "Guest";

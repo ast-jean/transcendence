@@ -4,9 +4,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, room_id } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket , room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
-import { showLayer2Btns, hideLayer2Btns, hideAllButtons } from './ui/ui_updates.js';
+import { showLayer2Btns, hideLayer2Btns, hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
 import { players, setPlayerMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
@@ -244,7 +244,7 @@ document.getElementById('joinTournamentBtn').addEventListener('click', () => {
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
 document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
-document.getElementById('localplay_4players_btn').addEventListener('click', localPlay4Players);
+// document.getElementById('localplay_4players_btn').addEventListener('click', localPlay4Players);
 
 
 document.getElementById('startGameButton').addEventListener('click', () => {
@@ -252,25 +252,53 @@ document.getElementById('startGameButton').addEventListener('click', () => {
     console.log("La partie a commencé, joueurs ajoutés à la scène");
 });
 
+document.getElementById('return_btn_1').addEventListener('click', () => {
+    disconnectWebSocket();
+    hideBtn('layer2Btns_local');
+    hideBtn('layer2Btns_online');
+    hideBtn('layer2Btns_tournament');
+    showBtn('play_btns');
+});
 
-document.querySelector('#searchRoom').addEventListener('submit', handleSubmit);
-document.getElementById('localplay_btn').addEventListener('click', localPlay);
+document.getElementById('return_btn_2').addEventListener('click', () => {
+    hideBtn('layer2Btns_local');
+    hideBtn('layer2Btns_online');
+    hideBtn('layer2Btns_tournament');
+    showBtn('play_btns');
+});
+
+document.getElementById('return_btn_3').addEventListener('click', () => {
+    hideBtn('layer2Btns_local');
+    hideBtn('layer2Btns_online');
+    hideBtn('layer2Btns_tournament');
+    showBtn('play_btns');
+});
+
+document.getElementById('localplay_btn').addEventListener('click', ()=>{showBtn('layer2Btns_local');hideBtn('play_btns');});
+document.getElementById('local_1v1_btn').addEventListener('click', () =>{hideBtn('layer2Btns_local');showBtn('start_btn');localPlay;});
+document.getElementById('local_2v2_btn').addEventListener('click', () =>{hideBtn('layer2Btns_local');showBtn('start_btn');localPlay4Players;});
+
+
+
+document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
-document.getElementById('OneVsOne').addEventListener('click', () => {
+document.getElementById('local_1v1_btn').addEventListener('click', () => {
     playOnline(2);
     showChat();
 });
-document.getElementById('TwoVsTwo').addEventListener('click', () => {
+document.getElementById('local_2v2_btn').addEventListener('click', () => {
     playOnline(4);
     showChat();
 });
+
 document.getElementById('onlineplay_btn').addEventListener('click', async () => {
     console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
         showChat();
-        showLayer2Btns();
+        showBtn('layer2Btns_online')
+        hideBtn('play_btns');
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;

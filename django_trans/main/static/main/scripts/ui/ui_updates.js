@@ -17,27 +17,42 @@ export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
 export function showLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
     layer2Btns.classList.add('active');
-    layer2Btns.classList.remove('hidden');
+    layer2Btns.classList.remove('visually-hidden');
 }
 
 export function hideLayer2Btns() {
     var layer2Btns = document.getElementById('layer2Btns');
     layer2Btns.classList.remove('active');
-    layer2Btns.classList.add('hidden');
+    layer2Btns.classList.add('visually-hidden');
 }
 
+export function hideBtn(btnName) {
+    var btns = document.getElementById(btnName);
+    btns.classList.remove('active');
+    btns.classList.remove('d-flex');
+    btns.classList.add('visually-hidden');
+}
+
+
+export function showBtn(btnName) {
+    var btns = document.getElementById(btnName);
+    btns.classList.add('active');
+    btns.classList.add('d-flex');
+    btns.classList.remove('visually-hidden');
+}
+
+
 export function hideAllButtons() {
-    console.log()
     const play_btns = document.querySelectorAll('.game-button');
     play_btns.forEach(button => {
-        button.classList.add('hidden');
+        button.classList.add('visually-hidden');
     });
 }
 
 export function showAllButtons() {
     const buttons = document.querySelectorAll('.game-button');
     buttons.forEach(button => {
-        button.classList.remove('hidden');
+        button.classList.remove('visually-hidden');
     });
 }
 

@@ -13,46 +13,42 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="/">Transcendence</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarColor01">
+    <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand strokeme ms-2" href="/">Transcendence</a>
+        <div class="navbar-collapse" id="navbarColor01">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item {% if current_path == '/Pong/' %}active{% endif %}">
-                    <a class="nav-link" href="/Pong/">Pong {% if current_path == '/Pong/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                    <a class="nav-link" href="/Pong/" {% if current_path == '/Pong/' %}aria-current="page"{% endif %}>Pong</a>
                 </li>
                 <li class="nav-item {% if current_path == '/truckleague/' %}active{% endif %}">
-                    <a class="nav-link" href="/truckleague/">Truck League {% if current_path == '/truckleague/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                    <a class="nav-link" href="/truckleague/" {% if current_path == '/truckleague/' %}aria-current="page"{% endif %}>Truck League</a>
                 </li>
                 <li class="nav-item {% if current_path == '/about/' %}active{% endif %}">
-                    <a class="nav-link" href="/about/">About {% if current_path == '/about/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                    <a class="nav-link" href="/about/" {% if current_path == '/about/' %}aria-current="page"{% endif %}>About</a>
                 </li>
                 <li class="nav-item {% if current_path == '/games/' %}active{% endif %}">
-                    <a class="nav-link" href="/games/">Pong Game history {% if current_path == '/games/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                    <a class="nav-link" href="/games/" {% if current_path == '/games/' %}aria-current="page"{% endif %}>Pong Game history</a>
                 </li>
                 {% if profile.login %}
                 <li class="nav-item {% if current_path == '/profile/' %}active{% endif %}">
-                    <a class="nav-link" href="/profile/">Profile {% if current_path == '/profile/' %}<span class="sr-only">(current)</span>{% endif %}</a>
+                    <a class="nav-link" href="/profile/" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
                 </li>
                 {% endif %}
             </ul>
-          <ul class="navbar-nav">
-            {% if profile.login %}
-            <li class="nav-item active">
-                <a class="nav-link">Hello, <span id="name">{{ profile.login }}</span></a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-            </li>
-            {% else %}
-            <li class="nav-item active">
-                <a class="nav-link" href="{% url 'oauth_login' %}">Login {{ profile.login }}</a>
-            </li>
-            {% endif %}
-          </ul>
+            <ul class="navbar-nav">
+                {% if profile.login %}
+                <li class="nav-item active">
+                    <a class="nav-link">Hello, <span id="name">{{ profile.login }}</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'oauth_login' %}">Login</a>
+                </li>
+                {% endif %}
+            </ul>
         </div>
     </nav>
 <main>

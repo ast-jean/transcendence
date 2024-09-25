@@ -15,6 +15,16 @@ body {
     font-size: 2rem;
 }
 
+.strokeme
+{
+    color: white;
+    /* text-shadow:
+    -1px -1px 0 black,
+    1px -1px 0 black,
+    -1px 1px 0 black,
+    1px 1px 0 black;   */
+}
+
 .btn-background {
     width: 800px;
     /* Adjust the width as needed */
