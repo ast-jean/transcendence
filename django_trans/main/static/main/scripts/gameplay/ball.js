@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { socketState } from '../websockets/socket_pong.js';
+import { room_id, socketState } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
 import { getBallSpeedX, getBallSpeedY, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
@@ -42,9 +42,10 @@ export function moveBall(delta, walls, players) {
 
 // Fonction pour envoyer périodiquement l'état de la balle au serveur
 export function sendBallState() {
-    if (socketState.socket && socketState.isSocketReady) {
+    if (socketState.socket && socketState.isSocketReady && room_id) {
         let cmd = "ballSync";
         const ballData = {
+            room_id: room_id,
             x: sphere.position.x,
             y: sphere.position.y,
             vx: getBallSpeedX(),

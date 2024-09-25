@@ -42,7 +42,7 @@
           <ul class="navbar-nav">
             {% if profile.login %}
             <li class="nav-item active">
-                <a class="nav-link">Hello, {{ profile.login }}</a>
+                <a class="nav-link">Hello, <span id="name">{{ profile.login }}</span></a>
             </li>
             <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>

@@ -18,14 +18,15 @@ export const socketState = {
 
 export function setupWebSocket() {
     return new Promise((resolve, reject) => {
-        const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const ws_path = `${ws_scheme}://${window.location.host}/ws/pong/`;
+        // const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws_path = `wss://${window.location.host}/ws/pong/`;
         socketState.socket = new WebSocket(ws_path);
         console.log("Creating WebSocket:", socketState.socket);
 
         socketState.socket.onopen = function() {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
+            sendCmd(null,null);
             resolve();
         };
 
@@ -56,20 +57,34 @@ export function setupWebSocket() {
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
-                showChat();
-                addChat(null, "Room id = "+ room_id)
+                addChat("Server", "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
+                addChat("Server", "Player connected:")
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
                         addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
                         console.log("Existing player added: ", player.ident);    
+                        addChat("->", player.name)
                     }
                     });
             }
             if (data.cmd === "chat") {
-                addChat(data.ident, ": " + data.data)
+                // parsingChat(data);
+                addChat(data.name, ": " + data.data, 'primary')
+                //receiving error if bad command
+            }
+            if (data.cmd === "profile") {
+                // parsingChat(data);
+                addChatProfile(data.name, ": " + data.data, 'primary')
+                //receiving error if bad command
+            }
+            if (data.cmd === "badChat") {
+                // parsingChat(data);
+                console.log(data);
+                addChat('Server', ": " + data.msg, 'warning')
+                //receiving error if bad command
             }
             if (data.cmd === "move") {
                 receiveMove(data.ident, data.movementData);
@@ -82,17 +97,16 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 receiveConnect(data.ident);
-                addChat(data.ident, " has joined")
+                addChat(data.name, " has joined")
             }
             if (data.cmd === "disconnect") {
-                addChat(data.ident, " has disconnected")
+                addChat(data.name, " has disconnected")
                 removePlayer(data.ident);
             }
 
             if (data.cmd === "joinLobby") {
                 // Mise à jour du room_id après la création du lobby
                 room_id = data.roomId;
-                showChat();
                 console.log("Tournament lobby created, room ID:", room_id);
                 // Mise à jour des informations du tournoi avec le room_id reçu
                 updateTournamentInfo(room_id, data.playerIn, data.playerTotal);
@@ -111,7 +125,6 @@ export function setupWebSocket() {
                 const playerCount = data.playerCount;
                 const maxPlayers = data.maxPlayers;
                 const roomId = data.roomId;
-                showChat();
                 onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
             }
         };
@@ -119,9 +132,27 @@ export function setupWebSocket() {
     });
 }
 
+export function getName(){
+    var name; 
+    try {
+        var nameElement = document.getElementById('name'); 
+        name = nameElement.textContent || nameElement.innerText;
+        if (!name || name === 'null' || name == 'None')
+            name = 'Guest';
+        console.log("Name found is >"+name+"<");
+    } 
+    catch {
+        name = "Guest";
+    }
+    return name;
+    
+}
+
+
 export function sendCmd(cmd, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
-        socketState.socket.send(JSON.stringify({ cmd, roomId }));
+        var name = getName();
+        socketState.socket.send(JSON.stringify({ cmd, roomId, name }));
     } else {
         console.error("WebSocket is not ready. Unable to send command.");
     }
@@ -188,7 +219,8 @@ export function sendSync() {
         let roomId = getRoomId();
         const movementData = { x, y };
         // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
-        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
+        var name = getName();
+        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
@@ -210,7 +242,7 @@ export function checkAllPlayersConnected(maxPlayers) {
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
-        }, 60000); // Délai d'attente de 30 secondes
+        }, 600000); // Délai d'attente de 30 secondes
     });
 }
 

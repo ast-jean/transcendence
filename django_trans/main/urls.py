@@ -11,6 +11,7 @@ urlpatterns = [
     path('login/', views.oauth_login, name='oauth_login'),
     path('callback/', views.callback, name='callback'),
     path('profile/', views.profile, name='profile'),
+    path('profile/<str:playername>', views.userProfile, name='userProfile'),
     path('logout/', views.logout_view, name='logout'),
     path('games/', views.games_view, name='games'),
 ]
