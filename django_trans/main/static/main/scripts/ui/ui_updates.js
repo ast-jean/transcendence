@@ -85,3 +85,15 @@ export function startCountdown() {
 }
 
 
+export function updateTournamentUI(tournamentId, players) {
+    const playerList = document.getElementById('playerList');
+    playerList.innerHTML = '';
+
+    players.forEach((player, index) => {
+        let li = document.createElement('li');
+        li.textContent = `Joueur ${index + 1}: ${player}`;
+        playerList.appendChild(li);
+    });
+
+    console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
+}

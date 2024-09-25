@@ -203,6 +203,20 @@ document.addEventListener('keydown', function (event) {
 });
 
 
+function joinTournament(tournamentId) {
+    // Vérifier si le WebSocket est prêt
+    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        const cmd = {
+            cmd: "joinTournament",
+            tournamentId: tournamentId
+        };
+        socketState.socket.send(JSON.stringify(cmd));
+        console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
+    } else {
+        console.error("WebSocket n'est pas prêt.");
+        alert("Connexion WebSocket non établie.");
+    }
+}
 
 
 
@@ -234,9 +248,29 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
 });
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi
-document.getElementById('joinTournamentBtn').addEventListener('click', () => {
+document.getElementById('joinTournamentBtn').addEventListener('click', async () => {
     console.log("Rejoindre un tournoi existant");
-    // Logique pour rejoindre un tournoi ici...
+    try {
+        await setupWebSocket();
+        console.log("WebSocket prêt.");
+        //socketState.socket.send(JSON.stringify(cmd));
+        document.getElementById('tournamentJoinForm').classList.remove('hidden');
+        // Logique pour rejoindre un tournoi ici...
+    } catch (error) {
+        console.error("Erreur lors de l'établissement du WebSocket :", error);
+        return;
+    }
+});
+
+document.getElementById('submitJoinTournament').addEventListener('click', () => {
+    const tournamentId = document.getElementById('tournamentIdInput').value.trim();
+    
+    if (tournamentId) {
+        console.log("Tentative de rejoindre le tournoi avec l'ID :", tournamentId);
+        joinTournament(tournamentId);
+    } else {
+        alert("Veuillez entrer un ID de tournoi valide.");
+    }
 });
 
 

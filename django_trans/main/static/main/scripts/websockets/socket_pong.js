@@ -10,6 +10,7 @@ import { initTournament } from '../pong.js';
 import { showLayer2Btns } from '../ui/ui_updates.js';
 import { Tournament } from '../tournament/tournament.js';
 import { tournament, setTournament } from '../utils/setter.js';
+import { updateTournamentUI } from '../ui/ui_updates.js';
 
 export var room_id;
 
@@ -141,12 +142,15 @@ export function setupWebSocket() {
                 tournament.handleBackendUpdate(data);
             }
         
-            if (data.cmd === "playerJoinedTournament") {
-                // Mettre à jour le nombre de joueurs connectés
-                const playerCount = data.playerCount;
-                const maxPlayers = data.maxPlayers;
-                const roomId = data.roomId;
-                onPlayerJoinedRoom(roomId, playerCount, maxPlayers);
+            if (data.cmd === "joinTournament") {
+                if (data.success) {
+                    console.log(`Rejoint avec succès le tournoi ID : ${data.tournamentId}`);
+                    // Mise à jour de l'interface utilisateur
+                    updateTournamentUI(data.tournamentId, data.players);
+                } else {
+                    console.error("Impossible de rejoindre le tournoi :", data.error);
+                    alert(data.error);
+                }
             }
             if (data.cmd === "backendInfo") {
                 console.log("%c--- Backend Information ---", "color: #ff00ff; font-weight: bold;");
