@@ -48,6 +48,31 @@ class Tournament:
         else:
             print(f"Impossible de démarrer le tournoi {tournament_id}.")
 
+    async def join_tournament(self, tournament_id, player_id):
+        tournament = self.tournaments.get(tournament_id)
+        
+        if tournament:
+            if len(tournament.players) < tournament.max_players:
+                tournament.add_player(player_id)
+                response = {
+                    "cmd": "joinTournament",
+                    "success": True,
+                    "tournamentId": tournament_id,
+                    "players": [player.ident for player in tournament.players]
+                }
+            else:
+                response = {
+                    "cmd": "joinTournament",
+                    "success": False,
+                    "error": "Le tournoi est plein."
+                }
+        else:
+            response = {
+                "cmd": "joinTournament",
+                "success": False,
+                "error": "Tournoi non trouvé."
+            }
+        await self.send(text_data=json.dumps(response))
 
     def create_matches(self):
         """Crée des matchs pour les joueurs inscrits."""
