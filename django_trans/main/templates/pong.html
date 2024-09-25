@@ -17,6 +17,7 @@
     }
 </script>
 <script src="{% static 'main/scripts/socket_pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/camera.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/collision.js' %}" type="module"></script>
@@ -74,7 +75,6 @@
 					<input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
 					<label class="btn btn-secondary" id="topViewCameraBtn"  for="btnradio3">Top View Camera</label>
 				</div>
-
 				<div id="tournament-info" class="hud">
 					<p id="tournamentRoom">Tournament Room: </p>
 					<p id="connectedPlayers">Players Connected: 0/4</p>
@@ -86,12 +86,13 @@
 				</div>
 
 				<!-- Placeholder pour afficher la liste des joueurs dans le lobby -->
-				<div id="playersList" class="tournament-section">
+				<div id="playersList">
 					<h3>Players in the lobby:</h3>
 					<ul id="playerListUl">
 						<!-- Les joueurs seront ajoutés ici dynamiquement -->
 					</ul>
 				</div>
+				
 
 				<!-- Bouton pour démarrer la partie  STEVEN -->
 				<!-- <div id="startGameDiv" class="game-controls">
@@ -193,17 +194,6 @@
 				</div>
 				<!-- </div> -->
 				<div id="playersList"></div>
-				<div id="tournamentOptions" class="hidden">
-					<button id="startTournament">Commencer un tournoi</button>
-					<button id="joinTournament">Rejoindre un tournoi</button>
-				</div>
-				<div id="tournamentRoomSearch" class="hidden">
-					<h3>Enter Tournament Room ID</h3>
-					<form id="roomSearchForm">
-						<input type="text" id="roomIdInput" placeholder="Enter Room ID" required />
-						<button type="submit">Join Tournament</button>
-					</form>
-				</div>
                 <div id="layer2Btns" class="hidden">
                     <div id="OneVsOne" class="btn btn-primary hud-btn">
                         <small>Create new (1vs1)</small>
