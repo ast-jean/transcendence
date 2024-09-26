@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket , room_id } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { showLayer2Btns, hideLayer2Btns, hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
 import { players, setPlayerMode } from './utils/setter.js';
@@ -264,7 +264,7 @@ document.getElementById('joinTournamentBtn').addEventListener('click', async () 
 
 document.getElementById('submitJoinTournament').addEventListener('click', () => {
     const tournamentId = document.getElementById('tournamentIdInput').value.trim();
-    
+
     if (tournamentId) {
         console.log("Tentative de rejoindre le tournoi avec l'ID :", tournamentId);
         joinTournament(tournamentId);
@@ -282,6 +282,7 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 
 document.getElementById('startGameButton').addEventListener('click', () => {
+    hideBtn('start_btn');
     displayPlayersInScene(players, scene);  // Appelle la fonction pour afficher les joueurs
     console.log("La partie a commencé, joueurs ajoutés à la scène");
 });
@@ -308,9 +309,10 @@ document.getElementById('return_btn_3').addEventListener('click', () => {
     showBtn('play_btns');
 });
 
-document.getElementById('localplay_btn').addEventListener('click', ()=>{showBtn('layer2Btns_local');hideBtn('play_btns');});
-document.getElementById('local_1v1_btn').addEventListener('click', () =>{hideBtn('layer2Btns_local');showBtn('start_btn');localPlay;});
-document.getElementById('local_2v2_btn').addEventListener('click', () =>{hideBtn('layer2Btns_local');showBtn('start_btn');localPlay4Players;});
+document.getElementById('tournament_btn').addEventListener('click', () => { showBtn('layer2Btns_tournament'); hideBtn('play_btns'); });
+document.getElementById('localplay_btn').addEventListener('click', () => { showBtn('layer2Btns_local'); hideBtn('play_btns'); });
+document.getElementById('local_1v1_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay; });
+document.getElementById('local_2v2_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay4Players; });
 
 
 

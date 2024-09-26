@@ -52,7 +52,7 @@
 								<br>
 								🤖
 							</div>
-							<button type="button" id="tournament_btn" class="row hud-btn game-button btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+							<button type="button" id="tournament_btn" class="row hud-btn game-button btn btn-primary" >
 								<b  class="strokeme">Tournament</b><br>
 								<small  class="strokeme">(4 players)</small>
 							</button>
@@ -98,6 +98,13 @@
 							<h1 class="strokeme">TOURNAMENT</h1>
 							<hr class="border border-info border-1">
 						<!-- Add tournament boutons -->
+						<div id="tournamentOptions" class="hidden"></div>
+						<button id="createTournamentBtn" class="btn-info " data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
+						<button id="joinTournamentBtn" class="btn-info ">Join</button>
+						<div id="tournamentJoinForm" class="hidden">
+							<input type="text" id="tournamentIdInput" placeholder="Entrez l'ID du tournoi">
+							<button id="submitJoinTournament">Rejoindre</button>
+						</div>
 							<hr class="border border-info border-1">
 							<div id="return_btn_3" class="row hud-btn game-button btn btn-info pt-2">
 								<h2 class="strokeme">←</h2>
@@ -120,9 +127,6 @@
 					<input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
 					<label class="btn btn-secondary" id="topViewCameraBtn"  for="btnradio3">Top View Camera</label>
 				</div>
-				<div id="tournamentOptions" class="hidden"></div>
-					<button id="createTournamentBtn">Créer un tournoi</button>
-					<button id="joinTournamentBtn">Rejoindre un tournoi</button>
 			</div>
 			<div class="col">
 				<div id="chat-container" class="col mt-3">
@@ -141,12 +145,6 @@
 				</div>
 			</div>
 		</div>
-		
-		<div id="tournamentJoinForm" class="hidden">
-			<input type="text" id="tournamentIdInput" placeholder="Entrez l'ID du tournoi">
-			<button id="submitJoinTournament">Rejoindre</button>
-		</div>
-
 				<!-- Placeholder pour afficher la liste des joueurs dans le lobby -->
 			<div id="playersList">
 				<h3>Players in the lobby:</h3>
