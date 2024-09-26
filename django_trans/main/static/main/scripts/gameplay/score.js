@@ -1,5 +1,6 @@
 import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
 import { setBallSpeedX, setBallSpeedY, setGameOverState } from '../utils/setter.js';
+import { addChat } from '../ui/chat.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -49,9 +50,7 @@ export function endGame() {
     const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
 
     // Crée un message pour afficher le gagnant
-    const endGameMessage = document.createElement('div');
-    endGameMessage.innerHTML = `${winner} wins!<br>`;
-    document.getElementById('gameCont').appendChild(endGameMessage);
+    addChat("Server:",`${winner} wins!` );
 
     // Affiche les boutons de fin de jeu (rejouer ou retourner au menu)
     const endGameButtons = document.getElementById('end-game-buttons');
