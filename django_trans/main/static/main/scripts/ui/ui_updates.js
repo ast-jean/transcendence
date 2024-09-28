@@ -75,7 +75,7 @@ export function startCountdown() {
         if (countdown === 0) {
             clearInterval(interval);
             document.body.removeChild(countdownContainer);
-            setGameOverState(true);
+            setGameOverState(false);
             setBallSpeedX(INITIAL_BALL_SPEED_X);
             setBallSpeedY(INITIAL_BALL_SPEED_Y);
         } else {

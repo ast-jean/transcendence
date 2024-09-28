@@ -7,7 +7,7 @@ import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { hideChat, showChat, addChat, addChatProfile } from '../ui/chat.js'
 import { initTournament } from '../pong.js';
-import { showLayer2Btns } from '../ui/ui_updates.js';
+import { hideBtn, showBtn, showLayer2Btns } from '../ui/ui_updates.js';
 import { Tournament } from '../tournament/tournament.js';
 import { tournament, setTournament } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
@@ -59,9 +59,8 @@ export function setupWebSocket() {
             var data = JSON.parse(event.data);
     
             if (data.cmd === "roomNotFound") {
-                console.log("In roomNotFound");
-                alert("Room not found");
-                showLayer2Btns();
+                addChat('Server:', "Room not found","danger");
+                showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
                 console.log("joined room" + data.roomId);
@@ -71,7 +70,7 @@ export function setupWebSocket() {
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
-                addChat("Server", "Player connected:")
+                addChat("Server", "Player connected")
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
                         addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
@@ -244,7 +243,6 @@ export function receiveConnect(id) {
             console.log("new player 2 push");
         }
     }
-
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
@@ -279,11 +277,33 @@ export function sendSync() {
 
 export function checkAllPlayersConnected(maxPlayers) {
     return new Promise((resolve, reject) => {
+        let playerIn = document.getElementById("playerIn");
+        let timeElapse = document.getElementById('timeElapse');
+        let startTime = Date.now();
+        showBtn('playerCount');
         const checkInterval = setInterval(() => {
+            // Calculate elapsed time
+            let elapsedTime = Date.now() - startTime;
+            let totalSeconds = Math.floor(elapsedTime / 1000);
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            
+            // Format time according to your requirements
+            let formattedTime = '';
+            if (minutes > 0) {
+                formattedTime = `${minutes}min`;
+                if (seconds > 0) {
+                    formattedTime += ` ${seconds}sec`;
+                }
+            } else {
+                formattedTime = `${seconds}sec`;
+            }
+            timeElapse.textContent = formattedTime;
+            playerIn.textContent = players.length + "/" + maxPlayers;
+
             if (socketState.isSocketReady && players.length === maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
-                // startCountdown();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms
@@ -292,7 +312,9 @@ export function checkAllPlayersConnected(maxPlayers) {
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
-        }, 600000); // Délai d'attente de 30 secondes
+            addChat('Server','Connection Timeout for players','danger');
+            hideBtn('playerCount');
+        }, 600000); // Délai d'attente de secondes
     });
 }
 
