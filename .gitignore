@@ -1,9 +1,9 @@
-django_trans/django_trans/settings.py
+# django_trans/django_trans/settings.py
 
 # Ignore node_modules directory
 node_modules/
 Makefile
-docker-compose.yml
+# docker-compose.yml
 nginx/Dockerfile
 nginx/nginx.conf
 certbot
