@@ -216,6 +216,7 @@ function joinTournament(tournamentId) {
         console.error("WebSocket n'est pas prêt.");
         alert("Connexion WebSocket non établie.");
     }
+    showBtn('start_btn');
 }
 
 
@@ -243,8 +244,7 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-
-
+    showBtn('start_btn');
 });
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi
