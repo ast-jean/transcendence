@@ -178,6 +178,37 @@ class GameConsumer(AsyncWebsocketConsumer):
             # Notifie tous les autres joueurs
             await self.notify_players_in_lobby(tournament_id)
 
+    async def join_tournament(self, tournament_id, player_id, name = "Default"):
+        tournament = self.tournaments.get(int(tournament_id))
+        print(tournament)
+        print(self.tournaments)
+        
+        if tournament:
+            if len(tournament.clients) < tournament.max_players:
+                # Ajouter un nouveau client
+                new_client = Client(player_id, len(tournament.clients), self, name)
+                tournament.add_player(new_client)
+                
+                response = {
+                    "cmd": "joinTournament",
+                    "success": True,
+                    "tournamentId": tournament_id,
+                    "players": [{"id": client.ident, "index": client.index} for client in tournament.clients]
+                }
+            else:
+                response = {
+                    "cmd": "joinTournament",
+                    "success": False,
+                    "error": "Le tournoi est plein."
+                }
+        else:
+            response = {
+                "cmd": "joinTournament",
+                "success": False,
+                "error": "Tournoi non trouvé."
+            }
+        
+        await self.send(text_data=json.dumps(response))
 
     async def receive(self, text_data):
         if len(text_data) > 0:
@@ -221,7 +252,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             elif cmd == "sync":
                 await self.broadcast_move(text_data_json)
             elif cmd == "ballSync":
-                await self.broadcast_ball_sync(text_data_json)
+                await self.broadcast_ball_move(text_data_json)
             elif cmd == "roomSearch":
                 await self.searchRoom(text_data_json)
             elif cmd == "roomCreate2":
@@ -230,6 +261,19 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.createRoom(4)
             elif cmd == "createTournamentLobby":
                 await self.create_tournament_lobby() 
+            elif cmd == "joinTournament":
+                tournament_id = text_data_json.get('tournamentId')
+                player_id = self.ident  # Utiliser l'identifiant du client actuel
+                if tournament_id:
+                    await self.join_tournament(tournament_id, player_id)
+                else:
+                    # Gérer les erreurs s'il manque des informations
+                    await self.send(json.dumps({
+                        "cmd": "joinTournament",
+                        "success": False,
+                        "error": "Tournament ID manquant."
+                    }))
+
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
                 if self.ident == room.host_ident:

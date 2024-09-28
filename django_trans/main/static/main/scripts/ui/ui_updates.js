@@ -86,7 +86,13 @@ export function startCountdown() {
 
 
 export function updateTournamentUI(tournamentId, players) {
-    const playerList = document.getElementById('playerList');
+    const playerList = document.getElementById('playerListUl'); // Correction ici
+    
+    if (!playerList) {
+        console.error("Element 'playerListUl' non trouvé dans le DOM.");
+        return; // Arrêtez l'exécution si l'élément n'existe pas
+    }
+    
     playerList.innerHTML = '';
 
     players.forEach((player, index) => {
@@ -97,3 +103,4 @@ export function updateTournamentUI(tournamentId, players) {
 
     console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
 }
+

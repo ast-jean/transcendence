@@ -1,16 +1,18 @@
+from .consumers import *
+
 class Tournament:
     def __init__(self, tournament_id, max_players):
         self.tournament_id = tournament_id
         self.max_players = max_players
-        self.players = []  # Liste des joueurs
+        self.clients: List[Client] = []
         self.matches = []  # Liste des matchs en cours ou à venir
         self.is_lobby = True  # Etat initial du tournoi, avant le début des matchs
         self.winner = None  # Le gagnant du tournoi une fois terminé
     
-    def add_player(self, player):
+    def add_player(self, client):
         """Ajoute un joueur au tournoi s'il reste de la place."""
-        if len(self.players) < self.max_players:
-            self.players.append(player)
+        if len(self.clients) < self.max_players:
+            self.clients.append(client)
             return True
         return False
 
@@ -48,31 +50,7 @@ class Tournament:
         else:
             print(f"Impossible de démarrer le tournoi {tournament_id}.")
 
-    async def join_tournament(self, tournament_id, player_id):
-        tournament = self.tournaments.get(tournament_id)
-        
-        if tournament:
-            if len(tournament.players) < tournament.max_players:
-                tournament.add_player(player_id)
-                response = {
-                    "cmd": "joinTournament",
-                    "success": True,
-                    "tournamentId": tournament_id,
-                    "players": [player.ident for player in tournament.players]
-                }
-            else:
-                response = {
-                    "cmd": "joinTournament",
-                    "success": False,
-                    "error": "Le tournoi est plein."
-                }
-        else:
-            response = {
-                "cmd": "joinTournament",
-                "success": False,
-                "error": "Tournoi non trouvé."
-            }
-        await self.send(text_data=json.dumps(response))
+
 
     def create_matches(self):
         """Crée des matchs pour les joueurs inscrits."""
