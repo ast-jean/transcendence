@@ -86,7 +86,7 @@ export function startCountdown() {
 
 
 export function updateTournamentUI(tournamentId, players) {
-    const playerList = document.getElementById('playerListUl'); // Correction ici
+    const playerList = document.getElementById('playerListUl'); // Correction ici, on a playerList et playerListUl c'est pour ça qu'on avait un nul pensez à le renommer pareil ici et dans le html
     
     if (!playerList) {
         console.error("Element 'playerListUl' non trouvé dans le DOM.");
