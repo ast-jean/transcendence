@@ -270,6 +270,27 @@ document.getElementById('submitJoinTournament').addEventListener('click', () => 
 });
 
 
+document.getElementById('startTournamentBtn').addEventListener('click', () => {
+    console.log("Début du tournoi !");
+    
+    // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
+    if (tournament && tournament.tournamentId) {
+        const cmd = {
+            cmd: "startTournament",
+            tournamentId: tournament.tournamentId // L'ID du tournoi que vous gérez
+        };
+
+        // Envoie la commande au serveur via le WebSocket
+        socketState.socket.send(JSON.stringify(cmd));
+        console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
+    } else {
+        console.log("Aucun tournoi actif à démarrer.");
+    }
+});
+
+
+
+
 // Ajout d'événements pour les boutons
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);

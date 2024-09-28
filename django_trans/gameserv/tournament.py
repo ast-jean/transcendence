@@ -23,42 +23,52 @@ class Tournament:
     def get_players(self):
         """Retourne la liste des joueurs actuellement inscrits."""
         return [{"id": player.ident} for player in self.players]
-    
-    async def start_tournament(self, tournament_id):
-        # Récupère le tournoi via son ID
-        tournament = next((t for t in self.tournaments if t.tournament_id == tournament_id), None)
-        
-        if tournament and tournament.start_tournament():
-            print(f"Le tournoi {tournament.tournament_id} commence avec {len(tournament.players)} joueurs.")
-            data = {
-                "cmd": "tournamentStarted",
-                "tournamentId": tournament.tournament_id,
-                "players": [{"id": p.ident} for p in tournament.players]
-            }
-            for player in tournament.players:
-                await player.websocket.send(json.dumps(data))
-
-            # Créer les matchs après le démarrage du tournoi
-            for match in tournament.matches:
-                match_data = {
-                    "cmd": "matchCreated",
-                    "player1": match.player1.ident,
-                    "player2": match.player2.ident
-                }
-                await match.player1.websocket.send(json.dumps(match_data))
-                await match.player2.websocket.send(json.dumps(match_data))
-        else:
-            print(f"Impossible de démarrer le tournoi {tournament_id}.")
+#   
+#   async def start_tournament(self, tournament_id):
+#       # Récupère le tournoi via son ID
+#       tournament = next((t for t in self.tournaments if t.tournament_id == tournament_id), None)
+#       
+#       if tournament and tournament.start_tournament():
+#           print(f"Le tournoi {tournament.tournament_id} commence avec {len(tournament.players)} joueurs.")
+#           data = {
+#               "cmd": "tournamentStarted",
+#               "tournamentId": tournament.tournament_id,
+#               "players": [{"id": p.ident} for p in tournament.players]
+#           }
+#           for player in tournament.players:
+#               await player.websocket.send(json.dumps(data))
+#
+#           # Créer les matchs après le démarrage du tournoi
+#           for match in tournament.matches:
+#               match_data = {
+#                   "cmd": "matchCreated",
+#                   "player1": match.player1.ident,
+#                   "player2": match.player2.ident
+#               }
+#               await match.player1.websocket.send(json.dumps(match_data))
+#               await match.player2.websocket.send(json.dumps(match_data))
+#       else:
+#           print(f"Impossible de démarrer le tournoi {tournament_id}.")
+#
 
 
 
     def create_matches(self):
-        """Crée des matchs pour les joueurs inscrits."""
-        self.matches = []
-        # Divise les joueurs en paires pour créer les matchs
-        for i in range(0, len(self.players), 2):
-            match = Match(self.players[i], self.players[i+1])
-            self.matches.append(match)
+        """Crée des matchs en distribuant les joueurs par paires."""
+        print(f"Création des matchs pour le tournoi ID {self.tournament_id}...")
+        if len(self.clients) == self.max_players:
+            self.matches = []
+            # Création des paires de joueurs pour les matchs
+            for i in range(0, len(self.clients), 2):
+                if i + 1 < len(self.clients):
+                    match = Match(self.clients[i], self.clients[i + 1])
+                    self.matches.append(match)
+                    print(f"Match créé entre {self.clients[i].ident} et {self.clients[i + 1].ident}")
+                else:
+                    print(f"Nombre impair de joueurs, {self.clients[i].ident} reste en attente.")
+            print(f"Total de {len(self.matches)} match(s) créé(s).")
+        else:
+            print(f"Impossible de créer les matchs, pas assez de joueurs : {len(self.clients)} inscrits, {self.max_players} attendus.")
     
     async def report_match_result(self, tournament_id, match_id, winner_ident):
         # Récupère le tournoi

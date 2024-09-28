@@ -82,7 +82,8 @@ export function setupWebSocket() {
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
             } else if (data.cmd === "startMatch") {
-                tournament.createMatches();
+                //tournament.createMatches();
+                console.log("Début des matchs");
             } else if (data.cmd === "reportMatchResult") {
                 tournament.reportMatchResult(data.matchId, data.winner);
             }
@@ -139,6 +140,11 @@ export function setupWebSocket() {
             
             if (data.cmd === "updateLobbyPlayers") {
                 tournament.handleBackendUpdate(data);
+            }
+
+            if (data.cmd === "startMatch") {
+                console.log(`Match démarré dans la Room ID ${data.roomId} avec les joueurs : ${data.players.join(", ")}`);
+                // Logique pour gérer l'affichage ou l'entrée dans la room
             }
         
             if (data.cmd === "joinTournament") {
