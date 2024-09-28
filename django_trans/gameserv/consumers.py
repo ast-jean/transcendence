@@ -30,7 +30,7 @@ class Room:
         self.scoreTeam1 = 0
         self.scoreTeam2 = 0
         self.host_ident = None  # Identifiant de l'hôte
-        self.game_over = False
+        self.game_over = True
         self.isLobby = is_lobby
 
     @staticmethod
@@ -58,17 +58,12 @@ class Room:
     def check_all_players_ready(self):
         return self.playerIn == self.playerTotal and self.isLobby
 
-
-
-
-
     def update_score(self, team):
         if team == "team1":
             self.scoreTeam1 += 1
         elif team == "team2":
             self.scoreTeam2 += 1
         return {"scoreTeam1": self.scoreTeam1, "scoreTeam2": self.scoreTeam2}
-
     
     def add_client(self, client) -> Optional[Client]:
         if self.playerIn < self.playerTotal:
@@ -291,11 +286,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         for client in room.clients:
             await client.websocket.send(json.dumps(data))
 
-
-    async def broadcast_ball_sync(self, data):
-        for client in self.connected_clients:
-            if client.ident != self.ident:
-                await client.send(json.dumps(data))
+    # async def broadcast_ball_sync(self, data):
+    #     for client in self.connected_clients:
+    #         if client.ident != self.ident:
+    #             await client.send(json.dumps(data))
 
     async def broadcast_chat(self, data):
         print(f"{data}")
@@ -528,6 +522,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             print(f"{data['roomId']}")
             found_room = await self.find_room(data['roomId'])
             if found_room is None:
+                print("Found_room is None111111111111111111111")
                 raise Exception(f"\033[31mRoom {data['roomId']} not found.\033[0m]")
             else:
                 print(f"\033[32mRoom found: { found_room }\033[0m")
@@ -559,7 +554,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps(data))
                 await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
         except Exception as e:
-            print(f"Error searching room: {str(e)}")
+            print(f"Error searching room:2222222222222222222222222222 {str(e)}")
             await self.send(json.dumps({'cmd':'roomNotFound'}))
 
 # Exemple de donnees dans data

@@ -6,11 +6,11 @@ import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
-import { showLayer2Btns, hideLayer2Btns, hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
+import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
 import { players, setPlayerMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
-import { showChat } from './ui/chat.js';
+import { addChat, showChat } from './ui/chat.js';
 import { setCameraPlayer1, setCameraPlayer2, setCameraTopView } from './ui/camera.js';
 import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 import { tournament } from './utils/setter.js';
@@ -91,8 +91,9 @@ async function playOnline(maxPlayers) {
 
         // Initialise les joueurs après avoir rejoint une room
         initializePlayers(scene, false, true);
-        hideLayer2Btns();  // Cache les boutons après la configuration
-
+        // ();  // Cache les boutons après la configuration
+        hideBtn('layer2Btns_online');
+        hideBtn('layer2Btns_tournament');
         try {
             // Vérifie que tous les joueurs sont connectés avant de commencer la partie
             await checkAllPlayersConnected(maxPlayers);
@@ -106,6 +107,7 @@ async function playOnline(maxPlayers) {
         // Démarre le compte à rebours après la connexion des joueurs
         // startCountdown();
     } else {
+        addChat("Server:", "not connected", "danger");
         console.error("Le WebSocket n'est pas prêt.");
     }
 }
@@ -187,7 +189,8 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
-    hideLayer2Btns();
+    hideBtn('layer2Btns_online');
+    hideBtn('layer2Btns_tournament');
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
@@ -201,7 +204,6 @@ document.addEventListener('keydown', function (event) {
         displayDebugInfo();
     }
 });
-
 
 function joinTournament(tournamentId) {
     // Vérifier si le WebSocket est prêt
@@ -219,13 +221,7 @@ function joinTournament(tournamentId) {
     showBtn('start_btn');
 }
 
-
-
-
 const tournamentOptions = document.getElementById('tournamentOptions');
-
-
-
 
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
@@ -318,11 +314,11 @@ document.getElementById('local_2v2_btn').addEventListener('click', () => { hideB
 
 document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
-document.getElementById('local_1v1_btn').addEventListener('click', () => {
+document.getElementById('online_1v1_btn').addEventListener('click', () => {
     playOnline(2);
     showChat();
 });
-document.getElementById('local_2v2_btn').addEventListener('click', () => {
+document.getElementById('online_2v2_btn').addEventListener('click', () => {
     playOnline(4);
     showChat();
 });
