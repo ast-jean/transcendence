@@ -12,9 +12,9 @@ export function displayPlayersInScene(players, scene) {
         if (!scene.children.includes(player.mesh)) {
             // Ajoute le joueur à la scène s'il n'y est pas déjà
             scene.add(player.mesh);
-            console.log(`Joueur ${player.id} ajouté à la scène à la position x=${player.mesh.position.x}, y=${player.mesh.position.y}`);
+            console.log(`Joueur ${player.ident} ajouté à la scène à la position x=${player.mesh.position.x}, y=${player.mesh.position.y}`);
         } else {
-            console.log(`Joueur ${player.id} déjà présent dans la scène`);
+            console.log(`Joueur ${player.ident} déjà présent dans la scène`);
         }
     });
     addBallToScene(scene);

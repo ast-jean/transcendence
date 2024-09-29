@@ -25,7 +25,7 @@ export function displayDebugInfo() {
     if (players && players.length > 0) {
         console.log("%cPlayers Connected:", "color: #00ffff; font-weight: bold;");
         players.forEach((player, index) => {
-            console.log(`Player ${index + 1} - ID: ${player.id}, Position: (${player.mesh.position.x.toFixed(2)}, ${player.mesh.position.y.toFixed(2)}, ${player.mesh.position.z.toFixed(2)})`);
+            console.log(`Player ${index + 1} - ID: ${player.ident}, Position: (${player.mesh.position.x.toFixed(2)}, ${player.mesh.position.y.toFixed(2)}, ${player.mesh.position.z.toFixed(2)})`);
         });
     } else {
         console.log("%cNo players connected.", "color: #ff0000; font-weight: bold;");

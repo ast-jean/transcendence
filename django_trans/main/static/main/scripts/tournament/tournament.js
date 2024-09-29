@@ -120,10 +120,10 @@ export async function createTournamentLobby(tournamentId, maxPlayers) {
 function addPlayerToTournament() {
     // Fonction pour ajouter le joueur courant au tournoi
     const player = { id: socketState.socket.id, websocket: socketState.socket };
-    if (!players.find(p => p.id === player.id)) {
+    if (!players.find(p => p.ident === player.ident)) {
         players.push(player);
-        console.log(`%c[Debug] Joueur ajouté: ID ${player.id}`, "color: #00ff00;");
+        console.log(`%c[Debug] Joueur ajouté: ID ${player.ident}`, "color: #00ff00;");
     } else {
-        console.warn(`%c[Debug] Joueur déjà présent: ID ${player.id}`, "color: #ffff00;");
+        console.warn(`%c[Debug] Joueur déjà présent: ID ${player.ident}`, "color: #ffff00;");
     }
 }

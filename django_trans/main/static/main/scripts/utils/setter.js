@@ -61,7 +61,7 @@ export function removePlayer(playerIdToRemove) {
     let player = players.find(p => p.id === playerIdToRemove);
     if (player){
         removeMeshFromScene(player.mesh, scene);
-        players = players.filter(player => player.id !== playerIdToRemove);
+        players = players.filter(player => player.ident !== playerIdToRemove);
     } 
 }
 

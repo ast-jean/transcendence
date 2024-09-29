@@ -65,7 +65,6 @@ function localPlay4Players() {
 function localPlay() {
     local_game = true;
     // hideAllButtons();
-    console.log("local play");
     initializePlayers(scene, false, false);
 }
 
@@ -334,8 +333,8 @@ document.getElementById('local_2v2_btn').addEventListener('click', () => { hideB
 
 
 
-document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit());
-document.getElementById('versusai_btn').addEventListener('click', playAI());
+document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit);
+document.getElementById('versusai_btn').addEventListener('click', playAI);
 document.getElementById('online_1v1_btn').addEventListener('click', () => {
     playOnline(2);
     showChat();
