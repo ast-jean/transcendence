@@ -73,6 +73,11 @@ function playAI() {
     initializePlayers(scene, true, false);  // true pour indiquer qu'on joue contre une IA
 }
 
+export function startGame_online() {
+    displayPlayersInScene(players, scene); 
+
+}
+
 async function playOnline(maxPlayers) {
 
     // Si le WebSocket est prêt, continuer avec la création de la room

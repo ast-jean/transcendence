@@ -1,16 +1,17 @@
 import * as THREE from 'three';
-import { addPlayerToGame, players } from '../utils/setter.js';
+import { addPlayerToGame, isGameOver, players } from '../utils/setter.js';
 import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { hideChat, showChat, addChat, addChatProfile } from '../ui/chat.js'
-import { initTournament } from '../pong.js';
-import { hideBtn, showBtn, showLayer2Btns } from '../ui/ui_updates.js';
+import { initTournament, startGame_online } from '../pong.js';
+import { hideBtn, showBtn, showLayer2Btns, startCountdown } from '../ui/ui_updates.js';
 import { Tournament } from '../tournament/tournament.js';
 import { tournament, setTournament } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
+import { displayPlayersInScene } from '../gameplay/add_scene.js';
 
 export var room_id;
 
@@ -274,7 +275,6 @@ export function sendSync() {
     }
 }
 
-
 export function checkAllPlayersConnected(maxPlayers) {
     return new Promise((resolve, reject) => {
         let playerIn = document.getElementById("playerIn");
@@ -304,6 +304,8 @@ export function checkAllPlayersConnected(maxPlayers) {
             if (socketState.isSocketReady && players.length === maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
+                hideBtn('playerCount');
+                startGame_online();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms
