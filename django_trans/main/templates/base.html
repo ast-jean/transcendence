@@ -31,7 +31,7 @@
                 </li>
                 {% if profile.login %}
                 <li class="nav-item {% if current_path == '/profile/' %}active{% endif %}">
-                    <a class="nav-link" href="/profile/" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
+                    <a class="nav-link" href="/profile/{{profile.login}}" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
                 </li>
                 {% endif %}
             </ul>
