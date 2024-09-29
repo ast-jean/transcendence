@@ -517,20 +517,15 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def searchRoom(self, data):
         try:
-            print(f"\033[33mClient {self.ident} is searching for room {data['roomId']}\033[0m")
-            print(f"\033[91m Rooms: {self.rooms} \033[0m")
-            print(f"{data['roomId']}")
             found_room = await self.find_room(data['roomId'])
             if found_room is None:
-                print("Found_room is None111111111111111111111")
                 raise Exception(f"\033[31mRoom {data['roomId']} not found.\033[0m]")
             else:
-                print(f"\033[32mRoom found: { found_room }\033[0m")
                 new_client = Client(self.ident, found_room.playerIn, self, data['name'])
                 found_room.add_client(new_client)
                 
                 # Envoyer les informations des joueurs existants au nouveau joueur
-                existing_players = [{"ident": client.ident, "index": client.index} for client in found_room.clients if client.ident != self.ident]
+                existing_players = [{"ident": client.ident, "index": client.index, 'name':client.name} for client in found_room.clients if client.ident != self.ident]
                 await self.send(text_data=json.dumps({
                     "cmd": "existingPlayers",
                     "players": existing_players
@@ -551,10 +546,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "playerTotal": found_room.playerTotal,
                         'clientId': new_client.index,
                     }
+                    
                 await self.send(json.dumps(data))
-                await self.broadcast_connect({"ident": "user_%s" % self.ident, 'cmd' : "connect"})
+                await self.broadcast_connect({'ident': self.ident, 'cmd' : 'connect', 'roomId':found_room.roomId, 'name':self.name})
         except Exception as e:
-            print(f"Error searching room:2222222222222222222222222222 {str(e)}")
             await self.send(json.dumps({'cmd':'roomNotFound'}))
 
 # Exemple de donnees dans data
