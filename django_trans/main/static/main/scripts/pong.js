@@ -65,6 +65,7 @@ function localPlay4Players() {
 function localPlay() {
     local_game = true;
     // hideAllButtons();
+    console.log("local play");
     initializePlayers(scene, false, false);
 }
 
@@ -312,13 +313,13 @@ document.getElementById('return_btn_3').addEventListener('click', () => {
 
 document.getElementById('tournament_btn').addEventListener('click', () => { showBtn('layer2Btns_tournament'); hideBtn('play_btns'); });
 document.getElementById('localplay_btn').addEventListener('click', () => { showBtn('layer2Btns_local'); hideBtn('play_btns'); });
-document.getElementById('local_1v1_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay; });
-document.getElementById('local_2v2_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay4Players; });
+document.getElementById('local_1v1_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay(); });
+document.getElementById('local_2v2_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay4Players(); });
 
 
 
-document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit);
-document.getElementById('versusai_btn').addEventListener('click', playAI);
+document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit());
+document.getElementById('versusai_btn').addEventListener('click', playAI());
 document.getElementById('online_1v1_btn').addEventListener('click', () => {
     playOnline(2);
     showChat();
