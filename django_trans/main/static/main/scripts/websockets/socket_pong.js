@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { addPlayerToGame, players } from '../utils/setter.js';
-import { removeMeshFromScene } from '../utils/utils.js';
+import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
@@ -11,6 +11,7 @@ import { hideBtn, showBtn, showLayer2Btns } from '../ui/ui_updates.js';
 import { Tournament } from '../tournament/tournament.js';
 import { tournament, setTournament } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
+import { scene } from '../pong.js';
 
 export var room_id;
 
@@ -142,10 +143,30 @@ export function setupWebSocket() {
                 tournament.handleBackendUpdate(data);
             }
 
+            // Event listener pour le début du match
             if (data.cmd === "startMatch") {
                 console.log(`Match démarré dans la Room ID ${data.roomId} avec les joueurs : ${data.players.join(", ")}`);
-                // Logique pour gérer l'affichage ou l'entrée dans la room
+                let index = 0;
+                // Pour chaque joueur dans la room, les ajouter à la scène et au tableau global players
+                data.players.forEach(playerId => {
+                    // Vérifie si le joueur est déjà dans la liste (évite les doublons)
+                    if (!players.find(p => p.id === playerId)) {
+                        // Ajoute le joueur à la scène avec une position spécifique
+                        // On suppose que tu veux que les joueurs soient placés sur les murs (par exemple, vertical/horizontal)
+                        const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
+                        const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
+                        
+                        addPlayerToGame(playerId, playerPosition.x, playerPosition.y, playerPosition.z, 0x00ff00, scene, false, isVertical);
+                        console.log(`Player ${playerId} ajouté à la scène à la position (${playerPosition.x}, ${playerPosition.y})`);
+                        index++;
+                    }
+                });
+
+                // Connecte les joueurs entre eux via WebSocket
+                room_id = data.roomId;
+                //connectPlayersInRoom(data.roomId, data.players);
             }
+
         
             if (data.cmd === "joinTournament") {
                 if (data.success) {
@@ -236,22 +257,47 @@ export function receiveSync(id, movementData) {
 export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
 
-    // Ajouter le joueur s'il n'existe pas déjà dans la liste
-    if (players.length == 0)
-        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));
+    // Vérifier si le joueur existe déjà
     if (!players.find(p => p.id === id)) {
-        if (players.length == 0 ){    
-            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+        // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
+        if (players.length == 0) {    
+            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
             console.log("new player 1 push");
-        }
-        else{
-            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x00ffff));  // Ajout du nouveau joueur
-            console.log("new player 2 push");
+        } else {
+            // Pour les autres joueurs, calculer une nouvelle position et couleur
+            const newPosition = getNewPlayerPosition(players.length);
+            const newColor = getNewPlayerColor(players.length);
+            players.push(new Player(id, newPosition.x, newPosition.y, 0, newColor));  // Ajout des autres joueurs
+            console.log(`new player ${players.length + 1} push at position (${newPosition.x}, ${newPosition.y})`);
         }
     }
+
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
+
+
+
+
+//export function receiveConnect(id) {
+//    console.log(`Player connected with id: ${id}`);
+//
+//    // Ajouter le joueur s'il n'existe pas déjà dans la liste
+//    if (players.length == 0)
+//        players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));
+//    if (!players.find(p => p.id === id)) {
+//        if (players.length == 0 ){    
+//            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du nouveau joueur
+//            console.log("new player 1 push");
+//        }
+//        else{
+//            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x00ffff));  // Ajout du nouveau joueur
+//            console.log("new player 2 push");
+//        }
+//    }
+//    // Envoyer la synchronisation du nouveau joueur
+//    sendSync();
+//}
 
 export function receiveMove(id, movementData) {
     // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug

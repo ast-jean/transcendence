@@ -2,7 +2,7 @@ import { players, ballSpeedX, ballSpeedY } from "./setter.js";
 import { socketState } from "../websockets/socket_pong.js";
 import { room_id } from "../websockets/socket_pong.js";
 import { sphere } from "../gameplay/ball.js";
-import { walls } from "../gameplay/wall.js";
+import { wallLength, walls } from "../gameplay/wall.js";
 import { tournament } from "./setter.js";
 
 export function removeMeshFromScene(mesh, scene) {
@@ -93,4 +93,53 @@ export function displayDebugInfo() {
     }
 
     console.log("%c--------------------------", "color: #00ff00; font-weight: bold;");
+}
+
+
+export function getPlayerStartingPosition(playerId) {
+    const positions = [
+        {x: 0, y: -wallLength / 2 + 0.5, z: 0},  // Bas (joueur 1)
+        {x: 0, y: wallLength / 2 - 0.5, z: 0},   // Haut (joueur 2)
+        {x: -wallLength / 2 + 0.5, y: 0, z: 0},  // Gauche (joueur 3)
+        {x: wallLength / 2 - 0.5, y: 0, z: 0}    // Droite (joueur 4)
+    ];
+    return positions[parseInt(playerId) % 4];  // Simple logique pour distribuer les joueurs
+}
+
+export function determineIfVertical(playerId) {
+    // Suppose que les joueurs 1 et 2 sont horizontaux (bas et haut) et 3 et 4 sont verticaux (gauche et droite)
+    return playerId === 3 || playerId === 4;
+}
+
+export function connectPlayersInRoom(roomId, players) {
+    console.log(`Connexion des joueurs dans la Room ID ${roomId}...`);
+
+    // Envoie l'information de connexion à chaque joueur
+    players.forEach(playerId => {
+        const cmd = {
+            cmd: "connectPlayer",
+            roomId: roomId,
+            playerId: playerId
+        };
+        socketState.socket.send(JSON.stringify(cmd));
+    });
+}
+
+
+export function getNewPlayerPosition(playerCount) {
+    // Exemple simple : Diviser les joueurs sur 4 côtés du mur en fonction de leur nombre
+    const positions = [
+        {x: 0, y: wallLength / 2 - 0.5},  // Position du joueur 1 (bas)
+        {x: 0, y: -(wallLength / 2 - 0.5)}, // Position du joueur 2 (haut)
+        {x: -(wallLength / 2 - 0.5), y: 0}, // Position du joueur 3 (gauche)
+        {x: wallLength / 2 - 0.5, y: 0},    // Position du joueur 4 (droite)
+    ];
+
+    return positions[playerCount % positions.length];  // Retourne une position en fonction du nombre de joueurs
+}
+
+export function getNewPlayerColor(playerCount) {
+    // Exemple de couleurs pour chaque joueur
+    const colors = [0x0000ff, 0x00ffff, 0xff0000, 0x00ff00];
+    return colors[playerCount % colors.length];  // Retourne une couleur en fonction du nombre de joueurs
 }

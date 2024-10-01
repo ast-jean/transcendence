@@ -46,13 +46,12 @@ export function sendBallState() {
     if (socketState.socket && socketState.isSocketReady && room_id && !isGameOver) {
         let cmd = "ballSync";
         const ballData = {
-            room_id: room_id,
             x: sphere.position.x,
             y: sphere.position.y,
             vx: getBallSpeedX(),
             vy: getBallSpeedY()
         };
-        socketState.socket.send(JSON.stringify({ cmd, ballData }));
+        socketState.socket.send(JSON.stringify({ cmd, roomId: room_id, ballData }));
     }
 }
 // Envoyer l'état de la balle toutes les 100ms pour réduire la surcharge réseau

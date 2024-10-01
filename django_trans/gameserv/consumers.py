@@ -83,10 +83,21 @@ class GameConsumer(AsyncWebsocketConsumer):
     tournaments = {}
 
     async def find_room(self, room_id):
+        print(f"Recherche de la room avec room_id: {room_id}")
+
+        print("Liste des room IDs actuellement dans self.rooms:")
+        
+        # Affiche tous les IDs des rooms actuellement stockées
+        for room in self.rooms:
+            print(f"- Room ID: {room.roomId}")
+
         for room in self.rooms:
             if str(room.roomId) == str(room_id):
+                print(f"Room trouvée: {room.roomId}")
                 return room
+        print("Room non trouvée")
         return None
+
 
     async def connect(self):
         self.ident= str(uuid.uuid4())
@@ -174,7 +185,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.notify_players_in_lobby(tournament_id)
 
     async def join_tournament(self, tournament_id, player_id, name = "Default"):
-        tournament = self.tournaments.get(int(tournament_id)) # IMPORTANT: penser à gérer les cas de lettres
+        tournament = self.tournaments.get(int(tournament_id)) # IMPORTANT: penser à gérer le cas de lettres
         print(tournament)
         print(self.tournaments)
         
@@ -205,19 +216,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         
         await self.send(text_data=json.dumps(response))
 
-    async def start_tournament(self, tournament_id):
-        tournament = self.tournaments.get(tournament_id)
-        if tournament and tournament.is_lobby:
-            tournament.is_lobby = False
-            tournament.create_matches()  # Crée les matchs pour les joueurs
-            # Informer tous les clients que le tournoi commence
-            response = {
-                "cmd": "tournamentStarted",
-                "tournamentId": tournament_id,
-                "matches": [{"player1": match.player1.ident, "player2": match.player2.ident} for match in tournament.matches]
-            }
-            await self.send_to_all(response)
-
 
     async def start_tournament(self, tournament_id):
         """Méthode pour démarrer le tournoi et distribuer les joueurs dans des rooms."""
@@ -228,12 +226,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 tournament.create_matches()  # Crée les matchs
                 # Envoie chaque match dans une room dédiée
                 for match in tournament.matches:
-                    room_id = Room.generate_room_id(self.existing_room_ids)
                     new_room = Room(2, self.existing_room_ids)  # Room de match 1v1
                     self.rooms.append(new_room)
+                    print(f"Room créée avec ID {new_room.roomId} et ajoutée à self.rooms")
                     new_room.add_client(match.player1)
                     new_room.add_client(match.player2)
-                    print(f"Room créée pour {match.player1.ident} et {match.player2.ident}, Room ID: {room_id}")
+                    print(f"Room créée pour {match.player1.ident} et {match.player2.ident}, Room ID: {new_room.roomId}")
 
                     # Envoi des infos aux joueurs
                     data = {
@@ -324,11 +322,18 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
-                if self.ident == room.host_ident:
-                    score_data = room.update_score(text_data_json["team"])
-                    await self.broadcast_score_update(room, score_data)
+                print(text_data_json["roomId"])
+                print(self.rooms)
+                if room is not None:
+                    print(f"Room trouvée avec host_ident: {room.host_ident}")
+                    if self.ident == room.host_ident:
+                        score_data = room.update_score(text_data_json["team"])
+                        await self.broadcast_score_update(room, score_data)
+                    else:
+                        print(f"Client {self.ident} is not the host and cannot update the score.")
                 else:
-                    print(f"Client {self.ident} is not the host and cannot update the score.")
+                    print(f"Aucune room trouvée avec roomId: {text_data_json['roomId']}")
+
 
     async def broadcast_score_update(self, room, score_data):
         data = {
@@ -545,7 +550,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     await client.websocket.send(json.dumps(data))
 
     async def broadcast_ball_move(self, data):
-        room = await self.find_room(data['roomId'])
+        room_id = data.get('roomId')
+        room = await self.find_room(room_id)
         if room is not None:
             for client in room.clients:
                 if client.ident != self.ident:
