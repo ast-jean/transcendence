@@ -236,7 +236,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     # Envoi des infos aux joueurs
                     data = {
                         "cmd": "startMatch",
-                        "roomId": room_id,
+                        "roomId": new_room.roomId,
                         "players": [match.player1.ident, match.player2.ident]
                     }
                     await match.player1.websocket.send(json.dumps(data))

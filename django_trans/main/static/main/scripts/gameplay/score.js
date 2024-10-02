@@ -23,6 +23,7 @@ export function updateScore(player) {
     if (socketState.socket && socketState.isSocketReady) {
         let cmd = "score";
         let roomId = getRoomId(); // Probablement undefined pour les tournois, à vérifier
+        console.log(roomId);
         let data = { cmd, team, roomId };
         console.log("Envoi des données au serveur:", data);
         socketState.socket.send(JSON.stringify(data));
