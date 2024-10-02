@@ -52,11 +52,7 @@ export function sendBallState() {
             vx: getBallSpeedX(),
             vy: getBallSpeedY()
         };
-<<<<<<< HEAD
-        socketState.socket.send(JSON.stringify({ cmd, roomId: room_id, ballData }));
-=======
         socketState.socket.send(JSON.stringify({ cmd, roomId, ballData }));
->>>>>>> main
     }
 }
 // Envoyer l'état de la balle toutes les 100ms pour réduire la surcharge réseau

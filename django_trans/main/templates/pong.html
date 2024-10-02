@@ -118,7 +118,22 @@
 						 <p> Waiting for players: <div id="playerIn">0/0</div> : [<div id="timeElapse">0</div>]</p>	
 						</div>
 					</div>
-					<div id="gameCont" class="three-js-canvas"></div> <!-- d-flex justify-content-center align-items-center -->	
+					<div id="gameCont" class="three-js-canvas">
+						<div id="scoreboard flex-container z-2">
+							<!-- roomIdDiv for debug? -->
+							<div id="roomIdDiv">
+								<p id="roomId" class="text-white bg-dark">Room: </p>
+							</div>
+							<div>
+								<div>Player 1:</div>
+								<div id="player1Score"></div>
+							</div>
+							<div>
+								<div>Player 2:</div>
+								<div id="player2Score"></div>
+							</div>
+						</div>
+					</div> <!-- d-flex justify-content-center align-items-center -->	
 				</div>
 
 				<div id="cameraControls setting-btns" class="btn-group" >
@@ -259,20 +274,7 @@
 				<!-- </div> -->
 
 				<div id="playersList"></div>
-                <!-- PREVIOUSLY LAYER2 FOR ONLINE -->
-				<div id="scoreboard flex-container">
-                    <div id="roomIdDiv">
-						<p id="roomId" class="text-white bg-dark">Room: </p>
-					</div>
-					<div>
-						<div>Player 1:</div>
-						<div id="player1Score"></div>
-					</div>
-					<div>
-						<div>Player 2:</div>
-						<div id="player2Score"></div>
-					</div>
-				</div>
+				
 				<div id="end-game-buttons" class="game-button" style="display: none;">
 					<button id="replay-btn" class="btn btn-primary">Replay</button>
 					<button id="menu-btn" class="btn btn-secondary">Menu</button>

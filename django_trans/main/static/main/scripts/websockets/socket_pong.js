@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { addPlayerToGame, players } from '../utils/setter.js';
 import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
-import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
@@ -28,17 +27,17 @@ export function setupWebSocket() {
         socketState.socket = new WebSocket(ws_path);
         console.log("Creating WebSocket:", socketState.socket);
 
-        socketState.socket.onopen = function() {
+        socketState.socket.onopen = function () {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
-            sendCmd(null,null);
+            sendCmd(null, null);
             addChat("Server:", "You are connected", 'success')
             document.getElementById('chat-btn').disabled = false;
             document.getElementById('chat-input').disabled = false;
             resolve();
         };
 
-        socketState.socket.onclose = function() {
+        socketState.socket.onclose = function () {
             console.log('WebSocket connection closed');
             socketState.isSocketReady = false;
             addChat("Server:", "you are offline", 'danger');
@@ -47,7 +46,7 @@ export function setupWebSocket() {
             reject(new Error('WebSocket connection closed'));
         };
 
-        socketState.socket.onerror = function(error) {
+        socketState.socket.onerror = function (error) {
             console.error('WebSocket error:', error);
             reject(error);
         };
@@ -55,19 +54,19 @@ export function setupWebSocket() {
         function changeRoomIdElement(roomId) {
             document.getElementById("roomId").textContent = "Room:" + roomId;
         }
-        
-        socketState.socket.onmessage = function(event) {
+
+        socketState.socket.onmessage = function (event) {
             var data = JSON.parse(event.data);
-    
+
             if (data.cmd === "roomNotFound") {
-                addChat('Server:', "Room not found","danger");
+                addChat('Server:', "Room not found", "danger");
                 showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
                 console.log("joined room" + data.roomId);
                 changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
-                addChat("Server", "Room id = "+ room_id)
+                addChat("Server", "Room id = " + room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
@@ -75,10 +74,10 @@ export function setupWebSocket() {
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
                         addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
-                        console.log("Existing player added: ", player.ident);    
+                        console.log("Existing player added: ", player.ident);
                         addChat("->", player.name)
                     }
-                    });
+                });
             }
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
@@ -124,11 +123,11 @@ export function setupWebSocket() {
 
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
-                if (data.host === true ){
+                if (data.host === true) {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
-                
+
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {
@@ -138,7 +137,7 @@ export function setupWebSocket() {
                     console.log("Aucun joueur trouvé dans le lobby.");
                 }
             }
-            
+
             if (data.cmd === "updateLobbyPlayers") {
                 tournament.handleBackendUpdate(data);
             }
@@ -155,7 +154,7 @@ export function setupWebSocket() {
                         // On suppose que tu veux que les joueurs soient placés sur les murs (par exemple, vertical/horizontal)
                         const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
                         const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
-                        
+
                         addPlayerToGame(playerId, playerPosition.x, playerPosition.y, playerPosition.z, 0x00ff00, scene, false, isVertical);
                         console.log(`Player ${playerId} ajouté à la scène à la position (${playerPosition.x}, ${playerPosition.y})`);
                         index++;
@@ -167,7 +166,7 @@ export function setupWebSocket() {
                 //connectPlayersInRoom(data.roomId, data.players);
             }
 
-        
+
             if (data.cmd === "joinTournament") {
                 if (data.success) {
                     console.log(`Rejoint avec succès le tournoi ID : ${data.tournamentId}`);
@@ -185,9 +184,9 @@ export function setupWebSocket() {
                 // console.log(`Connected Clients: ${data.connected_clients.length}`);
                 console.log(`TournamentIds: ${data.tournamentId}`)
                 // data.connected_clients.forEach((client, index) => {
-                    // console.log(`Client ${index + 1} - ID: ${client}`);
+                // console.log(`Client ${index + 1} - ID: ${client}`);
                 // });
-        
+
                 //console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
                 //data.rooms.forEach((room, index) => {
                 //    console.log(`Room ${index + 1} - Room ID: ${room.roomId}, Players: ${room.players.join(", ")}`);
@@ -209,19 +208,19 @@ export function disconnectWebSocket() {
     }
 }
 
-export function getName(){
-    var name; 
+export function getName() {
+    var name;
     try {
-        var nameElement = document.getElementById('name'); 
+        var nameElement = document.getElementById('name');
         name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
             name = 'Guest';
-    } 
+    }
     catch {
         name = "Guest";
     }
     return name;
-    
+
 }
 
 
@@ -234,7 +233,7 @@ export function sendCmd(cmd, roomId) {
     }
 }
 
-export function getRoomId(){
+export function getRoomId() {
     return room_id;
 }
 
@@ -260,7 +259,7 @@ export function receiveConnect(id) {
     // Vérifier si le joueur existe déjà
     if (!players.find(p => p.id === id)) {
         // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
-        if (players.length == 0) {    
+        if (players.length == 0) {
             players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
             console.log("new player 1 push");
         } else {
@@ -338,7 +337,7 @@ export function checkAllPlayersConnected(maxPlayers) {
             let totalSeconds = Math.floor(elapsedTime / 1000);
             let minutes = Math.floor(totalSeconds / 60);
             let seconds = totalSeconds % 60;
-            
+
             // Format time according to your requirements
             let formattedTime = '';
             if (minutes > 0) {
@@ -365,7 +364,7 @@ export function checkAllPlayersConnected(maxPlayers) {
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
-            addChat('Server','Connection Timeout for players','danger');
+            addChat('Server', 'Connection Timeout for players', 'danger');
             hideBtn('playerCount');
         }, 600000); // Délai d'attente de secondes
     });
@@ -375,13 +374,13 @@ export function receiveBallSync(ballData) {
 
     let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let serverPos = new THREE.Vector2(ballData.x, ballData.y);
-    
+
     let smoothingFactor = 0.5;
     let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
-    
+
     sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
-    
-    
+
+
     // Synchroniser les vitesses de la balle également
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)
