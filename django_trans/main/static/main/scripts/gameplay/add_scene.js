@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { startCountdown } from '../ui/ui_updates.js';
 import { addBallToScene } from './ball.js';
 
+
 /**
  * Parcourt la liste des joueurs et les affiche dans la scène.
  * @param {Array} players - Liste des joueurs.

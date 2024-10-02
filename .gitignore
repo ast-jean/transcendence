@@ -1,32 +1,25 @@
-# django_trans/django_trans/settings.py
 
-# Ignore node_modules directory
+django_trans/django_trans/settings.py
 node_modules/
 Makefile
-# docker-compose.yml
+docker-compose.yml
 nginx/Dockerfile
 nginx/nginx.conf
 certbot
-# Ignore logs
+
 logs/
 *.log
 
-# Ignore temporary files
 tmp/
 *.tmp
 
-# Ignore OS-specific files
 .DS_Store
 Thumbs.db
 
-# Ignore environment files
 .env
-# transcendence/nginx/nginx.conf
 
-# Ignore build artifacts
 dist/
 build/
 
-# Ignore coverage reports
 coverage/
 *.lcov
