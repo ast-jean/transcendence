@@ -53,7 +53,7 @@ export function endGame() {
     const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
 
     // Crée un message pour afficher le gagnant
-    addChat("Server:",`${winner} wins!` );
+    addChat("Server:", `${winner} wins!`);
 
     // Affiche les boutons de fin de jeu (rejouer ou retourner au menu)
     const endGameButtons = document.getElementById('end-game-buttons');
@@ -68,11 +68,12 @@ export function endGame() {
     });
     // Bouton pour retourner au menu principal
     document.getElementById('menu-btn').addEventListener('click', () => {
-        document.getElementById('gameCont').removeChild(endGameMessage);
-        endGameButtons.style.display = 'none';
-        showAllButtons();
-        resetGame();
-        controls.enabled = false;
+        location.reload();
+        // document.getElementById('gameCont').removeChild(endGameMessage);
+        // endGameButtons.style.display = 'none';
+        // showAllButtons();
+        // resetGame();
+        // controls.enabled = false;
     });
 }
 
