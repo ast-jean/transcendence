@@ -1,7 +1,7 @@
 class connectedClient:
 	'''Class for clients who connect to the server.
 Takes an id string and a name string as parameters on construction'''
-	def __init__(self, ide: str, nam: str) -> None:
+	def __init__(self, ide: str, name: str) -> None:
 		self.ident = ide
 		self.name = name
 		self.blocklist = list
