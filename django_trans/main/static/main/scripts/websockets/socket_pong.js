@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { addPlayerToGame, players } from '../utils/setter.js';
 import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
-import { removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
