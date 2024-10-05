@@ -8,6 +8,12 @@ export let players = [];
 export let isGameOver = true;
 export let isFourPlayerMode = false;
 export let tournament;
+export let localPlayerId = null;
+
+
+export function setID(value){
+    localPlayerId = value;
+}
 
 export function setPlayerMode(value){
     isFourPlayerMode = value;
