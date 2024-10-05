@@ -264,16 +264,10 @@ export function receiveSync(id, movementData) {
 export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
 
-    // Stocker l'ID du joueur local reçu du serveur
-    if (localPlayerId === null) {
-        setID(id);
-    }
-    console.log(`Local player ID set to: ${localPlayerId}`);
-
-    // Vérifier si le joueur existe déjà dans la liste des joueurs
+    // Vérifier si le joueur existe déjà
     if (!players.find(p => p.id === id)) {
         // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
-        if (players.length == 0) {    
+        if (players.length == 0) {
             players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
             console.log("new player 1 push");
         } else {
@@ -285,7 +279,7 @@ export function receiveConnect(id) {
         }
     }
 
-    // Envoyer la synchronisation du nouveau joueur à tous les autres clients
+    // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
 
