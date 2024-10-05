@@ -105,7 +105,13 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.block_list = set()
         GameConsumer.connected_clients.append(self)
         print(f"Client {self.ident} has connected.")
+                # Renvoie l'ID du joueur au client
+        response = {
+            "cmd": "playerId",
+            "playerId": self.ident  # Supposons que self.ident contient l'ID du joueur
+        }
         await self.accept()
+        await self.send(text_data=json.dumps(response))
 
     async def disconnect(self, close_code):
         print(f"Client {self.ident} has disconnected.")
@@ -251,7 +257,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         if len(text_data) > 0:
             text_data_json = json.loads(text_data)
-            text_data_json.update({"ident": "user_%s" % self.ident})
+            text_data_json.update({"ident": self.ident})
             print(f"Receive data -> { text_data }")
             if not hasattr(self, 'name') or self.name is None:
                 name = text_data_json.get('name')

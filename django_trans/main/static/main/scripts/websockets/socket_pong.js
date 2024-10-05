@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { addPlayerToGame, players } from '../utils/setter.js';
+import { addPlayerToGame, localPlayerId, players, setID } from '../utils/setter.js';
 import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
@@ -30,7 +30,6 @@ export function setupWebSocket() {
         socketState.socket.onopen = function () {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
-            sendCmd(null, null);
             addChat("Server:", "You are connected", 'success')
             document.getElementById('chat-btn').disabled = false;
             document.getElementById('chat-input').disabled = false;
@@ -57,7 +56,15 @@ export function setupWebSocket() {
 
         socketState.socket.onmessage = function (event) {
             var data = JSON.parse(event.data);
+    
 
+            if (data.cmd === 'playerId') {
+                console.log("Player ID reçu du serveur:", data.playerId);
+                
+                // Sauvegarde l'ID du joueur dans la variable globale
+                setID(data.playerId);
+                console.log("ID du joueur local sauvegardé:", localPlayerId);
+            }
             if (data.cmd === "roomNotFound") {
                 addChat('Server:', "Room not found", "danger");
                 showBtn('layer2Btns_online');
@@ -104,6 +111,7 @@ export function setupWebSocket() {
                 //receiving error if bad command
             }
             if (data.cmd === "move") {
+                console.log(data.ident, "before move");
                 receiveMove(data.ident, data.movementData);
             }
             if (data.cmd === "sync") {
@@ -274,6 +282,7 @@ export function receiveConnect(id) {
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
+
 
 
 
