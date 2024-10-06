@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { addPlayerToGame, localPlayerId, players, setID } from '../utils/setter.js';
-import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
+import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, isPositionValid, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
@@ -307,17 +307,18 @@ export function receiveConnect(id) {
 //    sendSync();
 //}
 
-export function receiveMove(id, movementData) {
-    // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
-    const player = players.find(p => p.ident === id);
+// Fonction qui reçoit la nouvelle position du joueur
+function receiveMove(playerId, newPosition) {
+    const player = players.find(p => p.ident === playerId);
     if (player) {
-        if (movementData.x) player.mesh.position.x += movementData.x;
-        if (movementData.y) player.mesh.position.y += movementData.y;
-        //updatePlayerVisualization();
-    } else {
-        console.error(`Player with id ${id} not found in receiveMove`);
+        // Mettre à jour directement la position du joueur
+        player.mesh.position.x = newPosition.newX;
+        player.mesh.position.y = newPosition.newY;
+        console.log(`Joueur ${playerId} déplacé à la nouvelle position (${newPosition.x}, ${newPosition.y})`);
     }
 }
+
+
 
 export function sendSync() {
     if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {

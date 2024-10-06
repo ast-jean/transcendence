@@ -199,9 +199,11 @@ export function movePlayer(delta, scene) {
         if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
             let cmd = "move";
             const movementData = {
-                playerId: localPlayer.id,  // Ajoute l'ID du joueur
+                playerId: localPlayer.id,
                 x: movement.x,
                 y: movement.y,
+                newX: newX,
+                newY: newY
             };
             let roomId = getRoomId();
             socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));

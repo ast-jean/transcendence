@@ -143,3 +143,12 @@ export function getNewPlayerColor(playerCount) {
     const colors = [0x0000ff, 0x00ffff, 0xff0000, 0x00ff00];
     return colors[playerCount % colors.length];  // Retourne une couleur en fonction du nombre de joueurs
 }
+
+export function isPositionValid(x, y) {
+    // Vérifie si la nouvelle position est valide en fonction de la longueur des murs, etc.
+    // Par exemple :
+    if (x < -wallLength / 2 || x > wallLength / 2 || y < -wallLength / 2 || y > wallLength / 2) {
+        return false; // Le mouvement va traverser les murs
+    }
+    return true; // Le mouvement est valide
+}
