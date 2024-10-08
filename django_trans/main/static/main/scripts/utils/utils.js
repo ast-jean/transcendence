@@ -1,9 +1,10 @@
-import { players, ballSpeedX, ballSpeedY } from "./setter.js";
+import { players, ballSpeedX, ballSpeedY, localPlayerId } from "./setter.js";
 import { socketState } from "../websockets/socket_pong.js";
 import { room_id } from "../websockets/socket_pong.js";
 import { sphere } from "../gameplay/ball.js";
 import { wallLength, walls } from "../gameplay/wall.js";
 import { tournament } from "./setter.js";
+import { hideBtn, showBtn } from "../ui/ui_updates.js";
 
 export function removeMeshFromScene(mesh, scene) {
     scene.remove(mesh);
@@ -142,4 +143,37 @@ export function getNewPlayerColor(playerCount) {
     // Exemple de couleurs pour chaque joueur
     const colors = [0x0000ff, 0x00ffff, 0xff0000, 0x00ff00];
     return colors[playerCount % colors.length];  // Retourne une couleur en fonction du nombre de joueurs
+}
+
+export function isPositionValid(x, y) {
+    // Vérifie si la nouvelle position est valide en fonction de la longueur des murs, etc.
+    // Par exemple :
+    if (x < -wallLength / 2 || x > wallLength / 2 || y < -wallLength / 2 || y > wallLength / 2) {
+        return false; // Le mouvement va traverser les murs
+    }
+    return true; // Le mouvement est valide
+}
+
+// Fonction pour vérifier si l'utilisateur est l'hôte en comparant les ID
+export function checkIfHost(hostId) {
+    if (localPlayerId === hostId) {
+        showBtn('start_btn');  // Affiche le bouton si l'ID local correspond à l'ID de l'hôte
+        console.log("Vous êtes l'hôte, bouton start visible.");
+    } else {
+        hideBtn('start_btn');  // Cache le bouton si l'ID local ne correspond pas à l'ID de l'hôte
+        console.log("Vous n'êtes pas l'hôte, bouton start caché.");
+    }
+}
+
+export function endMatch(winnerId) {
+    const cmd = "endMatch";
+    const roomId = getRoomId(); // ID de la room actuelle
+    const data = {
+        cmd,
+        roomId,
+        winnerId
+    };
+    
+    socketState.socket.send(JSON.stringify(data));
+    console.log(`Fin du match, gagnant : ${winnerId}`);
 }
