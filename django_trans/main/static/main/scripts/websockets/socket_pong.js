@@ -60,6 +60,10 @@ export function setupWebSocket() {
         socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
     
+            if (data.cmd === "tournamentWinner") {
+                console.log(`Le gagnant du tournoi est : ${data.winnerId}`);
+                alert(`Le gagnant du tournoi est : ${data.winnerId}`);
+            }
             if (data.cmd === "startGame") {
                 hideAllButtons();
                 displayPlayersInScene(players, scene);  // Affiche tous les joueurs dans la scène

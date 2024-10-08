@@ -164,3 +164,16 @@ export function checkIfHost(hostId) {
         console.log("Vous n'êtes pas l'hôte, bouton start caché.");
     }
 }
+
+export function endMatch(winnerId) {
+    const cmd = "endMatch";
+    const roomId = getRoomId(); // ID de la room actuelle
+    const data = {
+        cmd,
+        roomId,
+        winnerId
+    };
+    
+    socketState.socket.send(JSON.stringify(data));
+    console.log(`Fin du match, gagnant : ${winnerId}`);
+}
