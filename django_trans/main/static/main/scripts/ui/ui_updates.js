@@ -45,7 +45,7 @@ export function showBtn(btnName) {
 export function hideAllButtons() {
     const play_btns = document.querySelectorAll('.game-button');
     play_btns.forEach(button => {
-        button.classList.add('visually-hidden');
+        button.classList.add('hidden');
     });
 }
 

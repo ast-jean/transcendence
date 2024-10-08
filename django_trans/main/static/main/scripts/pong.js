@@ -223,7 +223,6 @@ function joinTournament(tournamentId) {
         console.error("WebSocket n'est pas prêt.");
         alert("Connexion WebSocket non établie.");
     }
-    showBtn('start_btn');
 }
 
 const tournamentOptions = document.getElementById('tournamentOptions');
@@ -305,8 +304,8 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
-    displayPlayersInScene(players, scene);  // Appelle la fonction pour afficher les joueurs
-    console.log("La partie a commencé, joueurs ajoutés à la scène");
+    sendCmd("startGame", room_id);
+    console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
 
 document.getElementById('return_btn_1').addEventListener('click', () => {

@@ -66,7 +66,10 @@ export function initializePlayers(scene, useAI, isOnline ) {
     removeAllPlayers(scene);  // Retire tous les joueurs existants
 
     // Ajoute le premier joueur
-    addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    if (localPlayerId)
+        addPlayerToGame(localPlayerId, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    else
+        addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene);
     if (!isOnline)
     {
         if (useAI) {
