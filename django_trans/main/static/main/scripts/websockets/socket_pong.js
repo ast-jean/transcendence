@@ -50,11 +50,6 @@ export function setupWebSocket() {
             console.error('WebSocket error:', error);
             reject(error);
         };
-
-        function changeRoomIdElement(roomId) {
-            document.getElementById("roomId").textContent = "Room:" + roomId;
-        }
-
         
         
         socketState.socket.onmessage = function(event) {
@@ -82,7 +77,6 @@ export function setupWebSocket() {
             }
             if (data.cmd === "joinRoom") {
                 console.log("joined room" + data.roomId);
-                changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
                 checkIfHost(data.host);
                 addChat("Server", "Room id = "+ room_id)

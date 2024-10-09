@@ -105,10 +105,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.block_list = set()
         GameConsumer.connected_clients.append(self)
         print(f"Client {self.ident} has connected.")
-                # Renvoie l'ID du joueur au client
+        # Renvoie l'ID du joueur au client
         response = {
             "cmd": "playerId",
-            "playerId": self.ident  # Supposons que self.ident contient l'ID du joueur
+            "playerId": self.ident
         }
         await self.accept()
         await self.send(text_data=json.dumps(response))
@@ -642,7 +642,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "playerIn": new_room.playerIn,
                 "playerTotal": new_room.playerTotal,
                 "clientId": 0,
-                "host": True
+                "host": new_room.host_ident
             }
             await self.send(json.dumps(data))
         except Exception as e:
