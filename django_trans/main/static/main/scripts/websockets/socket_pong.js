@@ -1,16 +1,17 @@
 import * as THREE from 'three';
-import { addPlayerToGame, players } from '../utils/setter.js';
-import { connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, removeMeshFromScene } from '../utils/utils.js';
+import { addPlayerToGame, localPlayerId, players, setID } from '../utils/setter.js';
+import { checkIfHost, connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, isPositionValid, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { addChat, addChatProfile } from '../ui/chat.js'
 import { startGame_online } from '../pong.js';
-import { hideBtn, showBtn } from '../ui/ui_updates.js';
+import { hideAllButtons, hideBtn, showBtn } from '../ui/ui_updates.js';
 import { tournament, setTournament } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
 import { scene } from '../pong.js';
+import { displayPlayersInScene } from '../gameplay/add_scene.js';
 
 export var room_id;
 
@@ -30,7 +31,6 @@ export function setupWebSocket() {
         socketState.socket.onopen = function () {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
-            sendCmd(null, null);
             addChat("Server:", "You are connected", 'success')
             document.getElementById('chat-btn').disabled = false;
             document.getElementById('chat-input').disabled = false;
@@ -50,22 +50,35 @@ export function setupWebSocket() {
             console.error('WebSocket error:', error);
             reject(error);
         };
-
-        function changeRoomIdElement(roomId) {
-            document.getElementById("roomId").textContent = "Room:" + roomId;
-        }
-
-        socketState.socket.onmessage = function (event) {
+        
+        
+        socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
-
+    
+            if (data.cmd === "tournamentWinner") {
+                console.log(`Le gagnant du tournoi est : ${data.winnerId}`);
+                alert(`Le gagnant du tournoi est : ${data.winnerId}`);
+            }
+            if (data.cmd === "startGame") {
+                hideAllButtons();
+                displayPlayersInScene(players, scene);  // Affiche tous les joueurs dans la scène
+                console.log("La partie a commencé pour tous les joueurs");
+            }
+            if (data.cmd === 'playerId') {
+                console.log("Player ID reçu du serveur:", data.playerId);
+                
+                // Sauvegarde l'ID du joueur dans la variable globale
+                setID(data.playerId);
+                console.log("ID du joueur local sauvegardé:", localPlayerId);
+            }
             if (data.cmd === "roomNotFound") {
                 addChat('Server:', "Room not found", "danger");
                 showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
                 console.log("joined room" + data.roomId);
-                changeRoomIdElement(data.roomId);
                 room_id = data.roomId;
+                checkIfHost(data.host);
                 addChat("Server", "Room id = " + room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
@@ -81,9 +94,6 @@ export function setupWebSocket() {
             }
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
-            } else if (data.cmd === "startMatch") {
-                //tournament.createMatches();
-                console.log("Début des matchs");
             } else if (data.cmd === "reportMatchResult") {
                 tournament.reportMatchResult(data.matchId, data.winner);
             }
@@ -104,6 +114,7 @@ export function setupWebSocket() {
                 //receiving error if bad command
             }
             if (data.cmd === "move") {
+                console.log(data.ident, "before move");
                 receiveMove(data.ident, data.movementData);
             }
             if (data.cmd === "sync") {
@@ -149,9 +160,10 @@ export function setupWebSocket() {
                 // Pour chaque joueur dans la room, les ajouter à la scène et au tableau global players
                 data.players.forEach(playerId => {
                     // Vérifie si le joueur est déjà dans la liste (évite les doublons)
-                    if (!players.find(p => p.id === playerId)) {
+                    if (!players.find(p => p.ident === playerId)) {
                         // Ajoute le joueur à la scène avec une position spécifique
                         // On suppose que tu veux que les joueurs soient placés sur les murs (par exemple, vertical/horizontal)
+                        checkIfHost(data.host);
                         const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
                         const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
 
@@ -257,7 +269,7 @@ export function receiveConnect(id) {
     console.log(`Player connected with id: ${id}`);
 
     // Vérifier si le joueur existe déjà
-    if (!players.find(p => p.id === id)) {
+    if (!players.find(p => p.ident === id)) {
         // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
         if (players.length == 0) {
             players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
@@ -274,6 +286,7 @@ export function receiveConnect(id) {
     // Envoyer la synchronisation du nouveau joueur
     sendSync();
 }
+
 
 
 
@@ -298,17 +311,18 @@ export function receiveConnect(id) {
 //    sendSync();
 //}
 
-export function receiveMove(id, movementData) {
-    // console.log(`receiveMove called with id: ${id}, movementData: ${JSON.stringify(movementData)}`); #debug
-    const player = players.find(p => p.ident === id);
+// Fonction qui reçoit la nouvelle position du joueur
+function receiveMove(playerId, newPosition) {
+    const player = players.find(p => p.ident === playerId);
     if (player) {
-        if (movementData.x) player.mesh.position.x += movementData.x;
-        if (movementData.y) player.mesh.position.y += movementData.y;
-        //updatePlayerVisualization();
-    } else {
-        console.error(`Player with id ${id} not found in receiveMove`);
+        // Mettre à jour directement la position du joueur
+        player.mesh.position.x = newPosition.newX;
+        player.mesh.position.y = newPosition.newY;
+        console.log(`Joueur ${playerId} déplacé à la nouvelle position (${newPosition.x}, ${newPosition.y})`);
     }
 }
+
+
 
 export function sendSync() {
     if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {

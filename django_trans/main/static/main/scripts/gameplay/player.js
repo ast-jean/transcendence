@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, scene } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId } from '../utils/setter.js';
 import { sphere } from './ball.js';
 
 export let keyState = {};
@@ -66,7 +66,10 @@ export function initializePlayers(scene, useAI, isOnline ) {
     removeAllPlayers(scene);  // Retire tous les joueurs existants
 
     // Ajoute le premier joueur
-    addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    if (localPlayerId)
+        addPlayerToGame(localPlayerId, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
+    else
+        addPlayerToGame(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene);
     if (!isOnline)
     {
         if (useAI) {
@@ -167,58 +170,50 @@ export function movePlayer4(delta) {
 
 
 
- //Fonction pour déplacer les joueurs
+// Fonction pour déplacer les joueurs
 export function movePlayer(delta, scene) {
-
-    if (isFourPlayerMode){
-        movePlayer4(delta);
-        return ;
-    }
     const speed = 20;
-    let x1 = 0, x2 = 0;
+    let movement = { x: 0, y: 0 };
 
-    if (players[0]) {        
-        if (keyState['ArrowLeft']) x1 -= speed * delta;
-        if (keyState['ArrowRight']) x1 += speed * delta;
+    // Identifie le joueur localement connecté (assume que playerId est l'ID local du joueur)
+    const localPlayer = players.find(p => p.ident === localPlayerId);
 
-        if (local_game) {
-            if (keyState['KeyA']) x2 -= speed * delta;
-            if (keyState['KeyD']) x2 += speed * delta;
+    if (!localPlayer) {
+        //console.error("Joueur local non trouvé");
+        return;
+    }
+
+    // Gestion des mouvements avec les touches
+    if (keyState['ArrowLeft']) movement.x -= speed * delta;
+    if (keyState['ArrowRight']) movement.x += speed * delta;
+
+    // Mise à jour de la position du joueur local
+    if (movement.x !== 0 || movement.y !== 0) {
+        const newX = localPlayer.mesh.position.x + movement.x;
+        const newY = localPlayer.mesh.position.y + movement.y;
+
+        // Validation des limites de déplacement (par exemple, les murs)
+        if (newX - localPlayer.mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
+            newX + localPlayer.mesh.geometry.parameters.width / 2 <= wallLength / 2) {
+            localPlayer.mesh.position.x = newX;
         }
 
-        // Mise à jour de la position du joueur 1
-        if (x1 !== 0) {
-            let newX = players[0].mesh.position.x + x1;
-            if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-                newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-                players[0].mesh.position.x = newX;
-                // Envoi des données de mouvement en ligne
-                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                    let cmd = "move";
-                    const movementData = { x: x1, y: 0 };
-                    let roomId = getRoomId();
-                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-                }
-            }
-        }
-
-        // Mise à jour de la position du joueur 2
-        if (x2 !== 0) {
-            let newX = players[1].mesh.position.x + x2;
-            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-                newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-                players[1].mesh.position.x = newX;
-                // Envoi des données de mouvement en ligne
-                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-                    let cmd = "move";
-                    const movementData = { x: x2 * -1, y: 0 };
-                    let roomId = getRoomId();
-                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-                }
-            }
+        // Envoi des données de mouvement en ligne si le jeu est en ligne
+        if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+            let cmd = "move";
+            const movementData = {
+                playerId: localPlayer.id,
+                x: movement.x,
+                y: movement.y,
+                newX: newX,
+                newY: newY
+            };
+            let roomId = getRoomId();
+            socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
         }
     }
 }
+
 
 // Met à jour l'affichage des joueurs
 export function updatePlayerVisualization(scene) {
