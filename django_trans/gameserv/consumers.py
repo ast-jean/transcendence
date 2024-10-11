@@ -93,7 +93,6 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         for room in self.rooms:
             if str(room.roomId) == str(room_id):
-                print(f"Room trouvée: {room.roomId}")
                 return room
         print("Room non trouvée")
         return None
@@ -656,7 +655,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             else:
                 new_client = Client(self.ident, found_room.playerIn, self, data['name'])
                 found_room.add_client(new_client)
-                
                 # Envoyer les informations des joueurs existants au nouveau joueur
                 existing_players = [{"ident": client.ident, "index": client.index, 'name':client.name} for client in found_room.clients if client.ident != self.ident]
                 await self.send(text_data=json.dumps({
@@ -669,7 +667,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "roomId": found_room.roomId,
                         "playerIn": found_room.playerIn,
                         "playerTotal": found_room.playerTotal,
-                        "host": False
+                        "host":  found_room.host_ident
                     }
                 else:
                     data = {
@@ -678,6 +676,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "playerIn": found_room.playerIn,
                         "playerTotal": found_room.playerTotal,
                         'clientId': new_client.index,
+                        "host" : found_room.host_ident
                     }
                     
                 await self.send(json.dumps(data))

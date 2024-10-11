@@ -14,6 +14,7 @@ import { scene } from '../pong.js';
 import { displayPlayersInScene } from '../gameplay/add_scene.js';
 
 export var room_id;
+export var host_ident;
 
 export const socketState = {
     socket: null,
@@ -31,6 +32,7 @@ export function setupWebSocket() {
         socketState.socket.onopen = function() {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
+            sendCmd(null,null);
             addChat("Server:", "You are connected", 'success')
             document.getElementById('chat-btn').disabled = false;
             document.getElementById('chat-input').disabled = false;
@@ -76,19 +78,21 @@ export function setupWebSocket() {
                 showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
+                console.log(data);
                 console.log("joined room" + data.roomId);
                 room_id = data.roomId;
+                host_ident = data.host; 
                 checkIfHost(data.host);
                 addChat("Server", "Room id = "+ room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
-                addChat("Server", "Player connected")
+                addChat("Server", "Player connected");
                 data.players.forEach(player => {
                     if (!players.find(p => p.id === player.ident)) {
-                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
+                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00);
                         console.log("Existing player added: ", player.ident);    
-                        addChat("->", player.name)
+                        addChat("->", player.name);
                     }
                     });
             }
@@ -345,6 +349,7 @@ export function checkAllPlayersConnected(maxPlayers) {
         let timeElapse = document.getElementById('timeElapse');
         let startTime = Date.now();
         showBtn('playerCount');
+        hideBtn('startGameButton');
         const checkInterval = setInterval(() => {
             // Calculate elapsed time
             let elapsedTime = Date.now() - startTime;
@@ -369,7 +374,9 @@ export function checkAllPlayersConnected(maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
                 hideBtn('playerCount');
-                startGame_online();
+                // startGame_online();
+                showBtn('startGameButton');
+                wait_startmatch();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms
@@ -381,6 +388,21 @@ export function checkAllPlayersConnected(maxPlayers) {
             addChat('Server','Connection Timeout for players','danger');
             hideBtn('playerCount');
         }, 600000); // Délai d'attente de secondes
+    });
+}
+
+export function wait_startmatch() {
+    return new Promise((resolve, reject) => {
+        showBtn('joined');
+        hideBtn('joining');
+        showBtn('playerCount');
+        showBtn
+        checkIfHost(host_ident);
+
+        const timeout = setTimeout(() => {
+            reject(new Error('Timeout: No startMatch message received within the expected time.'));
+        }, 2400000); 
+
     });
 }
 

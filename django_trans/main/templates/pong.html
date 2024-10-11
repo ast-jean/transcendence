@@ -115,7 +115,32 @@
 							<button id="startGameButton" class="btn btn-secondary game-button">Start Game</button>
 						</div>
 						<div id="playerCount" class="visually-hidden strokeme">
-						 <p> Waiting for players: <div id="playerIn">0/0</div> : [<div id="timeElapse">0</div>]</p>	
+							<div id="joining" class="row d-flex">
+								<div class='col'>
+									<div class="d-inline">
+										Waiting for players: 
+									</div>
+										<div id="playerIn" class="d-inline">0/0</div>
+										<div class="d-inline">
+											: [
+										</div>
+										<div id="timeElapse" class="d-inline">0</div>
+										<div class="d-inline">
+											.
+											]
+										</div>
+									</div>
+							</div>
+							<div id="joined" class="visually-hidden row">
+
+								<div class="col-12">
+									<br>
+									<br>
+									Waiting for host to start game...
+								<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>
+
+								</div>
+							</div>
 						</div>
 					</div>
 					<div id="gameCont" class="three-js-canvas"></div> <!-- d-flex justify-content-center align-items-center -->	

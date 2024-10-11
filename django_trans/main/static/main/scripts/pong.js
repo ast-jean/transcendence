@@ -39,7 +39,6 @@ container.appendChild(renderer.domElement);
 setupWalls(scene);
 setWallColor(808080);
 
-
 // Contrôles de caméra
 export const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(0, -15, 10);  // Position initiale de la caméra
@@ -79,7 +78,6 @@ export function startGame_online() {
 }
 
 async function playOnline(maxPlayers) {
-
     // Si le WebSocket est prêt, continuer avec la création de la room
     if (socketState.isSocketReady) {
         console.log(`Création de la room pour ${maxPlayers} joueurs.`);
@@ -116,8 +114,6 @@ async function playOnline(maxPlayers) {
         console.error("Le WebSocket n'est pas prêt.");
     }
 }
-
-
 
 export function initTournament(tournamentId, maxPlayers) {
     tournament = new Tournament(tournamentId, maxPlayers);
@@ -304,6 +300,7 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
+    hideBtn('playerCount');
     sendCmd("startGame", room_id);
     console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
