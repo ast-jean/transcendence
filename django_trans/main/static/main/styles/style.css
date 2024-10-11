@@ -15,6 +15,17 @@ body {
     font-size: 2rem;
 }
 
+.strokemeP1 {
+    color: white;
+    text-shadow: green;
+}
+
+.strokemeP2 {
+    color: white;
+    text-shadow: blue;
+
+}
+
 .strokeme {
     color: white;
     /* text-shadow:
@@ -83,6 +94,7 @@ body {
 }
 
 .pongScoreP1 {
+
     color: white;
     /* background-color: #3b3b3b; */
     /* make it team color*/
@@ -91,6 +103,7 @@ body {
 }
 
 .pongScoreP2 {
+
     color: white;
     /* background-color: #3b3b3b; */
     transform: translate(100%, 0%);

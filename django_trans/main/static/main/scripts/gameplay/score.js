@@ -34,8 +34,10 @@ const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
 export function updateScoreDisplay() {
-    player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-    player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+    player1ScoreElement.innerHTML = player1Score;
+    player2ScoreElement.innerHTML = player2Score;
+    // player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
+    // player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
 }
 
 export function checkEndGame() {
@@ -78,12 +80,13 @@ export function endGame() {
 }
 
 function getScoreHTML(score, symbol, maxScore) {
-    let scoreHTML = '';
+    let num = '0'
+    let scoreHTML = num;
     for (let i = 0; i < score; i++) {
         scoreHTML += symbol;
     }
     for (let i = score; i < maxScore; i++) {
-        scoreHTML += '⚪';
+        scoreHTML = num;
     }
     return scoreHTML;
 }

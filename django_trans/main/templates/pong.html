@@ -37,21 +37,22 @@
 		<div class="row">
 			<div class="col">
 				<div class="gamediv">
-					<button id="menu-btn" class="col d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger visually-hidden">Exit</button>
+					<button id="menu-btn" class="d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger visually-hidden">Exit</button>
 					<div id="scoreboard " class="pongScoreboard" >
+                        <div>
+							    <div class="pongScoreP1 ">Player 1: </div>
+							    <div id="player1Score" class="strokemeP1 pongScoreP1"></div>
+						</div>
+                        <div>
+							<div class="pongScoreP2">Player 2: </div>
+							<div id="player2Score" class="strokemeP2 pongScoreP2"></div>
+						</div>
+                        
 					<!-- class="flex-container position-absolute top-0 start-25 translate-middle"  -->
 						<!-- roomIdDiv for debug? -->
 						<!-- <div id="roomIdDiv">
 							<p id="roomId" class="text-white bg-dark">Room: </p>
 						</div> -->
-						<div>
-							<div class="pongScoreP1">Player 1:</div>
-							<div id="player1Score" class="pongScoreP1"></div>
-						</div>
-						<div>
-							<div class="pongScoreP2">Player 2:</div>
-							<div id="player2Score" class="pongScoreP2"></div>
-						</div>
 					</div>
 					<div class="ui-btns">
 						<div id="play_btns" class="col d-flex flex-column hud "> <!-- unnecessary arguments:start-50 translate-middle mx-1 position-absolute  start-60/////text-center align-items-center align-self-center -->
