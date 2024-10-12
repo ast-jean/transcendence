@@ -67,7 +67,6 @@ function setupWebSocket() {
         }
         if (data.cmd === "connect") {
             receiveConnect(data.ident);
-            console.log("in connect functions");
         }
         if (data.cmd === "disconnect") {
             removePlayer(data.ident);

@@ -300,7 +300,6 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
-    hideBtn('playerCount');
     sendCmd("startGame", room_id);
     console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });

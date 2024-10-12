@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { addPlayerToGame, localPlayerId, players, setID } from '../utils/setter.js';
 import { checkIfHost, connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, isPositionValid, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
-import { setBallSpeedX, setBallSpeedY, removePlayer } from '../utils/setter.js';
+import { setBallSpeedX, setBallSpeedY, removePlayer, removeAllPlayers } from '../utils/setter.js';
 import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { addChat, addChatProfile } from '../ui/chat.js'
 import { startGame_online } from '../pong.js';
 import { hideAllButtons, hideBtn, showBtn } from '../ui/ui_updates.js';
-import { tournament, setTournament } from '../utils/setter.js';
+import { tournament, setTournament,  } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
 import { scene } from '../pong.js';
 import { displayPlayersInScene } from '../gameplay/add_scene.js';
@@ -74,6 +74,7 @@ export function setupWebSocket() {
                 console.log("ID du joueur local sauvegardé:", localPlayerId);
             }
             if (data.cmd === "roomNotFound") {
+                console.log("Room not Found with error:" + data.error);
                 addChat('Server:', "Room not found","danger");
                 showBtn('layer2Btns_online');
             }
@@ -88,13 +89,7 @@ export function setupWebSocket() {
             }
             if (data.cmd === "existingPlayers") {
                 addChat("Server", "Player connected");
-                data.players.forEach(player => {
-                    if (!players.find(p => p.id === player.ident)) {
-                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00);
-                        console.log("Existing player added: ", player.ident);    
-                        addChat("->", player.name);
-                    }
-                    });
+                receiveExistingPlayers(data);
             }
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
@@ -129,11 +124,13 @@ export function setupWebSocket() {
             }
             if (data.cmd === "connect") {
                 receiveConnect(data.ident);
-                addChat(data.name, " has joined")
+                addChat(data.name, " has joined");
             }
             if (data.cmd === "disconnect") {
-                addChat(data.name, " has disconnected")
+                addChat("Server:", "The other player has disconnected", 'danger');
                 removePlayer(data.ident);
+                new Promise(resolve => setTimeout(resolve, 5000)); //wait 5 sec
+                location.reload();  
             }
 
             if (data.cmd === "joinLobby") {
@@ -142,7 +139,6 @@ export function setupWebSocket() {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
-                
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {
@@ -239,7 +235,6 @@ export function getName(){
     
 }
 
-
 export function sendCmd(cmd, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
         var name = getName();
@@ -269,31 +264,39 @@ export function receiveSync(id, movementData) {
     }
 }
 
-export function receiveConnect(id) {
-    console.log(`Player connected with id: ${id}`);
 
-    // Vérifier si le joueur existe déjà
-    if (!players.find(p => p.ident === id)) {
-        // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
-        if (players.length == 0) {
-            players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
-            console.log("new player 1 push");
-        } else {
-            // Pour les autres joueurs, calculer une nouvelle position et couleur
-            const newPosition = getNewPlayerPosition(players.length);
-            const newColor = getNewPlayerColor(players.length);
-            players.push(new Player(id, newPosition.x, newPosition.y, 0, newColor));  // Ajout des autres joueurs
-            console.log(`new player ${players.length + 1} push at position (${newPosition.x}, ${newPosition.y})`);
-        }
-    }
-
-    // Envoyer la synchronisation du nouveau joueur
-    sendSync();
+export function receiveExistingPlayers(data) {
+    console.log(data);
+    removeAllPlayers(scene);
+    data.data.players.forEach((player, index) => {
+        const newPosition = getNewPlayerPosition(index);
+        const newColor = getNewPlayerColor(index);
+        players.push(new Player(player.id, newPosition.x, newPosition.y, 0, newColor));
+        // console.log("Existing player added: ", player.ident);    
+        addChat("->", player.name);
+    });
 }
 
 
-
-
+export function receiveConnect(id) {
+    console.log(`Player connected with id: ${id}`);
+    // // Vérifier si le joueur existe déjà
+    // if (!players.find(p => p.ident === id)) {
+    //     // Si aucun joueur n'est dans la liste, c'est le premier joueur à se connecter
+    //     if (players.length == 0) {
+    //         players.push(new Player(id, 0, wallLength / 2 - 0.5, 0, 0x0000ff));  // Ajout du premier joueur
+    //         console.log("new player 1 push");
+    //     } else {
+    //         // Pour les autres joueurs, calculer une nouvelle position et couleur
+    //         const newPosition = getNewPlayerPosition(players.length);
+    //         const newColor = getNewPlayerColor(players.length);
+    //         players.push(new Player(id, newPosition.x, newPosition.y, 0, newColor));  // Ajout des autres joueurs
+    //         console.log(`new player ${players.length + 1} push at position (${newPosition.x}, ${newPosition.y})`);
+    //     }
+    // }
+    // Envoyer la synchronisation du nouveau joueur
+    // sendSync();
+}
 
 //export function receiveConnect(id) {
 //    console.log(`Player connected with id: ${id}`);
@@ -325,8 +328,6 @@ function receiveMove(playerId, newPosition) {
         console.log(`Joueur ${playerId} déplacé à la nouvelle position (${newPosition.x}, ${newPosition.y})`);
     }
 }
-
-
 
 export function sendSync() {
     if (players.length > 0 && players[0].mesh && socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
@@ -374,19 +375,19 @@ export function checkAllPlayersConnected(maxPlayers) {
                 clearInterval(checkInterval);
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
                 hideBtn('playerCount');
-                // startGame_online();
                 showBtn('startGameButton');
                 wait_startmatch();
                 resolve();
             }
         }, 500); // Vérifie toutes les 500 ms
 
-        // Optionnel : Définir un délai d'attente pour rejeter la promesse si cela prend trop de temps
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
             addChat('Server','Connection Timeout for players','danger');
             hideBtn('playerCount');
+            new Promise(resolve => setTimeout(resolve, 5000)); //wait 5 sec
+            location.reload();  
         }, 600000); // Délai d'attente de secondes
     });
 }
@@ -396,7 +397,6 @@ export function wait_startmatch() {
         showBtn('joined');
         hideBtn('joining');
         showBtn('playerCount');
-        showBtn
         checkIfHost(host_ident);
 
         const timeout = setTimeout(() => {
@@ -407,15 +407,11 @@ export function wait_startmatch() {
 }
 
 export function receiveBallSync(ballData) {
-
     let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let serverPos = new THREE.Vector2(ballData.x, ballData.y);
-    
     let smoothingFactor = 0.5;
     let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
-    
     sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
-    
     
     // Synchroniser les vitesses de la balle également
     setBallSpeedX(ballData.vx)

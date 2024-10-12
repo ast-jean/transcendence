@@ -116,7 +116,24 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"Client {self.ident} has disconnected.")
         await self.broadcast_disconnect({"ident": "user_%s" % self.ident, 'cmd' : "disconnect"})
         GameConsumer.connected_clients.remove(self)
+        #Delete empty rooms 
+        for room in self.rooms[:]:  # Create a shallow copy of the list to avoid modifying it while iterating
+            # Check if the room has any clients
+            if len(room.clients) == 0: 
+                print(f"Room {room['roomId']} is empty and will be removed.")
+                self.rooms.remove(room)
+            else:
+                # Check if the client name exists in the room's clients
+                for client in room.clients[:]:
+                    if client.name == self.name:
+                        print(f"Removing client {client.name} from room {room['roomId']}.")
+                        room.clients.remove(client)  # Remove the client from the room
 
+                # Optionally, remove the room if it becomes empty after removing the client
+                if len(room.clients) == 0:
+                    print(f"Room {room['roomId']} is now empty and will be removed.")
+                    self.rooms.remove(room)
+        
 
     async def create_tournament_lobby(self, name = "Default"):
         tournament_id = Room.generate_room_id(self.existing_room_ids)
@@ -580,7 +597,6 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def find_client_by_name(self, name):
         for client in self.connected_clients:
-            print(f"Client Name = >{client.name}< =? Name = >{name}<")
             if client.name == name:
                 return client
         return None
@@ -605,12 +621,13 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if client.ident != self.ident:
                     await client.websocket.send(json.dumps(data))
 
-    async def broadcast_connect(self, data):
-        room = await self.find_room(data['roomId'])
+    async def broadcast_existingPlayers(self, data):
+        #Send to every players in room
+        room_id = data.get('data', {}).get('roomId')
+        room = await self.find_room(room_id)
         if room is not None:
             for client in room.clients:
-                if client.ident != self.ident:
-                    await client.websocket.send(json.dumps(data))
+                await client.websocket.send(json.dumps(data))
 
     async def broadcast_disconnect(self, data):
         room = await self.find_room_by_client_ident(self.ident)
@@ -619,6 +636,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if client.ident != self.ident:
                     await client.websocket.send(json.dumps(data))
 
+    async def broadcast_connect(self, data):
+        room = await self.find_room(data['roomId'])
+        if room is not None:
+            for client in room.clients:
+                if client.ident != self.ident:
+                    await client.websocket.send(json.dumps(data))
 
 
     async def broadcast_ball_move(self, data):
@@ -649,18 +672,29 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def searchRoom(self, data):
         try:
-            found_room = await self.find_room(data['roomId'])
+            room_id = data['roomId']
+            found_room = await self.find_room(room_id)
             if found_room is None:
-                raise Exception(f"\033[31mRoom {data['roomId']} not found.\033[0m]")
+                print(f"Room not found: {room_id}")
+                raise Exception(f"\033[31mRoom {room_id} not found.\033[0m]")
             else:
                 new_client = Client(self.ident, found_room.playerIn, self, data['name'])
                 found_room.add_client(new_client)
-                # Envoyer les informations des joueurs existants au nouveau joueur
-                existing_players = [{"ident": client.ident, "index": client.index, 'name':client.name} for client in found_room.clients if client.ident != self.ident]
-                await self.send(text_data=json.dumps({
-                    "cmd": "existingPlayers",
-                    "players": existing_players
-                }))
+                existing_players = [
+                    {
+                        "ident": client.ident, 
+                        "index": client.index, 
+                        "name": client.name
+                    } 
+                    for client in found_room.clients
+                ]
+                data = {
+                    "players": existing_players,
+                    "roomId": found_room.roomId
+                }
+                await self.broadcast_existingPlayers({ "cmd": "existingPlayers", 'data': data})
+                await self.broadcast_connect({'ident': self.ident, 'cmd' : 'connect', 'roomId':found_room.roomId, 'name':self.name})
+                
                 if (found_room.isLobby):
                     data = {
                         "cmd": "joinLobby",
@@ -678,11 +712,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                         'clientId': new_client.index,
                         "host" : found_room.host_ident
                     }
-                    
                 await self.send(json.dumps(data))
-                await self.broadcast_connect({'ident': self.ident, 'cmd' : 'connect', 'roomId':found_room.roomId, 'name':self.name})
         except Exception as e:
-            await self.send(json.dumps({'cmd':'roomNotFound'}))
+            error_message = str(e) 
+            await self.send(json.dumps({'cmd':'roomNotFound', 'error':error_message}))
 
             
 
@@ -695,7 +728,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 #         {"username": "player2", "score": 5, "winner": False, "team": 2}
 #     ]
 # }
-    async def save_game_result(self, game_id, players_data):
+    async def save_game_result(self, players_data):
         from main.models import Game, Player  # Import moved inside the function
         from django.contrib.auth import get_user_model
         CustomUser = get_user_model()
@@ -709,7 +742,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 Player.objects.create(
                     user=user,
                     game=game,
-                    name=name,
+                    name=player_data['name'],
                     score=player_data['score'],
                     winner=player_data['winner'],
                     team=player_data['team']

@@ -128,7 +128,7 @@ export function connectPlayersInRoom(roomId, players) {
 
 
 export function getNewPlayerPosition(playerCount) {
-    // Exemple simple : Diviser les joueurs sur 4 côtés du mur en fonction de leur nombre
+    // Diviser les joueurs sur 4 côtés du mur en fonction de leur nombre
     const positions = [
         {x: 0, y: wallLength / 2 - 0.5},  // Position du joueur 1 (bas)
         {x: 0, y: -(wallLength / 2 - 0.5)}, // Position du joueur 2 (haut)
