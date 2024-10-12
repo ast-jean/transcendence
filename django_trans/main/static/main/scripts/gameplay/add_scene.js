@@ -18,6 +18,7 @@ export function displayPlayersInScene(players, scene) {
             console.log(`Joueur ${player.ident} déjà présent dans la scène`);
         }
     });
+    document.getElementById("scoreboard").classList.remove("visually-hidden");
     addBallToScene(scene);
     startCountdown();
 }

@@ -47,7 +47,7 @@ export function hideAllButtons() {
     hideBtn('playerCount');
     hideBtn('joined');
     play_btns.forEach(button => {
-        button.classList.add('hidden');
+        button.classList.add('visually-hidden');
     });
 }
 

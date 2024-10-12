@@ -29,7 +29,7 @@ export function setupWebSocket() {
         socketState.socket = new WebSocket(ws_path);
         console.log("Creating WebSocket:", socketState.socket);
 
-        socketState.socket.onopen = function() {
+        socketState.socket.onopen = function () {
             console.log('WebSocket connection established');
             socketState.isSocketReady = true;
             sendCmd(null,null);
@@ -39,7 +39,7 @@ export function setupWebSocket() {
             resolve();
         };
 
-        socketState.socket.onclose = function() {
+        socketState.socket.onclose = function () {
             console.log('WebSocket connection closed');
             socketState.isSocketReady = false;
             addChat("Server:", "you are offline", 'danger');
@@ -48,7 +48,7 @@ export function setupWebSocket() {
             reject(new Error('WebSocket connection closed'));
         };
 
-        socketState.socket.onerror = function(error) {
+        socketState.socket.onerror = function (error) {
             console.error('WebSocket error:', error);
             reject(error);
         };
@@ -74,8 +74,12 @@ export function setupWebSocket() {
                 console.log("ID du joueur local sauvegardé:", localPlayerId);
             }
             if (data.cmd === "roomNotFound") {
+<<<<<<< HEAD
                 console.log("Room not Found with error:" + data.error);
                 addChat('Server:', "Room not found","danger");
+=======
+                addChat('Server:', "Room not found", "danger");
+>>>>>>> main
                 showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
@@ -84,12 +88,23 @@ export function setupWebSocket() {
                 room_id = data.roomId;
                 host_ident = data.host; 
                 checkIfHost(data.host);
-                addChat("Server", "Room id = "+ room_id)
+                addChat("Server", "Room id = " + room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
+<<<<<<< HEAD
                 addChat("Server", "Player connected");
                 receiveExistingPlayers(data);
+=======
+                addChat("Server", "Player connected")
+                data.players.forEach(player => {
+                    if (!players.find(p => p.id === player.ident)) {
+                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
+                        console.log("Existing player added: ", player.ident);
+                        addChat("->", player.name)
+                    }
+                });
+>>>>>>> main
             }
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
@@ -135,10 +150,14 @@ export function setupWebSocket() {
 
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
-                if (data.host === true ){
+                if (data.host === true) {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {
@@ -148,7 +167,7 @@ export function setupWebSocket() {
                     console.log("Aucun joueur trouvé dans le lobby.");
                 }
             }
-            
+
             if (data.cmd === "updateLobbyPlayers") {
                 tournament.handleBackendUpdate(data);
             }
@@ -166,7 +185,7 @@ export function setupWebSocket() {
                         checkIfHost(data.host);
                         const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
                         const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
-                        
+
                         addPlayerToGame(playerId, playerPosition.x, playerPosition.y, playerPosition.z, 0x00ff00, scene, false, isVertical);
                         console.log(`Player ${playerId} ajouté à la scène à la position (${playerPosition.x}, ${playerPosition.y})`);
                         index++;
@@ -178,7 +197,7 @@ export function setupWebSocket() {
                 //connectPlayersInRoom(data.roomId, data.players);
             }
 
-        
+
             if (data.cmd === "joinTournament") {
                 if (data.success) {
                     console.log(`Rejoint avec succès le tournoi ID : ${data.tournamentId}`);
@@ -196,9 +215,9 @@ export function setupWebSocket() {
                 // console.log(`Connected Clients: ${data.connected_clients.length}`);
                 console.log(`TournamentIds: ${data.tournamentId}`)
                 // data.connected_clients.forEach((client, index) => {
-                    // console.log(`Client ${index + 1} - ID: ${client}`);
+                // console.log(`Client ${index + 1} - ID: ${client}`);
                 // });
-        
+
                 //console.log("%cRooms Info:", "color: #ff00ff; font-weight: bold;");
                 //data.rooms.forEach((room, index) => {
                 //    console.log(`Room ${index + 1} - Room ID: ${room.roomId}, Players: ${room.players.join(", ")}`);
@@ -220,19 +239,19 @@ export function disconnectWebSocket() {
     }
 }
 
-export function getName(){
-    var name; 
+export function getName() {
+    var name;
     try {
-        var nameElement = document.getElementById('name'); 
+        var nameElement = document.getElementById('name');
         name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
             name = 'Guest';
-    } 
+    }
     catch {
         name = "Guest";
     }
     return name;
-    
+
 }
 
 export function sendCmd(cmd, roomId) {
@@ -244,7 +263,7 @@ export function sendCmd(cmd, roomId) {
     }
 }
 
-export function getRoomId(){
+export function getRoomId() {
     return room_id;
 }
 
@@ -357,7 +376,7 @@ export function checkAllPlayersConnected(maxPlayers) {
             let totalSeconds = Math.floor(elapsedTime / 1000);
             let minutes = Math.floor(totalSeconds / 60);
             let seconds = totalSeconds % 60;
-            
+
             // Format time according to your requirements
             let formattedTime = '';
             if (minutes > 0) {
@@ -384,7 +403,7 @@ export function checkAllPlayersConnected(maxPlayers) {
         setTimeout(() => {
             clearInterval(checkInterval);
             reject(new Error('Timeout waiting for all players to connect'));
-            addChat('Server','Connection Timeout for players','danger');
+            addChat('Server', 'Connection Timeout for players', 'danger');
             hideBtn('playerCount');
             new Promise(resolve => setTimeout(resolve, 5000)); //wait 5 sec
             location.reload();  
@@ -409,10 +428,20 @@ export function wait_startmatch() {
 export function receiveBallSync(ballData) {
     let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let serverPos = new THREE.Vector2(ballData.x, ballData.y);
+<<<<<<< HEAD
     let smoothingFactor = 0.5;
     let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
     sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
     
+=======
+
+    let smoothingFactor = 0.5;
+    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
+
+    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
+
+
+>>>>>>> main
     // Synchroniser les vitesses de la balle également
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)

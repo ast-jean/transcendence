@@ -37,6 +37,23 @@
 		<div class="row">
 			<div class="col">
 				<div class="gamediv">
+					<button id="menu-btn" class="d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger visually-hidden">Exit</button>
+					<div id="scoreboard " class="pongScoreboard" >
+                        <div>
+							    <div class="pongScoreP1 ">Player 1: </div>
+							    <div id="player1Score" class="strokemeP1 pongScoreP1"></div>
+						</div>
+                        <div>
+							<div class="pongScoreP2">Player 2: </div>
+							<div id="player2Score" class="strokemeP2 pongScoreP2"></div>
+						</div>
+                        
+					<!-- class="flex-container position-absolute top-0 start-25 translate-middle"  -->
+						<!-- roomIdDiv for debug? -->
+						<!-- <div id="roomIdDiv">
+							<p id="roomId" class="text-white bg-dark">Room: </p>
+						</div> -->
+					</div>
 					<div class="ui-btns">
 						<div id="play_btns" class="col d-flex flex-column hud "> <!-- unnecessary arguments:start-50 translate-middle mx-1 position-absolute  start-60/////text-center align-items-center align-self-center -->
 							<div id="onlineplay_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient">
@@ -52,11 +69,17 @@
 								<br>
 								🤖
 							</div>
-							<button type="button" id="tournament_btn" class="row hud-btn game-button btn btn-primary" >
+							<button type="button" id="tournament_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient" >
 								<b  class="strokeme">Tournament</b><br>
 								<small  class="strokeme">(4 players)</small>
 							</button>
 						</div>
+						<!-- <button id="menu-btn" class="col d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger">Exit</button> -->
+						<!-- <div id="end-game-buttons" class="row hud-btn game-button" >
+							<button id="replay-btn" class="btn btn-danger">Replay</button>
+							<button id="menu-btn" class="btn btn-danger">Menu</button>
+							<p id="endGameMessage"></p>
+						</div> -->
 						<!---------------------------------------------- SECOND LAYERS-------------------------------------------------- -->
 						<div id="layer2Btns_online" class="col flex-column hud visually-hidden">
 							<h1 class="strokeme">ONLINE</h1>
@@ -99,15 +122,15 @@
 							<hr class="border border-info border-1">
 						<!-- Add tournament boutons -->
 						<div id="tournamentOptions" class="hidden"></div>
-						<button id="createTournamentBtn" class="btn-info " data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
-						<button id="joinTournamentBtn" class="btn-info ">Join</button>
-						<button id="startTournamentBtn">Début du tournoi</button>
+						<button id="createTournamentBtn" class="btn btn-outline-info strokeme hud-btn " data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
+						<button id="joinTournamentBtn" class="btn btn-outline-info strokeme hud-btn ">Join</button>
+						<button id="startTournamentBtn" class="btn btn-outline-info strokeme hud-btn ">Begin Tournament</button>
 						<div id="tournamentJoinForm" class="hidden">
 							<input type="text" id="tournamentIdInput" placeholder="Entrez l'ID du tournoi">
-							<button id="submitJoinTournament">Rejoindre</button>
+							<button id="submitJoinTournament">Join</button>
 						</div>
 							<hr class="border border-info border-1">
-							<div id="return_btn_3" class="row hud-btn game-button btn btn-info pt-2">
+							<div id="return_btn_3" class="row hud-btn game-button btn btn-outline-info pt-2">
 								<h2 class="strokeme">←</h2>
 							</div>
 						</div>
@@ -279,25 +302,8 @@
 				<!-- </div> -->
 
 				<div id="playersList"></div>
-                <!-- PREVIOUSLY LAYER2 FOR ONLINE -->
-				<div id="scoreboard flex-container">
-                    <div id="roomIdDiv">
-						<p id="roomId" class="text-white bg-dark">Room: </p>
-					</div>
-					<div>
-						<div>Player 1:</div>
-						<div id="player1Score"></div>
-					</div>
-					<div>
-						<div>Player 2:</div>
-						<div id="player2Score"></div>
-					</div>
-				</div>
-				<div id="end-game-buttons" class="game-button" style="display: none;">
-					<button id="replay-btn" class="btn btn-primary">Replay</button>
-					<button id="menu-btn" class="btn btn-secondary">Menu</button>
-					<p id="endGameMessage"></p>
-				</div>
+				
+				
 				<!-- <button id="randomize-colors-btn" class="play-button randomize-colors-btn">Randomize Colors</button> -->
 
 

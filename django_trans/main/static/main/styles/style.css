@@ -15,8 +15,18 @@ body {
     font-size: 2rem;
 }
 
-.strokeme
-{
+.strokemeP1 {
+    color: white;
+    text-shadow: green;
+}
+
+.strokemeP2 {
+    color: white;
+    text-shadow: blue;
+
+}
+
+.strokeme {
     color: white;
     /* text-shadow:
     -1px -1px 0 black,
@@ -66,9 +76,40 @@ body {
 }
 
 /* !!! Padding will need to be changed once game window is flexible!!! */
-#scoreboard {
+/* #scoreboard {
     padding-top: 45px;
     padding-left: 20px;
+} */
+
+.pongScoreboard {
+    display: flex;
+    position: absolute;
+    top: 5%;
+    left: 25%;
+    /* transform: translate(-50%, -50%); */
+    color: white;
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+    width: 1000px;
+}
+
+.pongScoreP1 {
+
+    color: white;
+    /* background-color: #3b3b3b; */
+    /* make it team color*/
+    text-align: center;
+    width: 125px;
+}
+
+.pongScoreP2 {
+
+    color: white;
+    /* background-color: #3b3b3b; */
+    transform: translate(100%, 0%);
+    /* make it team color*/
+    text-align: center;
+    width: 125px;
 }
 
 #boost-indicator {
@@ -482,18 +523,6 @@ body {
     font-size: 24px;
     font-family: Arial, sans-serif;
 }
-
-/* 
-#truckScoreMsg
-{
-	color: white;
-	background-color: #3b3b3b;
-	width: 100px;
-	text-align: center;
-	/* -webkit-text-stroke-width: 3px;
-	-webkit-text-stroke-color: black;
-	-ms-text-size-adjust: 25; 
-}*/
 
 #truckTeam1Score {
     color: white;
