@@ -74,12 +74,7 @@ export function setupWebSocket() {
                 console.log("ID du joueur local sauvegardé:", localPlayerId);
             }
             if (data.cmd === "roomNotFound") {
-<<<<<<< HEAD
-                console.log("Room not Found with error:" + data.error);
-                addChat('Server:', "Room not found","danger");
-=======
                 addChat('Server:', "Room not found", "danger");
->>>>>>> main
                 showBtn('layer2Btns_online');
             }
             if (data.cmd === "joinRoom") {
@@ -92,19 +87,8 @@ export function setupWebSocket() {
                 checkAllPlayersConnected(data.playerTotal);
             }
             if (data.cmd === "existingPlayers") {
-<<<<<<< HEAD
                 addChat("Server", "Player connected");
                 receiveExistingPlayers(data);
-=======
-                addChat("Server", "Player connected")
-                data.players.forEach(player => {
-                    if (!players.find(p => p.id === player.ident)) {
-                        addPlayerToGame(player.ident, 0, wallLength / 2 - 0.5, 0, 0x00ff00)
-                        console.log("Existing player added: ", player.ident);
-                        addChat("->", player.name)
-                    }
-                });
->>>>>>> main
             }
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
@@ -154,10 +138,6 @@ export function setupWebSocket() {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
-<<<<<<< HEAD
-=======
-
->>>>>>> main
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {
@@ -428,12 +408,6 @@ export function wait_startmatch() {
 export function receiveBallSync(ballData) {
     let currentPos = new THREE.Vector2(sphere.position.x, sphere.position.y);
     let serverPos = new THREE.Vector2(ballData.x, ballData.y);
-<<<<<<< HEAD
-    let smoothingFactor = 0.5;
-    let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
-    sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
-    
-=======
 
     let smoothingFactor = 0.5;
     let interpolatedPos = currentPos.lerp(serverPos, smoothingFactor);
@@ -441,7 +415,6 @@ export function receiveBallSync(ballData) {
     sphere.position.set(interpolatedPos.x, interpolatedPos.y, 0);
 
 
->>>>>>> main
     // Synchroniser les vitesses de la balle également
     setBallSpeedX(ballData.vx)
     setBallSpeedY(ballData.vy)
