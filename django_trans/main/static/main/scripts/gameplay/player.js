@@ -177,16 +177,16 @@ export function movePlayer(delta, scene) {
 
     // Identifie le joueur localement connecté (assume que playerId est l'ID local du joueur)
     const localPlayer = players.find(p => p.ident === localPlayerId);
-
-    if (!localPlayer) {
-        //console.error("Joueur local non trouvé");
-        return;
-    }
-
+    if (!localPlayer) { return; }
     // Gestion des mouvements avec les touches
-    if (keyState['ArrowLeft']) movement.x -= speed * delta;
-    if (keyState['ArrowRight']) movement.x += speed * delta;
-
+    if (keyState['ArrowLeft']) {
+        console.log('left pressed')
+        movement.x -= speed * delta;
+    }
+    if (keyState['ArrowRight']) {
+        console.log('right pressed')
+        movement.x += speed * delta;
+    }
     // Mise à jour de la position du joueur local
     if (movement.x !== 0 || movement.y !== 0) {
         const newX = localPlayer.mesh.position.x + movement.x;
@@ -228,13 +228,18 @@ export function resetPlayer() {
     // scene.add(local_player.mesh);
 }
 
-// Gestion des événements de touche
+// Event listener for keydown events
 document.addEventListener('keydown', function (e) {
-    keyState[e.code] = true; // Marque la touche comme enfoncée
+    keyState[e.code] = true; // Mark the key as pressed
+    // Prevent default behavior for Left and Right arrow keys
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+        e.preventDefault();
+    }
 });
 
+// Event listener for keyup events
 document.addEventListener('keyup', function (e) {
-    keyState[e.code] = false; // Marque la touche comme relâchée
+    keyState[e.code] = false; // Mark the key as released
 });
 
 export class AIPlayer extends Player {

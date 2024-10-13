@@ -288,15 +288,11 @@ document.getElementById('startTournamentBtn').addEventListener('click', () => {
     }
 });
 
-
-
-
 // Ajout d'événements pour les boutons
 document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
 document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
 document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
 // document.getElementById('localplay_4players_btn').addEventListener('click', localPlay4Players);
-
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');

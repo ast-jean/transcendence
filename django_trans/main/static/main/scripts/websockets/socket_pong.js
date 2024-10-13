@@ -12,6 +12,7 @@ import { tournament, setTournament,  } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
 import { scene } from '../pong.js';
 import { displayPlayersInScene } from '../gameplay/add_scene.js';
+import { setCameraPlayer2 } from '../ui/camera.js';
 
 export var room_id;
 export var host_ident;
@@ -112,7 +113,7 @@ export function setupWebSocket() {
                 //receiving error if bad command
             }
             if (data.cmd === "move") {
-                console.log(data.ident, "before move");
+                // console.log(data.ident, "before move");
                 receiveMove(data.ident, data.movementData);
             }
             if (data.cmd === "sync") {
@@ -270,7 +271,7 @@ export function receiveExistingPlayers(data) {
     data.data.players.forEach((player, index) => {
         const newPosition = getNewPlayerPosition(index);
         const newColor = getNewPlayerColor(index);
-        players.push(new Player(player.id, newPosition.x, newPosition.y, 0, newColor));
+        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor));
         // console.log("Existing player added: ", player.ident);    
         addChat("->", player.name);
     });
@@ -324,7 +325,7 @@ function receiveMove(playerId, newPosition) {
         // Mettre à jour directement la position du joueur
         player.mesh.position.x = newPosition.newX;
         player.mesh.position.y = newPosition.newY;
-        console.log(`Joueur ${playerId} déplacé à la nouvelle position (${newPosition.x}, ${newPosition.y})`);
+        // console.log(`Joueur ${playerId} déplacé à la nouvelle position (${newPosition.x}, ${newPosition.y})`);
     }
 }
 
@@ -375,6 +376,11 @@ export function checkAllPlayersConnected(maxPlayers) {
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
                 hideBtn('playerCount');
                 showBtn('startGameButton');
+                console.log("OUTSIDE");
+                if (!checkIfHost(host_ident)) {
+                    console.log("INSIDE");
+                    setCameraPlayer2();
+                }
                 wait_startmatch();
                 resolve();
             }
@@ -382,11 +388,11 @@ export function checkAllPlayersConnected(maxPlayers) {
 
         setTimeout(() => {
             clearInterval(checkInterval);
-            reject(new Error('Timeout waiting for all players to connect'));
             addChat('Server', 'Connection Timeout for players', 'danger');
             hideBtn('playerCount');
             new Promise(resolve => setTimeout(resolve, 5000)); //wait 5 sec
             location.reload();  
+            reject(new Error('Timeout waiting for all players to connect'));
         }, 600000); // Délai d'attente de secondes
     });
 }

@@ -623,6 +623,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_existingPlayers(self, data):
         #Send to every players in room
+        print(data)
         room_id = data.get('data', {}).get('roomId')
         room = await self.find_room(room_id)
         if room is not None:
