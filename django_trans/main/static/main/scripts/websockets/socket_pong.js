@@ -271,7 +271,7 @@ export function receiveExistingPlayers(data) {
     data.data.players.forEach((player, index) => {
         const newPosition = getNewPlayerPosition(index);
         const newColor = getNewPlayerColor(index);
-        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor));
+        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name));
         // console.log("Existing player added: ", player.ident);    
         addChat("->", player.name);
     });
@@ -376,9 +376,7 @@ export function checkAllPlayersConnected(maxPlayers) {
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
                 hideBtn('playerCount');
                 showBtn('startGameButton');
-                console.log("OUTSIDE");
                 if (!checkIfHost(host_ident)) {
-                    console.log("INSIDE");
                     setCameraPlayer2();
                 }
                 wait_startmatch();

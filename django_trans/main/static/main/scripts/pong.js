@@ -37,7 +37,7 @@ container.appendChild(renderer.domElement);
 
 // Configuration des murs
 setupWalls(scene);
-setWallColor(808080);
+setWallColor(0x808080);
 
 // Contrôles de caméra
 export const controls = new OrbitControls(camera, renderer.domElement);
@@ -365,6 +365,9 @@ document.getElementById('tournament_btn').addEventListener('click', () => {
     }
 });
 
+document.getElementById('menu-btn-quit').addEventListener('click', () => {
+    location.reload();
+});
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 

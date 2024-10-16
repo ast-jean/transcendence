@@ -1,6 +1,9 @@
-import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setBallSpeedX, setBallSpeedY, setGameOverState } from '../utils/setter.js';
+import { socketState, getRoomId, room_id, sendCmd } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
+import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
+import { sphere } from '../gameplay/ball.js';
+import { hideBtn, showBtn } from '../ui/ui_updates.js';
+import { checkIfHost } from '../utils/utils.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -23,9 +26,7 @@ export function updateScore(player) {
     if (socketState.socket && socketState.isSocketReady) {
         let cmd = "score";
         let roomId = getRoomId(); // Probablement undefined pour les tournois, à vérifier
-        console.log(roomId);
         let data = { cmd, team, roomId };
-        console.log("Envoi des données au serveur:", data);
         socketState.socket.send(JSON.stringify(data));
     }
 }
@@ -49,34 +50,20 @@ export function checkEndGame() {
 // Fonction pour mettre fin à la partie et afficher des options
 export function endGame() {
     // Déclare que le jeu est terminé
-    setGameOverState(true);
-
-    // Détermine le gagnant
-    const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
-
-    // Crée un message pour afficher le gagnant
-    addChat("Server:", `${winner} wins!`);
-
-    // Affiche les boutons de fin de jeu (rejouer ou retourner au menu)
-    const endGameButtons = document.getElementById('end-game-buttons');
-    endGameButtons.style.display = 'block';
-
-    // Bouton pour rejouer la partie
-    document.getElementById('replay-btn').addEventListener('click', () => {
-        document.getElementById('gameCont').removeChild(endGameMessage);
-        endGameButtons.style.display = 'none';
+    //Assure it is called once
+    if (isGameOver == false) {
+        setGameOverState(true);
+        // Détermine le gagnant
+        const winner = player1Score >= maxScore ? players[0].name : players[1].name;
+        // Crée un message pour afficher le gagnant
+        addChat("Server:", `${winner} wins!`);
+        showBtn('end-game-buttons');
+        hideBtn('scoreboard');
         resetGame();
-        // startCountdown();
-    });
-    // Bouton pour retourner au menu principal
-    document.getElementById('menu-btn').addEventListener('click', () => {
-        location.reload();
-        // document.getElementById('gameCont').removeChild(endGameMessage);
-        // endGameButtons.style.display = 'none';
-        // showAllButtons();
-        // resetGame();
-        // controls.enabled = false;
-    });
+        if(checkIfHost) {
+            sendCmd("saveGame", room_id);
+        }
+    }
 }
 
 function getScoreHTML(score, symbol, maxScore) {
@@ -92,14 +79,11 @@ function getScoreHTML(score, symbol, maxScore) {
 }
 
 export function resetGame() {
-    player1Score = 0;
-    player2Score = 0;
+    // player1Score = 0;
+    // player2Score = 0;
     setBallSpeedX(0);
     setBallSpeedY(0);
-    setGameOverState(true);
+    // setGameOverState(true);
     sphere.position.set(0, 0, 0);
-    players.forEach(player => {
-        player.mesh.position.set(0, player.ident === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
-    });
-    updateScoreDisplay();
+    // updateScoreDisplay();
 }

@@ -25,7 +25,8 @@ function pageLoaded() {
     const sendButton = document.getElementById('chat-btn');
     const chatInput = document.getElementById('chat-input');
 
-    addChat("FYI","Click play Online to connect to the server",'black')
+    addChat("FYI","Click play Online to connect to the server",'black');
+    addChat("FYI","Then use commands: /dm, /invite, /block, /profile",'black');
 
    if (sendButton !== null) {
        sendButton.addEventListener('click', () => {
