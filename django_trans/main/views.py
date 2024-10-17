@@ -22,6 +22,7 @@ TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 
 def token_saver(token):
 	request.session['oauth_token'] = token
+ 
 def home(request):
 	token = request.session.get('oauth_token')
 
@@ -173,7 +174,8 @@ def logout_view(request):
 
 
 def games_view(request):
-	games = Game.objects.all()  # Fetch all games and related players
+	games = Game.objects.all().order_by('-id')
+ # Fetch all games and related players
 	context = {
 		'games': games,
 	}
@@ -207,11 +209,19 @@ def profile(request):
 		# Handle other exceptions or errors
 		return HttpResponse(f'An error occurred: {e}')
 	user = request.user
-	games = Game.objects.filter(players__user=user).distinct()
+	# Check if the user is anonymous
+	if user.is_anonymous:
+		messages.error(request, "You need to be logged in to view profiles.")
+		return redirect('oauth_login')  # Redirect to login page
+	games = Game.objects.filter(players__user=user).distinct().order_by('-id')
 	return render(request, 'profile.html', {'user' : user , 'profile' : user.profile_data, 'games' : games})
 
 def userProfile(request, playername):
 	you = request.user
+	# Check if the user is anonymous
+	if you.is_anonymous:
+		messages.error(request, "You need to be logged in to view profiles.")
+		return redirect('oauth_login')  # Redirect to login page
 	them = get_object_or_404(CustomUser, username=playername)
 	theirgames = Game.objects.filter(players__user=them).distinct()
 	context =  {

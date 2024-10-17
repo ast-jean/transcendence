@@ -372,6 +372,18 @@ document.getElementById('menu-btn-quit').addEventListener('click', () => {
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
 
+export function deleteBall(sphere){
+    // Remove the sphere from the scene
+    scene.remove(sphere);
+
+    // Dispose of the sphere's geometry and material
+    sphere.geometry.dispose();
+    sphere.material.dispose();
+
+    // Optionally, set the sphere to null to ensure it is fully cleared from memory
+    sphere = null;
+}
+
 ///* Btns layer 1     Btns layer 2
 //
 //    [ ONLINE ]  --->   [ New 1v1 ]
