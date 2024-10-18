@@ -9,6 +9,7 @@ from requests_oauthlib import OAuth2Session
 from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
+from django.db.models import Count, Q
 from .models import CustomUser, Game
 import jwt
 from jwt.exceptions import ExpiredSignatureError
@@ -218,17 +219,30 @@ def profile(request):
 
 def userProfile(request, playername):
 	you = request.user
+
 	# Check if the user is anonymous
 	if you.is_anonymous:
 		messages.error(request, "You need to be logged in to view profiles.")
 		return redirect('oauth_login')  # Redirect to login page
-	them = get_object_or_404(CustomUser, username=playername)
+	# Retrieve the profile being viewed
+	them = get_object_or_404(
+		CustomUser.objects.annotate(
+			games_won_count=Count('player', filter=Q(player__winner=True))
+		),
+		username=playername
+	)
+	# Retrieve all games the user has participated in
 	theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
-	context =  {
-		'them' : them,
-		'user' : you,
-		'profile' : you.profile_data,
-		'theirprofile' : them.profile_data,
-		'games' : theirgames 
-  	}
+	# Calculate the number of games won by the user
+	gamesWon = them.games_won_count
+
+	context = {
+		'them': them,
+		'user': you,
+		'profile': you.profile_data,
+		'theirprofile': them.profile_data,
+		'games': theirgames,
+		'gamesWon': gamesWon,
+	}
+
 	return render(request, 'profile.html', context)
