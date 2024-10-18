@@ -223,11 +223,12 @@ def userProfile(request, playername):
 		messages.error(request, "You need to be logged in to view profiles.")
 		return redirect('oauth_login')  # Redirect to login page
 	them = get_object_or_404(CustomUser, username=playername)
-	theirgames = Game.objects.filter(players__user=them).distinct()
+	theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
 	context =  {
 		'them' : them,
 		'user' : you,
 		'profile' : you.profile_data,
 		'theirprofile' : them.profile_data,
-		'games' : theirgames }
+		'games' : theirgames 
+  	}
 	return render(request, 'profile.html', context)

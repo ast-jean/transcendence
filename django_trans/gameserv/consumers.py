@@ -390,7 +390,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.save_game(text_data_json["roomId"])
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
-                print('ScoreChange')
+                # print('ScoreChange')
                 # print(self.rooms)
                 if room is not None:
                     # print(f"Room trouvée avec host_ident: {room.host_ident}")

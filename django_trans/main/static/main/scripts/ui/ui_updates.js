@@ -38,6 +38,7 @@ export function showBtn(btnName) {
     var btns = document.getElementById(btnName);
     btns.classList.add('active');
     btns.classList.add('d-flex');
+    showBtn('scoreboard');
     btns.classList.remove('visually-hidden');
 }
 
