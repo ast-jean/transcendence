@@ -17,7 +17,7 @@
 		  <p class="profilecard-text"> Login: {{ theirprofile.login }}</p>
 		  <p class="profilecard-text"> Email: {{ theirprofile.email }}</p>
       {% if games %}
-          <p class="profilecard-text">Games won: {{ games|length }}</p>
+          <p class="profilecard-text">Games won: {{ gamesWon }} out of {{games|length}}</p>
       {% else %}
           <p class="profilecard-text">Games won: 0</p>
       {% endif %}
