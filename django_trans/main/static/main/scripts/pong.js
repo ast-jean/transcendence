@@ -37,7 +37,7 @@ container.appendChild(renderer.domElement);
 
 // Configuration des murs
 setupWalls(scene);
-setWallColor(808080);
+setWallColor(0x808080);
 
 // Contrôles de caméra
 export const controls = new OrbitControls(camera, renderer.domElement);
@@ -296,6 +296,7 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
+    showBtn('scoreboard');
     sendCmd("startGame", room_id);
     console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
@@ -365,9 +366,24 @@ document.getElementById('tournament_btn').addEventListener('click', () => {
     }
 });
 
+document.getElementById('menu-btn-quit').addEventListener('click', () => {
+    location.reload();
+});
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
+
+export function deleteBall(sphere){
+    // Remove the sphere from the scene
+    scene.remove(sphere);
+
+    // Dispose of the sphere's geometry and material
+    sphere.geometry.dispose();
+    sphere.material.dispose();
+
+    // Optionally, set the sphere to null to ensure it is fully cleared from memory
+    sphere = null;
+}
 
 ///* Btns layer 1     Btns layer 2
 //

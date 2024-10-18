@@ -8,11 +8,11 @@ import { sphere } from './ball.js';
 export let keyState = {};
 
 export class Player {
-    constructor(ident, x, y, z, color, isVertical) {
+    constructor(ident, x, y, z, color, isVertical, name = null) {
         this.ident = ident;
         this.lives = 3;
         this.isVertical = isVertical;
-
+        this.name = name;
         // Choisir la géométrie en fonction de l'orientation (vertical ou horizontal)
         const geometry = this.isVertical
             ? new THREE.BoxGeometry(0.5, 5, 0.5) // Vertical: hauteur plus grande
@@ -180,11 +180,9 @@ export function movePlayer(delta, scene) {
     if (!localPlayer) { return; }
     // Gestion des mouvements avec les touches
     if (keyState['ArrowLeft']) {
-        console.log('left pressed')
         movement.x -= speed * delta;
     }
     if (keyState['ArrowRight']) {
-        console.log('right pressed')
         movement.x += speed * delta;
     }
     // Mise à jour de la position du joueur local

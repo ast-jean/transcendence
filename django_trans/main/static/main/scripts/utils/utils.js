@@ -21,7 +21,7 @@ export function removeMeshFromScene(mesh, scene) {
 
 export function displayDebugInfo() {
     console.log("%c--- Debug Information ---", "color: #00ff00; font-weight: bold;");
-
+    console.log(players);
     // Afficher la liste des joueurs
     if (players && players.length > 0) {
         console.log("%cPlayers Connected:", "color: #00ffff; font-weight: bold;");
@@ -130,8 +130,8 @@ export function connectPlayersInRoom(roomId, players) {
 export function getNewPlayerPosition(playerCount) {
     // Diviser les joueurs sur 4 côtés du mur en fonction de leur nombre
     const positions = [
-        {x: 0, y: wallLength / 2 - 0.5},  // Position du joueur 1 (bas)
         {x: 0, y: -(wallLength / 2 - 0.5)}, // Position du joueur 2 (haut)
+        {x: 0, y: wallLength / 2 - 0.5},  // Position du joueur 1 (bas), 
         {x: -(wallLength / 2 - 0.5), y: 0}, // Position du joueur 3 (gauche)
         {x: wallLength / 2 - 0.5, y: 0},    // Position du joueur 4 (droite)
     ];
@@ -141,7 +141,7 @@ export function getNewPlayerPosition(playerCount) {
 
 export function getNewPlayerColor(playerCount) {
     // Exemple de couleurs pour chaque joueur
-    const colors = [0x0000ff, 0x00ffff, 0xff0000, 0x00ff00];
+    const colors = [0x0000ff, 0xff0000, 0xffff00, 0x00ff00];
     return colors[playerCount % colors.length];  // Retourne une couleur en fonction du nombre de joueurs
 }
 

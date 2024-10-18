@@ -38,7 +38,7 @@
 			<div class="col">
 				<div class="gamediv">
 					<button id="menu-btn" class="d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger visually-hidden">Exit</button>
-					<div id="scoreboard " class="pongScoreboard" >
+					<div id="scoreboard " class="pongScoreboard visually-hidden" >
                         <div>
 							    <div class="pongScoreP1 ">Player 1: </div>
 							    <div id="player1Score" class="strokemeP1 pongScoreP1"></div>
@@ -73,13 +73,9 @@
 								<b  class="strokeme">Tournament</b><br>
 								<small  class="strokeme">(4 players)</small>
 							</button>
+
 						</div>
-						<!-- <button id="menu-btn" class="col d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger">Exit</button> -->
-						<!-- <div id="end-game-buttons" class="row hud-btn game-button" >
-							<button id="replay-btn" class="btn btn-danger">Replay</button>
-							<button id="menu-btn" class="btn btn-danger">Menu</button>
-							<p id="endGameMessage"></p>
-						</div> -->
+
 						<!---------------------------------------------- SECOND LAYERS-------------------------------------------------- -->
 						<div id="layer2Btns_online" class="col flex-column hud visually-hidden">
 							<h1 class="strokeme">ONLINE</h1>
@@ -159,6 +155,12 @@
 									<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>
 								</div>
 							</div>
+						</div>
+						<div id="end-game-buttons" class="row visually-hidden" >
+							{% comment %} <button id="replay-btn" class="btn btn-danger">Replay</button> {% endcomment %}
+							<h1 id="endGameMessage" class="strokeme" >GAME OVER</h1>
+							<h2 id='winner' class="strokeme"></h2>
+							<button id="menu-btn-quit" class="btn btn-primary" style="width: 100px;">Menu</button>
 						</div>
 					</div>
 					<div id="gameCont" class="three-js-canvas"></div> <!-- d-flex justify-content-center align-items-center -->	
