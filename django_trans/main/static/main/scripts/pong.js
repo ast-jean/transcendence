@@ -7,7 +7,7 @@ import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -50,8 +50,11 @@ directionalLight.position.set(0, 20, 10);
 scene.add(directionalLight);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
 
+scene.add(ambientLight);
+document.addEventListener('DOMContentLoaded', function() {
+    hideBtn('loading');
+});
 
 function localPlay4Players() {
     console.log("Initialisation du mode Local Play à 4 joueurs");
@@ -65,16 +68,21 @@ function localPlay() {
     local_game = true;
     // hideAllButtons();
     initializePlayers(scene, false, false);
+    displayPlayersInScene(players, scene); 
 }
 
 // Démarrage du jeu contre l'IA
 function playAI() {
+    hideAllButtons();
+    setID(1);
+    local_game = true;
+    showBtn('scoreboard');
     initializePlayers(scene, true, false);  // true pour indiquer qu'on joue contre une IA
+    displayPlayersInScene(players, scene); 
 }
 
 export function startGame_online() {
     displayPlayersInScene(players, scene); 
-
 }
 
 async function playOnline(maxPlayers) {
@@ -297,7 +305,9 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
     showBtn('scoreboard');
-    sendCmd("startGame", room_id);
+    if (!local_game) {
+        sendCmd("startGame", room_id);
+    }
     console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
 

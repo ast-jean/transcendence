@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, scene } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId, setID } from '../utils/setter.js';
 import { sphere } from './ball.js';
 
 export let keyState = {};
@@ -73,11 +73,12 @@ export function initializePlayers(scene, useAI, isOnline ) {
     if (!isOnline)
     {
         if (useAI) {
+            console.log('PLAY AGAINST AI');
             // Ajoute un joueur IA
-            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true, "AI🤖"); // IA (rouge)
         } else {
             // Ajoute un deuxième joueur humain
-            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene, false, false, 'Player 2'); // Joueur 2 (bleu)
         }
     }
 }
@@ -229,10 +230,10 @@ export function resetPlayer() {
 // Event listener for keydown events
 document.addEventListener('keydown', function (e) {
     keyState[e.code] = true; // Mark the key as pressed
-    // Prevent default behavior for Left and Right arrow keys
     if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
     }
+    // Prevent default behavior for Left and Right arrow keys
 });
 
 // Event listener for keyup events
@@ -241,9 +242,9 @@ document.addEventListener('keyup', function (e) {
 });
 
 export class AIPlayer extends Player {
-    constructor(ident, x, y, z, color) {
+    constructor(ident, x, y, z, color, vertical, name) {
         console.log('AIPlayer is being initialized');
-        super(ident, x, y, z, color);
+        super(ident, x, y, z, color, vertical, name);
         this.targetX = 0;
         this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
     }

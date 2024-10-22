@@ -219,7 +219,6 @@ def profile(request):
 
 def userProfile(request, playername):
 	you = request.user
-
 	# Check if the user is anonymous
 	if you.is_anonymous:
 		messages.error(request, "You need to be logged in to view profiles.")
@@ -235,7 +234,6 @@ def userProfile(request, playername):
 	theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
 	# Calculate the number of games won by the user
 	gamesWon = them.games_won_count
-
 	context = {
 		'them': them,
 		'user': you,
@@ -244,5 +242,4 @@ def userProfile(request, playername):
 		'games': theirgames,
 		'gamesWon': gamesWon,
 	}
-
 	return render(request, 'profile.html', context)

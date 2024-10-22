@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { startCountdown } from '../ui/ui_updates.js';
+import { startCountdown, showBtn, hideBtn } from '../ui/ui_updates.js';
 import { addBallToScene } from './ball.js';
 
 
@@ -18,7 +18,9 @@ export function displayPlayersInScene(players, scene) {
             console.log(`Joueur ${player.ident} déjà présent dans la scène`);
         }
     });
-    document.getElementById("scoreboard").classList.remove("visually-hidden");
+    showBtn('scoreboard');
+    hideBtn('start_btn');
     addBallToScene(scene);
+    console.log(players);
     startCountdown();
 }

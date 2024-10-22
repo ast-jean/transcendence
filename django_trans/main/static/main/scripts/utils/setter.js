@@ -40,14 +40,14 @@ export function setGameOverState(state) {
 }
 
 // Ajoute un joueur dans le tableau global players et à la scène
-export function addPlayerToGame(id, x, y, z, color, scene, AI = false, isVertical = false) {
+export function addPlayerToGame(id, x, y, z, color, scene, AI = false, isVertical = false, name = null) {
     if (AI) {
         // Ajouter un joueur IA
-        const newAIPlayer = new AIPlayer(id, x, y, z, color);
+        const newAIPlayer = new AIPlayer(id, x, y, z, color, false, 'AI');
         players.push(newAIPlayer);
     } else {
         // Ajouter un joueur humain
-        const newPlayer = new Player(id, x, y, z, color);
+        const newPlayer = new Player(id, x, y, z, color, isVertical, name);
         players.push(newPlayer);
     }
 }
