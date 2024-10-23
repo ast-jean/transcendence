@@ -7,7 +7,7 @@ import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode, localPlayerId, setID } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID, setLocalMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -60,13 +60,16 @@ function localPlay4Players() {
     console.log("Initialisation du mode Local Play à 4 joueurs");
     initializePlayers4()
     setPlayerMode(true);
-
+    setLocalMode(true);
+    const scoreboard = document.getElementById('scoreboard');
+    scoreboard.innerHTML = "P1 : ❤️❤️❤️ | P2 : ❤️❤️❤️ | P3 : ❤️❤️❤️ | P4 : ❤️❤️❤️ |";
+    displayPlayersInScene(players, scene); 
 }
 
 // Démarrage du jeu local
 function localPlay() {
     local_game = true;
-    // hideAllButtons();
+    setLocalMode(true);
     initializePlayers(scene, false, false);
     displayPlayersInScene(players, scene); 
 }

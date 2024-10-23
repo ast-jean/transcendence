@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { delta } from "../pong.js";
+import { updateScoreDisplay, checkEndGame } from "./score.js";
 import { getBallSpeedX, getBallSpeedY, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
 import { players } from '../utils/setter.js';
 
@@ -53,6 +54,8 @@ export function handleWallCollision(walls, sphere, isFourPlayerMode) {
                     setBallSpeedX(getBallSpeedX() * -1);
                     sphere.position.x += getBallSpeedX() * delta * 2;
                 }
+                updateScoreDisplay();
+                checkEndGame();
             } else {
                 // Mode 2 joueurs : seuls les murs du haut et du bas comptent
                 if (wall.name === 'topWall') {
@@ -74,7 +77,7 @@ export function handleWallCollision(walls, sphere, isFourPlayerMode) {
 
 // Fonction pour gérer la perte de vie des joueurs
 function handlePlayerLifeLoss(playerId) {
-    let player = players.find(p => p.id === playerId);
+    let player = players.find(p => p.ident === playerId);
     if (player && player.lives > 0) {
         player.loseLife();
         console.log(`Player ${playerId} has ${player.lives} lives remaining.`);
