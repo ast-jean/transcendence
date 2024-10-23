@@ -157,12 +157,10 @@ export function isPositionValid(x, y) {
 // Fonction pour vérifier si l'utilisateur est l'hôte en comparant les ID
 export function checkIfHost(hostId) {
     if (localPlayerId === hostId) {
-        showBtn('start_btn');  // Affiche le bouton si l'ID local correspond à l'ID de l'hôte
-        console.log("Vous êtes l'hôte, bouton start visible.");
+        // console.log("Vous êtes l'hôte, bouton start visible.");
         return true;
     } else {
-        hideBtn('start_btn');  // Cache le bouton si l'ID local ne correspond pas à l'ID de l'hôte
-        console.log("Vous n'êtes pas l'hôte, bouton start caché.");
+        // console.log("Vous n'êtes pas l'hôte, bouton start caché.");
         return false;
     }
 }
