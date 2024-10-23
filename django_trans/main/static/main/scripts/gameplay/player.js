@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, scene } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId, setID } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId, setID, isLocalMode } from '../utils/setter.js';
 import { sphere } from './ball.js';
 
 export let keyState = {};
@@ -25,16 +25,17 @@ export class Player {
         this.mesh.position.set(x, y, z);
 
     }
-        loseLife() {
-            this.lives -= 1;
-            if (this.lives <= 0) {
-                this.mesh.material.color.setHex(0x808080);  // Change to grey when no more lives
-            }
+
+    loseLife() {
+        this.lives -= 1;
+        if (this.lives <= 0) {
+            this.mesh.material.color.setHex(0x808080);  // Change to grey when no more lives
         }
-    
-        isAlive() {
-            return this.lives > 0;
-        }
+    }
+
+    isAlive() {
+        return this.lives > 0;
+    }
 }
 
 // Fonction pour initialiser les joueurs sur leurs positions respectives avec le flag isVertical
@@ -43,16 +44,16 @@ export function initializePlayers4() {
     removeAllPlayers(scene);
 
     // Joueur 1 - Bas (horizontal)
-    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, false);
+    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, false, 'P1');
 
     // Joueur 2 - Haut (horizontal)
-    const player2 = new Player(2, 0, wallLength / 2 - 0.5 , 0, 0x0000ff, false);
+    const player2 = new Player(2, 0, wallLength / 2 - 0.5 , 0, 0x0000ff, false, 'P2');
 
     // Joueur 3 - Gauche (vertical)
-    const player3 = new Player(3, -wallLength / 2 + 0.5, 0, 0, 0xff0000, true);
+    const player3 = new Player(3, -wallLength / 2 + 0.5, 0, 0, 0xff0000, true, 'P3');
 
     // Joueur 4 - Droite (vertical)
-    const player4 = new Player(4, wallLength / 2 - 0.5, 0, 0, 0xffff00, true);
+    const player4 = new Player(4, wallLength / 2 - 0.5, 0, 0, 0xffff00, true, 'P4');
 
     // Ajouter les joueurs à la liste globale
     players.push(player1, player2, player3, player4);
@@ -173,6 +174,11 @@ export function movePlayer4(delta) {
 
 // Fonction pour déplacer les joueurs
 export function movePlayer(delta, scene) {
+    if (isLocalMode){
+        movePlayer4(delta);
+        return ;
+    }
+    
     const speed = 20;
     let movement = { x: 0, y: 0 };
 

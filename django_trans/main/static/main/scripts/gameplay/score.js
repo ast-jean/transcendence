@@ -1,10 +1,11 @@
 import { socketState, getRoomId, room_id, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players } from '../utils/setter.js';
+import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
 import { deleteBall, scene } from '../pong.js';
 import { sphere } from '../gameplay/ball.js';
 import { hideBtn, showBtn } from '../ui/ui_updates.js';
 import { checkIfHost } from '../utils/utils.js';
+import { walls } from './wall.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -36,28 +37,59 @@ const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
 export function updateScoreDisplay() {
-    player1ScoreElement.innerHTML = player1Score;
-    player2ScoreElement.innerHTML = player2Score;
-    // player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-    // player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
+    if (isFourPlayerMode) {
+        const scoreboard = document.getElementById('scoreboard');
+        scoreboard.innerHTML = '';
+        players.forEach((player) => {
+            let lifes = " ";
+            for (let i = 0; i < player.lives; i++) {
+                lifes += '❤️';
+            }
+            scoreboard.innerHTML += player.name + ' : ' + lifes + " | ";
+        });
+        return ;
+    } else {
+        player1ScoreElement.innerHTML = player1Score;
+        player2ScoreElement.innerHTML = player2Score;
+    }
 }
 
 export function checkEndGame() {
+    console.log('CHECKENDGAME');
+
+    if (isFourPlayerMode) {
+        // Check if one player still has lives and others don't
+        let remainingPlayers = players.filter(player => player.lives > 0);
+        console.log(remainingPlayers);
+        console.log(remainingPlayers.length);
+        if (remainingPlayers.length === 1) {
+            // Send the last remaining player to endGame
+            console.log("WINNER WINNER CHICKEN DINNER");
+            isGameOver == true;
+            endGame(remainingPlayers[0]);
+            return; // Stop further checks if game is over
+        }
+    }
     if (player1Score >= maxScore || player2Score >= maxScore) {
+        console.log('endGame');
         endGame();
     }
 }
 let once = false;
 // Fonction pour mettre fin à la partie et afficher des options
-export function endGame() {
+export function endGame(player=null) {
     // Déclare que le jeu est terminé
     //Assure it is called once
     if (isGameOver == false) {
         setGameOverState(true);
         hideBtn('scoreboard');
         // Détermine le gagnant
-
-        const winner = player1Score >= maxScore ? players[0].name : players[1].name;
+        let winner;
+        if (player) {
+            winner = player.name;
+        } else {
+            winner = player1Score >= maxScore ? players[0].name : players[1].name;
+        }
         document.getElementById('winner').innerText = winner + " won!";
 
         // Crée un message pour afficher le gagnant
@@ -65,7 +97,7 @@ export function endGame() {
         showBtn('end-game-buttons');
         hideBtn('scoreboard');
         deleteBall(sphere);
-        if(checkIfHost(host_ident) && !once) {
+        if(checkIfHost(host_ident) && !once && !isLocalMode) {
             once = true;
             console.log("Send saveGame")
             sendCmd("saveGame", room_id);
