@@ -64,7 +64,6 @@ export function checkEndGame() {
         console.log(remainingPlayers.length);
         if (remainingPlayers.length === 1) {
             // Send the last remaining player to endGame
-            console.log("WINNER WINNER CHICKEN DINNER");
             isGameOver == true;
             endGame(remainingPlayers[0]);
             return; // Stop further checks if game is over

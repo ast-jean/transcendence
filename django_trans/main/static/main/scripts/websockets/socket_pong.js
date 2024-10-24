@@ -139,6 +139,7 @@ export function setupWebSocket() {
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
                 if (data.host === true) {
+                    document.getElementById('tournamentRoomLabel').innerHTML = "Room #:" + data.tournamentId;
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
