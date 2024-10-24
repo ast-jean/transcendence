@@ -16,35 +16,42 @@
 		  </h5>
 		  <p class="profilecard-text"> Login: {{ theirprofile.login }}</p>
 		  <p class="profilecard-text"> Email: {{ theirprofile.email }}</p>
-		  <p class="profilecard-text"> Games won: 0</p>
+      {% if games %}
+          <p class="profilecard-text">Games won: {{ gamesWon }} out of {{games|length}}</p>
+      {% else %}
+          <p class="profilecard-text">Games won: 0</p>
+      {% endif %}
 		</div>
 	  </div>
 	</div>
   </div>
-  <hr style="text-align:left;margin-left:0;height:10px"> {{theirprofile}}
-{% if theirprofile.login %}
-  <img src="{{ theirprofile.image.versions.small }}" alt="{{ profile.login }}">
-{% else %}
-    <p>No profile data available.</p>
-{% endif %}
+  <hr style="text-align:left;margin-left:0;height:10px">
 
 <h2>Match Results</h2>
 {% if games %}
 <ul>
-{% for game in games %}
-    <li>
-        <strong>Game ID:</strong> {{ game.id }} <br>
-        <strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
-        <strong>Players:</strong>
-        <ul>
-            {% for player in game.players.all %}
-                <li>{{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}{% if player.winner %} (Winner){% endif %}</li>
-            {% endfor %}
-        </ul>
-    </li>
-{% endfor %}
+	{% for game in games %}
+        <li>
+			<div class="card col-md-6" >
+				<div class="matchcard-body">
+					<strong>Game ID:</strong> {{ game.id }} <br>
+            		<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+            		<strong>Players:</strong>
+            		<ul>
+                		{% for player in game.players.all %}
+                    <li>
+                        {{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}
+                        {% if player.winner %} Winner👑{% endif %}
+                    </li>
+                		{% endfor %}
+            		</ul>
+				</div>
+			</div>
+        </li>
+    {% endfor %}
 </ul>
 {% else %}
 <p>No games available.</p>
 {% endif %}
 {% endblock %}
+

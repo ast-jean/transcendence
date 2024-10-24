@@ -43,12 +43,13 @@ export function showBtn(btnName) {
 
 
 export function hideAllButtons() {
-    const play_btns = document.querySelectorAll('.game-button');
+    // const play_btns = document.querySelectorAll('.game-button');
     hideBtn('playerCount');
     hideBtn('joined');
-    play_btns.forEach(button => {
-        button.classList.add('visually-hidden');
-    });
+    hideBtn('play_btns');
+    // play_btns.forEach(button => {
+    //     button.classList.add('visually-hidden');
+    // });
 }
 
 export function showAllButtons() {

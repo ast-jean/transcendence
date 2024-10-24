@@ -32,6 +32,7 @@ class Room:
         self.host_ident = None  # Identifiant de l'hôte
         self.game_over = True
         self.isLobby = is_lobby
+        self.game_saved = False
 
     @staticmethod
     def generate_room_id(existing_room_ids):
@@ -42,6 +43,12 @@ class Room:
             room_id = random.randint(lower_bound, upper_bound)    
         existing_room_ids.append(room_id)
         return room_id
+
+    async def find_client_by_ident(self, ident):
+        for client in self.connected_clients:
+            if client.ident == ident:
+                return client
+        return None
 
     # async def create_tournament_lobby(self):
     #     print("Creating new tournament lobby")
@@ -126,9 +133,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 # Check if the client name exists in the room's clients
                 for client in room.clients[:]:
                     if client.name == self.name:
-                        print(f"Removing client {client.name} from room {room['roomId']}.")
                         room.clients.remove(client)  # Remove the client from the room
-
                 # Optionally, remove the room if it becomes empty after removing the client
                 if len(room.clients) == 0:
                     self.rooms.remove(room)
@@ -239,29 +244,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await client.websocket.send(json.dumps(data))
 
 
-#   async def join_lobby(self, tournament_id):
-#       """Ajoute un joueur au lobby d'un tournoi."""
-#       if tournament_id in self.tournaments:
-#           
-#           tournament = self.tournaments[tournament_id]
-#           new_client = Client(self.ident, len(tournament.players), self)
-#           tournament.add_player(new_client)
-#
-#           # Mise à jour du frontend
-#           data = {
-#               "cmd": "joinLobby",
-#               "tournamentId": new_room.roomId,
-#               "maxPlayers": 4,
-#               "playerIn": new_room.playerIn,
-#               "host": True,  # Marque ce client comme l'hôte
-#               "players": [{"ident": client.ident} for client in new_room.clients]  # Inclure les joueurs existants
-#           }
-#
-#           await self.send(json.dumps(data))
-#
-#           # Notifie tous les autres joueurs
-#           await self.notify_players_in_lobby(tournament_id)
-#
     async def join_tournament(self, tournament_id, player_id, name = "Default"):
         tournament = self.tournaments.get(int(tournament_id)) # IMPORTANT: penser à gérer le cas de lettres
         print(tournament)
@@ -396,22 +378,22 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "success": False,
                         "error": "Tournament ID manquant."
                     }))
-
             elif cmd == "startTournament":
                 tournament_id = text_data_json.get("tournamentId")
                 if tournament_id:
                     await self.start_tournament(tournament_id)
                 else:
                     print("Aucun ID de tournoi fourni pour démarrer.")
-
             elif cmd == "startGame":
                 await self.start_game(text_data_json["roomId"])
+            elif cmd == "saveGame":
+                await self.save_game(text_data_json["roomId"])
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
-                print(text_data_json["roomId"])
-                print(self.rooms)
+                # print('ScoreChange')
+                # print(self.rooms)
                 if room is not None:
-                    print(f"Room trouvée avec host_ident: {room.host_ident}")
+                    # print(f"Room trouvée avec host_ident: {room.host_ident}")
                     if self.ident == room.host_ident:
                         score_data = room.update_score(text_data_json["team"])
                         await self.broadcast_score_update(room, score_data)
@@ -727,21 +709,69 @@ class GameConsumer(AsyncWebsocketConsumer):
 #         {"username": "player2", "score": 5, "winner": False, "team": 2}
 #     ]
 # }
+
+    async def save_game(self, roomId):
+        room = await self.find_room(roomId)
+        if not room:
+            print(f"Room with ID {roomId} not found.")
+            return
+        if room.game_saved is True:
+            print(f"Room with ID {roomId} already saved.")
+        
+        players_data = []
+
+        # Determine the winning team (no draw)
+        if room.scoreTeam1 > room.scoreTeam2:
+            winning_team = 1
+        else:
+            winning_team = 2
+
+        for index, client in enumerate(room.clients):
+            expected_team = 1 if index % 2 == 0 else 2 #team1 
+            score = room.scoreTeam1 if expected_team == 1 else room.scoreTeam2
+            is_winner = expected_team == winning_team
+            # Create player info dictionary
+            player_info = {
+                'username': client.name,
+                'score': score,
+                'winner': is_winner,
+                'team': expected_team
+            }
+            players_data.append(player_info)
+        print('Saving Game')
+        # Save the game result
+        room.game_saved = True
+        await self.save_game_result(players_data)
+
+        
+    
     async def save_game_result(self, players_data):
         from main.models import Game, Player  # Import moved inside the function
         from django.contrib.auth import get_user_model
+        from asgiref.sync import sync_to_async
         CustomUser = get_user_model()
         try:
             # Create a new game instance
-            game = Game.objects.create()
-            
+            game = await sync_to_async(Game.objects.create)()
             # Iterate over the player data and create Player instances
             for player_data in players_data:
-                user = CustomUser.objects.get(username=player_data['username'])
-                Player.objects.create(
+                # user = CustomUser.objects.get(username=player_data['username'])
+                try:
+                    # Attempt to retrieve the user by username
+                    user = await sync_to_async(CustomUser.objects.get)(username=player_data['username'])
+                except CustomUser.DoesNotExist:
+                    # If user not found, assign to Guest user
+                    try:
+                        user = await sync_to_async(CustomUser.objects.get)(username='Guest')
+                    except CustomUser.DoesNotExist:
+                        # Handle case where Guest user does not exist
+                        print("Error: 'Guest' user does not exist in the database.")
+                        continue  # Skip creating this player
+                
+                
+                await sync_to_async(Player.objects.create)(
                     user=user,
                     game=game,
-                    name=player_data['name'],
                     score=player_data['score'],
                     winner=player_data['winner'],
                     team=player_data['team']

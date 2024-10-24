@@ -64,6 +64,7 @@ export function setupWebSocket() {
             }
             if (data.cmd === "startGame") {
                 hideAllButtons();
+                hideBtn('start_btn');
                 displayPlayersInScene(players, scene);  // Affiche tous les joueurs dans la scène
                 console.log("La partie a commencé pour tous les joueurs");
             }
@@ -83,7 +84,9 @@ export function setupWebSocket() {
                 console.log("joined room" + data.roomId);
                 room_id = data.roomId;
                 host_ident = data.host; 
-                checkIfHost(data.host);
+                if (checkIfHost(data.host)) {
+                    showBtn('start_btn');
+                }   
                 addChat("Server", "Room id = " + room_id)
                 checkAllPlayersConnected(data.playerTotal);
             }
@@ -163,7 +166,9 @@ export function setupWebSocket() {
                     if (!players.find(p => p.ident === playerId)) {
                         // Ajoute le joueur à la scène avec une position spécifique
                         // On suppose que tu veux que les joueurs soient placés sur les murs (par exemple, vertical/horizontal)
-                        checkIfHost(data.host);
+                        if (checkIfHost(data.host)) {
+                            showBtn('start_btn');
+                        }
                         const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
                         const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
 
@@ -271,7 +276,7 @@ export function receiveExistingPlayers(data) {
     data.data.players.forEach((player, index) => {
         const newPosition = getNewPlayerPosition(index);
         const newColor = getNewPlayerColor(index);
-        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor));
+        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name));
         // console.log("Existing player added: ", player.ident);    
         addChat("->", player.name);
     });
@@ -376,9 +381,7 @@ export function checkAllPlayersConnected(maxPlayers) {
                 console.log("All players connected, starting game: >" + maxPlayers + "<");
                 hideBtn('playerCount');
                 showBtn('startGameButton');
-                console.log("OUTSIDE");
                 if (!checkIfHost(host_ident)) {
-                    console.log("INSIDE");
                     setCameraPlayer2();
                 }
                 wait_startmatch();
@@ -402,8 +405,9 @@ export function wait_startmatch() {
         showBtn('joined');
         hideBtn('joining');
         showBtn('playerCount');
-        checkIfHost(host_ident);
-
+        if (checkIfHost(host_ident)) {
+            showBtn('start_btn');
+        }
         const timeout = setTimeout(() => {
             reject(new Error('Timeout: No startMatch message received within the expected time.'));
         }, 2400000); 

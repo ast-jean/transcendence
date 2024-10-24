@@ -1,6 +1,11 @@
-import { socketState, getRoomId } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setBallSpeedX, setBallSpeedY, setGameOverState } from '../utils/setter.js';
+import { socketState, getRoomId, room_id, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
+import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
+import { deleteBall, scene } from '../pong.js';
+import { sphere } from '../gameplay/ball.js';
+import { hideBtn, showBtn } from '../ui/ui_updates.js';
+import { checkIfHost } from '../utils/utils.js';
+import { walls } from './wall.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -18,65 +23,86 @@ export function updateScore(player) {
         }
     }
     updateScoreDisplay();
-    checkEndGame();
     // Envoie les scores au serveur si on est en ligne
-    if (socketState.socket && socketState.isSocketReady) {
+    if (socketState.socket && socketState.isSocketReady && checkIfHost(host_ident) ) {
         let cmd = "score";
         let roomId = getRoomId(); // Probablement undefined pour les tournois, à vérifier
-        console.log(roomId);
         let data = { cmd, team, roomId };
-        console.log("Envoi des données au serveur:", data);
         socketState.socket.send(JSON.stringify(data));
     }
+    checkEndGame();
 }
 
 const player1ScoreElement = document.getElementById('player1Score');
 const player2ScoreElement = document.getElementById('player2Score');
 
 export function updateScoreDisplay() {
-    player1ScoreElement.innerHTML = player1Score;
-    player2ScoreElement.innerHTML = player2Score;
-    // player1ScoreElement.innerHTML = getScoreHTML(player1Score, '🟢', maxScore);
-    // player2ScoreElement.innerHTML = getScoreHTML(player2Score, '🔵', maxScore);
-}
-
-export function checkEndGame() {
-    if (player1Score >= maxScore || player2Score >= maxScore) {
-        endGame();
+    if (isFourPlayerMode) {
+        const scoreboard = document.getElementById('scoreboard');
+        scoreboard.innerHTML = '';
+        players.forEach((player) => {
+            let lifes = " ";
+            for (let i = 0; i < player.lives; i++) {
+                lifes += '❤️';
+            }
+            scoreboard.innerHTML += player.name + ' : ' + lifes + " | ";
+        });
+        return ;
+    } else {
+        player1ScoreElement.innerHTML = player1Score;
+        player2ScoreElement.innerHTML = player2Score;
     }
 }
 
+export function checkEndGame() {
+    console.log('CHECKENDGAME');
+
+    if (isFourPlayerMode) {
+        // Check if one player still has lives and others don't
+        let remainingPlayers = players.filter(player => player.lives > 0);
+        console.log(remainingPlayers);
+        console.log(remainingPlayers.length);
+        if (remainingPlayers.length === 1) {
+            // Send the last remaining player to endGame
+            console.log("WINNER WINNER CHICKEN DINNER");
+            isGameOver == true;
+            endGame(remainingPlayers[0]);
+            return; // Stop further checks if game is over
+        }
+    }
+    if (player1Score >= maxScore || player2Score >= maxScore) {
+        console.log('endGame');
+        endGame();
+    }
+}
+let once = false;
 // Fonction pour mettre fin à la partie et afficher des options
-export function endGame() {
+export function endGame(player=null) {
     // Déclare que le jeu est terminé
-    setGameOverState(true);
+    //Assure it is called once
+    if (isGameOver == false) {
+        setGameOverState(true);
+        hideBtn('scoreboard');
+        // Détermine le gagnant
+        let winner;
+        if (player) {
+            winner = player.name;
+        } else {
+            winner = player1Score >= maxScore ? players[0].name : players[1].name;
+        }
+        document.getElementById('winner').innerText = winner + " won!";
 
-    // Détermine le gagnant
-    const winner = player1Score >= maxScore ? 'Player 1' : 'Player 2';
-
-    // Crée un message pour afficher le gagnant
-    addChat("Server:", `${winner} wins!`);
-
-    // Affiche les boutons de fin de jeu (rejouer ou retourner au menu)
-    const endGameButtons = document.getElementById('end-game-buttons');
-    endGameButtons.style.display = 'block';
-
-    // Bouton pour rejouer la partie
-    document.getElementById('replay-btn').addEventListener('click', () => {
-        document.getElementById('gameCont').removeChild(endGameMessage);
-        endGameButtons.style.display = 'none';
-        resetGame();
-        // startCountdown();
-    });
-    // Bouton pour retourner au menu principal
-    document.getElementById('menu-btn').addEventListener('click', () => {
-        location.reload();
-        // document.getElementById('gameCont').removeChild(endGameMessage);
-        // endGameButtons.style.display = 'none';
-        // showAllButtons();
-        // resetGame();
-        // controls.enabled = false;
-    });
+        // Crée un message pour afficher le gagnant
+        addChat("Server:", `${winner} wins!`);
+        showBtn('end-game-buttons');
+        hideBtn('scoreboard');
+        deleteBall(sphere);
+        if(checkIfHost(host_ident) && !once && !isLocalMode) {
+            once = true;
+            console.log("Send saveGame")
+            sendCmd("saveGame", room_id);
+        }
+    }
 }
 
 function getScoreHTML(score, symbol, maxScore) {
@@ -92,14 +118,8 @@ function getScoreHTML(score, symbol, maxScore) {
 }
 
 export function resetGame() {
-    player1Score = 0;
-    player2Score = 0;
+    sphere.position.set(0, 0, 0);
     setBallSpeedX(0);
     setBallSpeedY(0);
-    setGameOverState(true);
-    sphere.position.set(0, 0, 0);
-    players.forEach(player => {
-        player.mesh.position.set(0, player.ident === 1 ? -wallLength / 2 + 1 : wallLength / 2 - 1, 0);
-    });
-    updateScoreDisplay();
+  
 }

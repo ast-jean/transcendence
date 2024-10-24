@@ -612,7 +612,7 @@ class TruckSimulation {
 			document.addEventListener('keydown', (e) => {
 				if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'ShiftLeft'].includes(e.code)) {
 					this.keyState[e.code] = true;
-					e.preventDefault();
+					// e.preventDefault();
 			}
 			if ([ 'KeyR' ].includes(e.code)) {
 				this.keyState[e.code] = true;

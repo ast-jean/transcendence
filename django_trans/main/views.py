@@ -9,6 +9,7 @@ from requests_oauthlib import OAuth2Session
 from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
+from django.db.models import Count, Q
 from .models import CustomUser, Game
 import jwt
 from jwt.exceptions import ExpiredSignatureError
@@ -22,6 +23,7 @@ TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 
 def token_saver(token):
 	request.session['oauth_token'] = token
+ 
 def home(request):
 	token = request.session.get('oauth_token')
 
@@ -173,7 +175,8 @@ def logout_view(request):
 
 
 def games_view(request):
-	games = Game.objects.all()  # Fetch all games and related players
+	games = Game.objects.all().order_by('-id')
+ # Fetch all games and related players
 	context = {
 		'games': games,
 	}
@@ -207,17 +210,36 @@ def profile(request):
 		# Handle other exceptions or errors
 		return HttpResponse(f'An error occurred: {e}')
 	user = request.user
-	games = Game.objects.filter(players__user=user).distinct()
+	# Check if the user is anonymous
+	if user.is_anonymous:
+		messages.error(request, "You need to be logged in to view profiles.")
+		return redirect('oauth_login')  # Redirect to login page
+	games = Game.objects.filter(players__user=user).distinct().order_by('-id')
 	return render(request, 'profile.html', {'user' : user , 'profile' : user.profile_data, 'games' : games})
 
 def userProfile(request, playername):
 	you = request.user
-	them = get_object_or_404(CustomUser, username=playername)
-	theirgames = Game.objects.filter(players__user=them).distinct()
-	context =  {
-		'them' : them,
-		'user' : you,
-		'profile' : you.profile_data,
-		'theirprofile' : them.profile_data,
-		'games' : theirgames }
+	# Check if the user is anonymous
+	if you.is_anonymous:
+		messages.error(request, "You need to be logged in to view profiles.")
+		return redirect('oauth_login')  # Redirect to login page
+	# Retrieve the profile being viewed
+	them = get_object_or_404(
+		CustomUser.objects.annotate(
+			games_won_count=Count('player', filter=Q(player__winner=True))
+		),
+		username=playername
+	)
+	# Retrieve all games the user has participated in
+	theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
+	# Calculate the number of games won by the user
+	gamesWon = them.games_won_count
+	context = {
+		'them': them,
+		'user': you,
+		'profile': you.profile_data,
+		'theirprofile': them.profile_data,
+		'games': theirgames,
+		'gamesWon': gamesWon,
+	}
 	return render(request, 'profile.html', context)

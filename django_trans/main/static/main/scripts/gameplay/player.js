@@ -2,17 +2,17 @@ import * as THREE from 'three';
 import { getRoomId, socketState } from '../websockets/socket_pong.js'; // Synchronisation des mouvements des joueurs
 import { wallLength } from './wall.js'; // Pour les limites du terrain
 import { local_game, scene } from '../pong.js';
-import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId } from '../utils/setter.js';
+import { addPlayerToGame, removeAllPlayers, players, getBallSpeedX, getBallSpeedY, isFourPlayerMode, localPlayerId, setID, isLocalMode } from '../utils/setter.js';
 import { sphere } from './ball.js';
 
 export let keyState = {};
 
 export class Player {
-    constructor(ident, x, y, z, color, isVertical) {
+    constructor(ident, x, y, z, color, isVertical, name = null) {
         this.ident = ident;
         this.lives = 3;
         this.isVertical = isVertical;
-
+        this.name = name;
         // Choisir la géométrie en fonction de l'orientation (vertical ou horizontal)
         const geometry = this.isVertical
             ? new THREE.BoxGeometry(0.5, 5, 0.5) // Vertical: hauteur plus grande
@@ -25,16 +25,17 @@ export class Player {
         this.mesh.position.set(x, y, z);
 
     }
-        loseLife() {
-            this.lives -= 1;
-            if (this.lives <= 0) {
-                this.mesh.material.color.setHex(0x808080);  // Change to grey when no more lives
-            }
+
+    loseLife() {
+        this.lives -= 1;
+        if (this.lives <= 0) {
+            this.mesh.material.color.setHex(0x808080);  // Change to grey when no more lives
         }
-    
-        isAlive() {
-            return this.lives > 0;
-        }
+    }
+
+    isAlive() {
+        return this.lives > 0;
+    }
 }
 
 // Fonction pour initialiser les joueurs sur leurs positions respectives avec le flag isVertical
@@ -43,16 +44,16 @@ export function initializePlayers4() {
     removeAllPlayers(scene);
 
     // Joueur 1 - Bas (horizontal)
-    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, false);
+    const player1 = new Player(1, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, false, 'P1');
 
     // Joueur 2 - Haut (horizontal)
-    const player2 = new Player(2, 0, wallLength / 2 - 0.5 , 0, 0x0000ff, false);
+    const player2 = new Player(2, 0, wallLength / 2 - 0.5 , 0, 0x0000ff, false, 'P2');
 
     // Joueur 3 - Gauche (vertical)
-    const player3 = new Player(3, -wallLength / 2 + 0.5, 0, 0, 0xff0000, true);
+    const player3 = new Player(3, -wallLength / 2 + 0.5, 0, 0, 0xff0000, true, 'P3');
 
     // Joueur 4 - Droite (vertical)
-    const player4 = new Player(4, wallLength / 2 - 0.5, 0, 0, 0xffff00, true);
+    const player4 = new Player(4, wallLength / 2 - 0.5, 0, 0, 0xffff00, true, 'P4');
 
     // Ajouter les joueurs à la liste globale
     players.push(player1, player2, player3, player4);
@@ -73,11 +74,12 @@ export function initializePlayers(scene, useAI, isOnline ) {
     if (!isOnline)
     {
         if (useAI) {
+            console.log('PLAY AGAINST AI');
             // Ajoute un joueur IA
-            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true); // IA (rouge)
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true, "AI🤖"); // IA (rouge)
         } else {
             // Ajoute un deuxième joueur humain
-            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene); // Joueur 2 (bleu)
+            addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene, false, false, 'Player 2'); // Joueur 2 (bleu)
         }
     }
 }
@@ -172,6 +174,11 @@ export function movePlayer4(delta) {
 
 // Fonction pour déplacer les joueurs
 export function movePlayer(delta, scene) {
+    if (isLocalMode){
+        movePlayer4(delta);
+        return ;
+    }
+    
     const speed = 20;
     let movement = { x: 0, y: 0 };
 
@@ -180,11 +187,9 @@ export function movePlayer(delta, scene) {
     if (!localPlayer) { return; }
     // Gestion des mouvements avec les touches
     if (keyState['ArrowLeft']) {
-        console.log('left pressed')
         movement.x -= speed * delta;
     }
     if (keyState['ArrowRight']) {
-        console.log('right pressed')
         movement.x += speed * delta;
     }
     // Mise à jour de la position du joueur local
@@ -231,10 +236,10 @@ export function resetPlayer() {
 // Event listener for keydown events
 document.addEventListener('keydown', function (e) {
     keyState[e.code] = true; // Mark the key as pressed
-    // Prevent default behavior for Left and Right arrow keys
     if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
     }
+    // Prevent default behavior for Left and Right arrow keys
 });
 
 // Event listener for keyup events
@@ -243,9 +248,9 @@ document.addEventListener('keyup', function (e) {
 });
 
 export class AIPlayer extends Player {
-    constructor(ident, x, y, z, color) {
+    constructor(ident, x, y, z, color, vertical, name) {
         console.log('AIPlayer is being initialized');
-        super(ident, x, y, z, color);
+        super(ident, x, y, z, color, vertical, name);
         this.targetX = 0;
         this.aiInterval = setInterval(() => this.calculateMovement(), 1000);
     }

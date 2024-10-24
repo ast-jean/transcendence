@@ -91,7 +91,6 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     if (!roomId) {
-        event.preventDefault();
         alert("Please fill in all required fields.");
     } else {
         sendCmd("roomSearch", roomId);

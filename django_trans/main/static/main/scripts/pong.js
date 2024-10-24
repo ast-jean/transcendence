@@ -7,7 +7,7 @@ import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID, setLocalMode } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -37,7 +37,7 @@ container.appendChild(renderer.domElement);
 
 // Configuration des murs
 setupWalls(scene);
-setWallColor(808080);
+setWallColor(0x808080);
 
 // Contrôles de caméra
 export const controls = new OrbitControls(camera, renderer.domElement);
@@ -50,31 +50,42 @@ directionalLight.position.set(0, 20, 10);
 scene.add(directionalLight);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
 
+scene.add(ambientLight);
+document.addEventListener('DOMContentLoaded', function() {
+    hideBtn('loading');
+});
 
 function localPlay4Players() {
     console.log("Initialisation du mode Local Play à 4 joueurs");
     initializePlayers4()
     setPlayerMode(true);
-
+    setLocalMode(true);
+    const scoreboard = document.getElementById('scoreboard');
+    scoreboard.innerHTML = "P1 : ❤️❤️❤️ | P2 : ❤️❤️❤️ | P3 : ❤️❤️❤️ | P4 : ❤️❤️❤️ |";
+    displayPlayersInScene(players, scene); 
 }
 
 // Démarrage du jeu local
 function localPlay() {
     local_game = true;
-    // hideAllButtons();
+    setLocalMode(true);
     initializePlayers(scene, false, false);
+    displayPlayersInScene(players, scene); 
 }
 
 // Démarrage du jeu contre l'IA
 function playAI() {
+    hideAllButtons();
+    setID(1);
+    local_game = true;
+    showBtn('scoreboard');
     initializePlayers(scene, true, false);  // true pour indiquer qu'on joue contre une IA
+    displayPlayersInScene(players, scene); 
 }
 
 export function startGame_online() {
     displayPlayersInScene(players, scene); 
-
 }
 
 async function playOnline(maxPlayers) {
@@ -296,7 +307,10 @@ document.getElementById('topViewCameraBtn').addEventListener('click', setCameraT
 
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
-    sendCmd("startGame", room_id);
+    showBtn('scoreboard');
+    if (!local_game) {
+        sendCmd("startGame", room_id);
+    }
     console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
 
@@ -365,9 +379,24 @@ document.getElementById('tournament_btn').addEventListener('click', () => {
     }
 });
 
+document.getElementById('menu-btn-quit').addEventListener('click', () => {
+    location.reload();
+});
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
 
+
+export function deleteBall(sphere){
+    // Remove the sphere from the scene
+    scene.remove(sphere);
+
+    // Dispose of the sphere's geometry and material
+    sphere.geometry.dispose();
+    sphere.material.dispose();
+
+    // Optionally, set the sphere to null to ensure it is fully cleared from memory
+    sphere = null;
+}
 
 ///* Btns layer 1     Btns layer 2
 //
