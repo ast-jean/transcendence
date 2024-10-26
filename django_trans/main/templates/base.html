@@ -29,12 +29,13 @@
                 <li class="nav-item {% if current_path == '/games/' %}active{% endif %}">
                     <a class="nav-link" href="/games/" {% if current_path == '/games/' %}aria-current="page"{% endif %}>Pong Game history</a>
                 </li>
-                {% if profile.login %}
+                {% if profile.login or user.is_authenticated %}
                 <li class="nav-item {% if current_path == '/profile/' %}active{% endif %}">
-                    <a class="nav-link" href="/profile/{{profile.login}}" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
+                    <a class="nav-link" href="/profile/{{profile.username}}" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
                 </li>
                 {% endif %}
             </ul>
+            <ul class='mx-auto'></ul>
             <ul class="navbar-nav">
                 {% if profile.login %}
                 <li class="nav-item active">
@@ -43,10 +44,24 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                 </li>
+                {% elif user and user.is_authenticated%}
+                    <li class="nav-item active">
+                        <a class="nav-link" aria-disabled="true">Hello, <span id="name">{{ user.username }}</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
                 {% else %}
                 <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'oauth_login' %}">Login</a>
+                    <a class="nav-link" href="{% url 'oauth_login' %}">42API</a>
                 </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                <a class="nav-link" href="{% url 'signup' %}">SignUp</a>
+                <li class="nav-item active">
+                </li>
+
                 {% endif %}
             </ul>
         </div>

@@ -8,12 +8,14 @@ urlpatterns = [
     path('Pong/', views.pong, name='Pong'),
     path('truckleague/', views.truckleague, name='Truck'),
     path('about/', views.about, name='About'),
-    path('login/', views.oauth_login, name='oauth_login'),
+    path('loginAPI/', views.oauth_login, name='oauth_login'),
+    path('login/', views.login_view, name='login'),
+    path('signup/', views.signup_view, name='signup'),
     path('callback/', views.callback, name='callback'),
     path('profile/', views.profile, name='profile'),
     path('profile/<str:playername>', views.userProfile, name='userProfile'),
     path('logout/', views.logout_view, name='logout'),
-    path('games/', views.games_view, name='games'),
+    path('games/', views.games_view, name='games')
 ]
 
 # The static() function is only used during development, and it's typically conditioned on DEBUG being True
