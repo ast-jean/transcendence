@@ -4,28 +4,37 @@
 {% block content %}
 <h1>Profile</h1>
 
-  <div class="card mb-5" style="max-width: 1000px;">
-	<div class="row g-0">
-	  <div class="col-md-4">
-		<img src="{{ theirprofile.image.versions.medium }}" alt="{{ theirprofile.login }}">
-	  </div>
-	  <div class="col-md-8">
-		<div class="profilecard-body">
-		  <h5 class="profilecard-text"> {{ theirprofile.displayname }}
-		
-		  </h5>
-		  <p class="profilecard-text"> Login: {{ theirprofile.login }}</p>
-		  <p class="profilecard-text"> Email: {{ theirprofile.email }}</p>
-      {% if games %}
-          <p class="profilecard-text">Games won: {{ gamesWon }} out of {{games|length}}</p>
-      {% else %}
-          <p class="profilecard-text">Games won: 0</p>
-      {% endif %}
-		</div>
-	  </div>
-	</div>
-  </div>
-  <hr style="text-align:left;margin-left:0;height:10px">
+<div class="card mb-5" style="max-width: 1000px;">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <img src="{{ profile.image.versions.medium }}" alt="{{ profile.login }}">
+        </div>
+        <div class="col-md-8">
+            <div class="profilecard-body">
+                <h5 class="profilecard-text">{{ profile.displayname }}</h5>
+                <p class="profilecard-text">Login: {{ profile.login }}</p>
+                <p class="profilecard-text">Email: {{ profile.email }}</p>
+
+                {% if games %}
+                    <p class="profilecard-text">Games won: {{ gamesWon }} out of {{ games|length }}</p>
+                {% else %}
+                    <p class="profilecard-text">Games won: 0</p>
+                {% endif %}
+
+                {% if is_own_profile %}
+                    <h5 class="mt-4">Edit Profile</h5>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr style="text-align:left;margin-left:0;height:10px">
 
 <h2>Match Results</h2>
 {% if games %}

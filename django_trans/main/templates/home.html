@@ -17,6 +17,14 @@
 {% endblock %}
 
 
+{% if messages %}
+    <script>
+        // Loop through messages and display alerts for each
+        {% for message in messages %}
+            alert("{{ message|escapejs }}");
+        {% endfor %}
+    </script>
+{% endif %}
 
 
 <!-- BACKGROUND COLORING -->
