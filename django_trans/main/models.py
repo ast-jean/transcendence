@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     oauth_token = models.JSONField(null=True, blank=True)  # Store the OAuth token
@@ -8,10 +9,10 @@ class CustomUser(AbstractUser):
     last_connected = models.DateTimeField(auto_now=True)  # Track last login time
     
     profile_data = models.JSONField(null=True, blank=True)
-    is_online = models.BooleanField(default=False) 
     alias = models.CharField(max_length=150, null=True, blank=True)
     friends = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg', null=True, blank=True)
+    last_active = models.DateTimeField(null=True, blank=True)
     def update_profile_data(self, api_data):
         """Updates the profile_data field with data fetched from the API."""
         self.profile_data = api_data
@@ -31,16 +32,24 @@ class CustomUser(AbstractUser):
 
     def is_friend(self, user):
         """Checks if a user is in the friends list."""
-        return self.friends.filter(id=user.id).exists()
+        is_friend = self.friends.filter(id=user.id).exists()
+        print(f"Is {self.username} friends with {user.username}? {is_friend}")
+        return is_friend
 
     def set_online(self):
-        """Sets the user as online."""
-        self.is_online = True
+        """Set the user as online by updating the last_active timestamp."""
+        self.last_active = timezone.now()
         self.save()
 
+    def is_online(self):
+        """Check if the user is online based on the last_active timestamp."""
+        if self.last_active:
+            return timezone.now() - self.last_active < timezone.timedelta(minutes=2)
+        return False
+    
     def set_offline(self):
-        """Sets the user as offline."""
-        self.is_online = False
+        """Mark the user as offline by setting last_active to None."""
+        self.last_active = None
         self.save()
     
     def games_won_count(self):
