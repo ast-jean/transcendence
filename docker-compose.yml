@@ -16,12 +16,13 @@ services:
       - transcendence_net
     ports:
       - "5432:5432"
+
   django:
     build: ./django_trans/
     volumes:
-      - .django_trans:/usr/src/app
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - .:/usr/src/app  # Mount the entire project folder if needed for code access
+      - media_volume:/usr/src/app/media/  # Consistent media volume mount
+      - static_volume:/usr/src/app/static/  # Static volume mount
     command: gunicorn django_trans.wsgi:application --bind 0.0.0.0:8000
     container_name: trans_django
     environment:
@@ -42,13 +43,14 @@ services:
       - db
     networks:
       - transcendence_net
+  
   nginx:
       image: nginx:alpine
       volumes:
         - ./nginx/nginx.conf:/etc/nginx/nginx.conf
         - ./nginx/certs:/etc/nginx/certs:ro
-        - static_volume:/usr/src/app/static
-        - media_volume:/usr/src/app/media
+        - static_volume:/usr/src/app/static/  # Consistent static volume mount
+        - media_volume:/usr/src/app/media/  # Consistent media volume mount
         - ./certbot/conf:/etc/letsencrypt
         - ./certbot/www:/var/www/certbot
       ports:
