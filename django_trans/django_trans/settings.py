@@ -149,7 +149,7 @@ USE_TZ = True
 
 # settings.py
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = '/usr/src/app/media/' 
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'

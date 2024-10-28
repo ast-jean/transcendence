@@ -229,7 +229,9 @@ export function disconnectWebSocket() {
 export function getName() {
     var name;
     try {
-        var nameElement = document.getElementById('name');
+        var nameElement = document.getElementById('alias');
+        if (!nameElement)
+            nameElement = document.getElementById('name');
         name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
             name = 'Guest';

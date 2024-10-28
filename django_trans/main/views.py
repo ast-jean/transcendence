@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import CustomAuthenticationForm, SignUpForm, CustomUserChangeForm
+from .forms import CustomAuthenticationForm, SignUpForm, CustomUserChangeForm, CustomUserChangeFormPassword
 from oauthlib.oauth2 import TokenExpiredError
 from requests.exceptions import RequestException
 from django.contrib import messages
@@ -32,13 +32,75 @@ def token_saver(token, user):
     user.oauth_token = token
     user.save()
  
+
 def home(request):
-    # Get the stored profile data from the logged-in user, if available
-    profile_data = request.user.profile_data if request.user.is_authenticated else None
+    # Use stored profile data if it exists
+    if request.user.is_authenticated and request.user.profile_data:
+        profile_data = request.user.profile_data
+    else:
+        # Attempt to retrieve profile data from the API if no local data is available
+        token = request.session.get('oauth_token')
+        if token:
+            oauth = OAuth2Session(CLIENT_ID, token=token, auto_refresh_url=TOKEN_URL, auto_refresh_kwargs={
+                'client_id': CLIENT_ID,
+                'client_secret': CLIENT_SECRET,
+            }, token_updater=lambda t: request.session.update({'oauth_token': t}))
+
+            try:
+                # Make an authenticated request to fetch updated profile data
+                response = oauth.get('https://api.intra.42.fr/v2/me')
+                response.raise_for_status()
+                profile_data = response.json()
+                
+                # Update the user profile data in the database
+                request.user.profile_data = profile_data
+                request.user.save()
+            except TokenExpiredError:
+                # Handle token expiration: redirect to login to refresh session
+                messages.error(request, "Your session has expired. Please log in again.")
+                return redirect('oauth_login')
+            except RequestException as e:
+                # Handle other request errors gracefully
+                messages.error(request, f"An error occurred while retrieving profile data: {e}")
+                profile_data = None
+        else:
+            profile_data = None
+
     return render(request, "home.html", {'profile': profile_data})
 
 def pong(request):
-    profile_data = request.user.profile_data if request.user.is_authenticated else None
+    # Use stored profile data if it exists
+    if request.user.is_authenticated and request.user.profile_data:
+        profile_data = request.user.profile_data
+    else:
+        # Attempt to retrieve profile data from the API if no local data is available
+        token = request.session.get('oauth_token')
+        if token:
+            oauth = OAuth2Session(CLIENT_ID, token=token, auto_refresh_url=TOKEN_URL, auto_refresh_kwargs={
+                'client_id': CLIENT_ID,
+                'client_secret': CLIENT_SECRET,
+            }, token_updater=lambda t: request.session.update({'oauth_token': t}))
+
+            try:
+                # Make an authenticated request to fetch updated profile data
+                response = oauth.get('https://api.intra.42.fr/v2/me')
+                response.raise_for_status()
+                profile_data = response.json()
+                
+                # Update the user profile data in the database
+                request.user.profile_data = profile_data
+                request.user.save()
+            except TokenExpiredError:
+                # Handle token expiration: redirect to login to refresh session
+                messages.error(request, "Your session has expired. Please log in again.")
+                return redirect('oauth_login')
+            except RequestException as e:
+                # Handle other request errors gracefully
+                messages.error(request, f"An error occurred while retrieving profile data: {e}")
+                profile_data = None
+        else:
+            profile_data = None
+
     return render(request, "pong.html", {'profile': profile_data})
 
 def truckleague(request):
@@ -91,7 +153,9 @@ def callback(request):
         user.profile_data = profile_data
         token_saver(token, user)  # Save the token and profile data to the user
         # If the user already exists, update their profile data
+        user.set_online()
         if not created:
+            user.email = profile_data['email']
             user.profile_data = profile_data  # Assuming profile_data is a field in CustomUser
             user.save()
         # Log the user in
@@ -116,6 +180,7 @@ def callback(request):
         return redirect('oauth_login')
 
 def logout_view(request):
+    request.user.is_online = False
     logout(request)
     request.session.flush() 
     return redirect('home')
@@ -128,6 +193,7 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                user.set_online() 
                 login(request, user)
                 return redirect(request.POST.get('next') or 'home')
             else:
@@ -138,12 +204,20 @@ def login_view(request):
         form = CustomAuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
+def set_offline(request):
+    from django.http import JsonResponse
+    # Set the user as offline
+    if user:
+        user = request.user
+        user.set_offline()
+    return JsonResponse({"status": "User set to offline"})
 
 def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            user.set_online() 
             login(request, user)
             return redirect('home')
     else:
@@ -160,24 +234,37 @@ def games_view(request):
     return render(request, 'games.html', context)
 
 def profile(request):
+    from django.contrib.auth import update_session_auth_hash
     user = request.user
     if not user.is_authenticated:
-        messages.error(request, "You need to be logged in to view this page.")
+        # messages.error(request, "You need to be logged in to view this page.")
         return redirect('home')  # Customize as needed
     profile_data = user.profile_data  # Retrieve profile data directly from the user's record
 
     # Determine if the logged-in user is viewing their own profile
     is_own_profile = True  # Since this is the user's own profile view
 
-    # Show the edit form if the user is viewing their own profile
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated!")
+        profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
+        password_form = CustomUserChangeFormPassword(request.POST, user=user)
+
+        # Process profile form independently
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, "Your profile information has been updated!")
+
+        # Process password form independently
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, user)  # Keep the user logged in after password change
+            messages.success(request, "Your password has been updated!")
+
+        # If either form is valid, redirect to profile
+        if profile_form.is_valid() or password_form.is_valid():
             return redirect('profile')
     else:
-        form = CustomUserChangeForm(instance=user)
+        profile_form = CustomUserChangeForm(instance=user)
+        password_form = CustomUserChangeFormPassword(user=user)
 
     # Fetch user's games
     games = Game.objects.filter(players__user=user).distinct().order_by('-id')
@@ -185,7 +272,8 @@ def profile(request):
         'user': user,
         'profile': profile_data,
         'games': games,
-        'form': form,
+        'profile_form': profile_form,
+        'password_form': password_form,
         'is_own_profile': is_own_profile
     })
 
@@ -193,7 +281,6 @@ def userProfile(request, playername):
     you = request.user
     # Check if the user is anonymous
     if you.is_anonymous:
-        messages.error(request, "You need to be logged in to view profiles.")
         return redirect('home')
 
     # Redirect to /profile if the playername matches the logged-in user's username
@@ -221,4 +308,22 @@ def userProfile(request, playername):
         'gamesWon': gamesWon,
     }
 
-    return render(request, 'profile.html', context)
+    return render(request, 'profile-view.html', context)
+
+
+@login_required
+def update_profile(request):
+    from django.contrib.auth import update_session_auth_hash
+    if request.method == 'POST':
+        form = CustomUserChangeForm(data=request.POST, files=request.FILES, user=request.user)
+        
+        if form.is_valid():
+            form.save()
+            # Update session to prevent logout after password change
+            update_session_auth_hash(request, form.user)
+            messages.success(request, "Your profile has been updated!")
+            return redirect('profile')  # Adjust with the actual profile view name
+    else:
+        form = CustomUserChangeForm(user=request.user)
+
+    return render(request, 'update_profile.html', {'form': form})

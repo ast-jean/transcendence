@@ -15,7 +15,8 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile/<str:playername>', views.userProfile, name='userProfile'),
     path('logout/', views.logout_view, name='logout'),
-    path('games/', views.games_view, name='games')
+    path('games/', views.games_view, name='games'),
+    path('set_offline/', views.set_offline, name='set_offline')
 ]
 
 # The static() function is only used during development, and it's typically conditioned on DEBUG being True
