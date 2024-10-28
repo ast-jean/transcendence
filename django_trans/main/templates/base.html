@@ -15,6 +15,14 @@
         window.addEventListener("beforeunload", function(event) {
             navigator.sendBeacon("{% url 'set_offline' %}");
         });
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("{% url 'set_online' %}", {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            }).catch(error => console.error("Error setting user online:", error));
+        });
         </script>
 
 </head>

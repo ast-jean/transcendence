@@ -10,23 +10,19 @@
         <div class="col-md-4">
             {% if them.avatar and them.avatar.url %}
                 <img src="{{ them.avatar.url }}" alt="{{ them.username }}" class="img-thumbnail" style="max-width: 200px;">
-            {% elif theirprofile.image %}
-                <img src="{{ theirprofile.image.versions.medium }}" alt="{{ them.username }}">
             {% else %}
                 <img src="{{ MEDIA_URL }}avatars/default.jpg" alt="{{ them.username }}" class="img-thumbnail" style="max-width: 200px;">
             {% endif %}
         </div>
         <div class="col-md-8">
             <div class="profilecard-body">
-                {% if them.is_online %}
-                    <h4 class="profilecard-text">
-                        Status: <span class="text-success">Online</span>
-                    </h4>
-                {% else %}
-                    <h4 class="profilecard-text">
-                        Status: <span class="text-danger">Offline</span>
-                    </h4>
-                {% endif %}
+                <h4 class="profilecard-text">Status:
+                    {% if them.is_online() %}
+                        <span class="text-success">Online</span>
+                    {% else %}
+                        <span class="text-danger">Offline</span>
+                    {% endif %}
+                </h4>
                 <p class="profilecard-text">Username: {{ them.username }}</p>
                 {% if them.alias %}
                     <p class="profilecard-text">Alias: {{ them.alias }}</p>
@@ -37,6 +33,22 @@
                     <p class="profilecard-text">Games won: {{ gamesWon }} out of {{ games|length }}</p>
                 {% else %}
                     <p class="profilecard-text">Games won: 0</p>
+                {% endif %}
+                {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="text-success">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+  
+                <!-- Add Friend / Remove Friend Button -->
+                {% if user.is_authenticated and user != them %}
+                    {% if is_friend is True%}
+                        <p class="profilecard-text">Your friend 😊 <a href="{% url 'remove_friend' them.id %}" class="btn btn-danger">Remove Friend</a></p>
+                    {% else %}
+                        <p class="profilecard-text">Not a friend ☹️ <a href="{% url 'add_friend' them.id %}" class="btn btn-primary">Add Friend</a></p>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

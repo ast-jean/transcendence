@@ -12,12 +12,13 @@ from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import CustomUser, Game
 from oauthlib.oauth2 import OAuth2Error
 import jwt
 from jwt.exceptions import ExpiredSignatureError
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 import os
 
@@ -180,9 +181,11 @@ def callback(request):
         return redirect('oauth_login')
 
 def logout_view(request):
-    request.user.is_online = False
+    # Mark the user as offline
+    if request.user.is_authenticated:
+        request.user.set_offline()
+    # Log the user out
     logout(request)
-    request.session.flush() 
     return redirect('home')
 
 def login_view(request):
@@ -195,7 +198,7 @@ def login_view(request):
             if user is not None:
                 user.set_online() 
                 login(request, user)
-                return redirect(request.POST.get('next') or 'home')
+                return redirect('home')
             else:
                 messages.error(request, "Invalid username or password.")
         else:
@@ -203,14 +206,22 @@ def login_view(request):
     else:
         form = CustomAuthenticationForm()
     return render(request, 'login.html', {'form': form})
+@csrf_exempt
+@login_required
+def set_online(request):
+    if request.method == "POST":
+        request.user.set_online()  # Updates last_active timestamp
+        return JsonResponse({"status": "User set to online"})
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
+@csrf_exempt
+@login_required
 def set_offline(request):
-    from django.http import JsonResponse
-    # Set the user as offline
-    if user:
-        user = request.user
-        user.set_offline()
-    return JsonResponse({"status": "User set to offline"})
+    if request.method == "POST":
+        request.user.last_active = None  # Clear last_active timestamp for offline
+        request.user.save()
+        return JsonResponse({"status": "User set to offline"})
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def signup_view(request):
     if request.method == 'POST':
@@ -274,7 +285,11 @@ def profile(request):
         'games': games,
         'profile_form': profile_form,
         'password_form': password_form,
-        'is_own_profile': is_own_profile
+        'is_own_profile': is_own_profile,
+        'is_online': True,
+        'friends': [
+        {'friend': friend, 'is_online': friend.is_online()} for friend in request.user.friends.all()
+    ]
     })
 
 def userProfile(request, playername):
@@ -298,7 +313,7 @@ def userProfile(request, playername):
     theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
     # Calculate the number of games won by the user
     gamesWon = them.games_won_count
-
+    is_friend = you.is_friend(them)
     context = {
         'them': them,
         'user': you,
@@ -306,6 +321,7 @@ def userProfile(request, playername):
         'theirprofile': them.profile_data,
         'games': theirgames,
         'gamesWon': gamesWon,
+        'is_friend': is_friend
     }
 
     return render(request, 'profile-view.html', context)
@@ -327,3 +343,19 @@ def update_profile(request):
         form = CustomUserChangeForm(user=request.user)
 
     return render(request, 'update_profile.html', {'form': form})
+
+def add_friend(request, user_id):
+    if request.user.is_authenticated:
+        friend = get_object_or_404(CustomUser, id=user_id)
+        request.user.add_friend(friend)
+        request.user.save()
+        messages.success(request, f"You are now friends with {friend.username}!")
+    return redirect('userProfile', playername=friend.username)
+
+def remove_friend(request, user_id):
+    if request.user.is_authenticated:
+        friend = get_object_or_404(CustomUser, id=user_id)
+        request.user.remove_friend(friend)
+        request.user.save()
+        messages.success(request, f"You are no longer friends with {friend.username}.")
+    return redirect('userProfile', playername=friend.username)

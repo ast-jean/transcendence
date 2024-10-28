@@ -19,11 +19,11 @@
         </div>
         <div class="col-md-8">
             <div class="profilecard-body">
-                {% if user.is_online == True %}
+                {% if is_online is True %}
                     <h4 class="profilecard-text">
                         Status: <span class="text-success">Online</span>
                     </h4>
-                    {% else %}
+                {% else %}
                     <h4 class="profilecard-text">
                         Status: <span class="text-danger">Offline</div>
                     </h4>
@@ -39,13 +39,40 @@
                 {% else %}
                     <p class="profilecard-text">Games won: 0</p>
                 {% endif %}
+                
+                <p class="profilecard-text">Friend(s):</p>
+                {% if user.friends.exists %}
+                    <div class="profilecard-text mb-3">
+                        {% for friend in friends %}
+                            <a href="{% url 'userProfile' friend.username %}">
+                                <div class="btn btn-primary position-relative rounded">
+
+                                    <img src="{{ friend.avatar.url }}" alt="{{ friend.username }} avatar" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded"> {{ friend.username }} </span>
+                                    
+                                    {% if friend.is_online is True %}
+                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle">
+                                        <span class="visually-hidden">Online</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">Offline</span>
+                                </span>
+                                {% endif %}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="profilecard-text">You have no friends 🥲</p>
+                {% endif %}
+
             </div>
         </div>
     </div>
 </div>
 
 
-{% if is_own_profile %}
 <div class="card ms-5 mb-1" style="max-width: 1000px;">
     <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProfileForm" aria-expanded="false" aria-controls="collapseProfileForm">Edit Profile</button>
     <button class="btn btn-secondary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePasswordForm" aria-expanded="false" aria-controls="collapsePasswordForm">Change Password</button>
@@ -84,9 +111,6 @@
         </div>
     </div>
 </div>
-{% else %}
-    {% comment %} <div> ADD TO FRIEND LIST</div> {% endcomment %}
-{% endif %}
 
 <hr style="text-align:left;margin-left:0;height:10px">
 
