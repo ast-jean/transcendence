@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserChangeForm, AuthenticationForm, UserCreationForm, PasswordChangeForm
 from .models import CustomUser
 from django.forms.widgets import ClearableFileInput
+from django.core.exceptions import ValidationError
 
 class CustomClearableFileInput(ClearableFileInput):
     template_name = 'widgets/file_input.html'
@@ -74,8 +75,16 @@ class CustomUserChangeForm(forms.ModelForm):
             self.fields['alias'].initial = user.alias
             self.fields['avatar'].initial = user.avatar
 
-    def clean(self):
-        cleaned_data = super().clean()
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+
+        # Define the maximum file size in bytes (e.g., 2 MB)
+        max_file_size = 2 * 1024 * 1024  # 2 MB
+
+        if avatar and avatar.size > max_file_size:
+            raise ValidationError(f"The file size exceeds the 2 MB limit. Please upload a smaller file.")
+        
+        return avatar
 
     def save(self, commit=True):
         user = super().save(commit=False)

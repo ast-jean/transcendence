@@ -1,6 +1,9 @@
 <div class="custom-clearable-file-input">
     {% if widget.is_initial %}
-        <img src="{{ widget.value.url }}" alt="Current Image" style="width: 100px; height: auto; border-radius: 50%;" /><br>
+        <img id="avatar_viewer" src="{{ widget.value.url }}" alt="Current Image" style="width: 100px; height: auto; border-radius: 50%;" /><br>
+    {% else %}
+        <img id="avatar_viewer" src="" alt="Selected Image Preview" style="width: 100px; height: auto; border-radius: 50%;" /><br>
     {% endif %}
-    {{ widget.input_text }}: <input type="{{ widget.type }}" name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %}>
+    {{ widget.input_text }}: 
+    <input type="{{ widget.type }}" name="{{ widget.name }}" id="avatar_input" {% include "django/forms/widgets/attrs.html" %}>
 </div>

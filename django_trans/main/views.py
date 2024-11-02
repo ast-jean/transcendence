@@ -319,7 +319,7 @@ def profile(request):
         'profile_form': profile_form,
         'password_form': password_form,
         'is_own_profile': is_own_profile,
-        'is_online': user.is_online(),  # Display user's online status if needed
+        'is_online': True,  # Display user's online status if needed
         'friends': friends_data  # Pass the list of friends with their online statuses
     })
 
