@@ -19,7 +19,7 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib.auth import update_session_auth_hash
 import os
 
 
@@ -34,73 +34,95 @@ def token_saver(token, user):
     user.save()
  
 
-def home(request):
-    # Use stored profile data if it exists
-    if request.user.is_authenticated and request.user.profile_data:
-        profile_data = request.user.profile_data
-    else:
-        # Attempt to retrieve profile data from the API if no local data is available
-        token = request.session.get('oauth_token')
-        if token:
-            oauth = OAuth2Session(CLIENT_ID, token=token, auto_refresh_url=TOKEN_URL, auto_refresh_kwargs={
-                'client_id': CLIENT_ID,
-                'client_secret': CLIENT_SECRET,
-            }, token_updater=lambda t: request.session.update({'oauth_token': t}))
 
-            try:
-                # Make an authenticated request to fetch updated profile data
-                response = oauth.get('https://api.intra.42.fr/v2/me')
-                response.raise_for_status()
-                profile_data = response.json()
-                
-                # Update the user profile data in the database
+def get_oauth_session(request):
+    """Create or refresh an OAuth2 session with the access token from the session."""
+    token = request.session.get('oauth_token')
+    
+    if not token:
+        # No token, redirect to login
+        return False
+    # Initialize the OAuth2 session with auto-refresh capability
+    oauth = OAuth2Session(
+        settings.CLIENT_ID,
+        token=token,
+        auto_refresh_url=settings.TOKEN_URL,
+        auto_refresh_kwargs={
+            'client_id': settings.CLIENT_ID,
+            'client_secret': settings.CLIENT_SECRET,
+        },
+        token_updater=lambda t: request.session.update({'oauth_token': t})  # Save new token in session
+    )
+
+    # Try making an authenticated request to check the token status
+    try:
+        # This example fetches the user's profile as a check, but use the actual request as needed
+        response = oauth.get('https://api.intra.42.fr/v2/me')
+        response.raise_for_status()
+        return oauth  # Return the session if successful
+
+    except TokenExpiredError:
+        # Token expired; remove from session and redirect to login
+        request.session.pop('oauth_token', None)
+        messages.warning(request, 'Your session has expired. Please log in again.')
+        print(f"\033[91m[DEBUG]Expired Token in get_oauth\033[0m")
+        return False
+
+    except RequestException as e:
+        messages.error(request, f"Failed to retrieve profile information: {e}")
+        print(f"\033[91m[DEBUG]NO Auth info\033[0m")
+        return False
+
+def home(request):
+    try:
+        # Use locally stored profile data if it exists
+        if request.user.is_authenticated and request.user.profile_data:
+            profile_data = request.user.profile_data
+            print(f"\033[94m[DEBUG]User.is_online = {request.user.is_online}\033[0m")
+        else:
+            # Attempt to fetch profile data using OAuth session helper
+            oauth_result = get_oauth_session(request)
+            if oauth_result is False:
+                return render(request, "home.html")
+            # If the result is a redirect, handle it
+            if hasattr(oauth_result, 'url'):
+                return oauth_result  # Redirect to login or error page
+
+            # Otherwise, unpack the session and profile data
+            oauth, profile_data = oauth_result
+
+            # Update the user profile data in the database
+            if profile_data:
                 request.user.profile_data = profile_data
                 request.user.save()
-            except TokenExpiredError:
-                # Handle token expiration: redirect to login to refresh session
-                messages.error(request, "Your session has expired. Please log in again.")
-                return redirect('oauth_login')
-            except RequestException as e:
-                # Handle other request errors gracefully
-                messages.error(request, f"An error occurred while retrieving profile data: {e}")
-                profile_data = None
-        else:
-            profile_data = None
-
-    return render(request, "home.html", {'profile': profile_data})
+        print(f"\033[91m[DEBUG]NO ERROR\033[0m")
+        
+        return render(request, "home.html", {'profile': profile_data})
+    except RequestException as e:
+        request.session.pop('oauth_token', None)
+        print(f"\033[91m[DEBUG]{e}\033[0m")
+        return render(request, "home.html")
+        
 
 def pong(request):
-    # Use stored profile data if it exists
+    # Use locally stored profile data if it exists
     if request.user.is_authenticated and request.user.profile_data:
         profile_data = request.user.profile_data
     else:
-        # Attempt to retrieve profile data from the API if no local data is available
-        token = request.session.get('oauth_token')
-        if token:
-            oauth = OAuth2Session(CLIENT_ID, token=token, auto_refresh_url=TOKEN_URL, auto_refresh_kwargs={
-                'client_id': CLIENT_ID,
-                'client_secret': CLIENT_SECRET,
-            }, token_updater=lambda t: request.session.update({'oauth_token': t}))
+        # Use the helper function to attempt fetching profile data
+        oauth_result = get_oauth_session(request)
 
-            try:
-                # Make an authenticated request to fetch updated profile data
-                response = oauth.get('https://api.intra.42.fr/v2/me')
-                response.raise_for_status()
-                profile_data = response.json()
-                
-                # Update the user profile data in the database
-                request.user.profile_data = profile_data
-                request.user.save()
-            except TokenExpiredError:
-                # Handle token expiration: redirect to login to refresh session
-                messages.error(request, "Your session has expired. Please log in again.")
-                return redirect('oauth_login')
-            except RequestException as e:
-                # Handle other request errors gracefully
-                messages.error(request, f"An error occurred while retrieving profile data: {e}")
-                profile_data = None
-        else:
-            profile_data = None
+        # Check if the result is a redirect (e.g., to login if the token expired)
+        if hasattr(oauth_result, 'url'):
+            return oauth_result  # Redirect to login or error page
+
+        # Otherwise, unpack the session and profile data
+        profile_data = oauth_result
+
+        # Update the user profile data in the database if fetched successfully
+        if profile_data:
+            request.user.profile_data = profile_data
+            request.user.save()
 
     return render(request, "pong.html", {'profile': profile_data})
 
@@ -218,8 +240,8 @@ def set_online(request):
 @login_required
 def set_offline(request):
     if request.method == "POST":
-        request.user.last_active = None  # Clear last_active timestamp for offline
-        request.user.save()
+        # request.user.last_active = None  # Clear last_active timestamp for offline
+        # request.user.save()
         return JsonResponse({"status": "User set to offline"})
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
@@ -244,18 +266,22 @@ def games_view(request):
     }
     return render(request, 'games.html', context)
 
+
 def profile(request):
-    from django.contrib.auth import update_session_auth_hash
     user = request.user
     if not user.is_authenticated:
-        # messages.error(request, "You need to be logged in to view this page.")
-        return redirect('home')  # Customize as needed
-    profile_data = user.profile_data  # Retrieve profile data directly from the user's record
+        # Redirect unauthenticated users to the home page or login page
+        return redirect('home')
+
+    # Retrieve profile data directly from the user's record
+    profile_data = user.profile_data
 
     # Determine if the logged-in user is viewing their own profile
-    is_own_profile = True  # Since this is the user's own profile view
+    is_own_profile = True  # This view is for the user's own profile
+
 
     if request.method == 'POST':
+        # Process both profile and password forms
         profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
         password_form = CustomUserChangeFormPassword(request.POST, user=user)
 
@@ -274,11 +300,18 @@ def profile(request):
         if profile_form.is_valid() or password_form.is_valid():
             return redirect('profile')
     else:
+        # Initialize empty profile and password forms if GET request
         profile_form = CustomUserChangeForm(instance=user)
         password_form = CustomUserChangeFormPassword(user=user)
 
     # Fetch user's games
     games = Game.objects.filter(players__user=user).distinct().order_by('-id')
+
+    # Build a list of friends with online status
+    friends_data = [
+        {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
+    ]
+
     return render(request, 'profile.html', {
         'user': user,
         'profile': profile_data,
@@ -286,10 +319,8 @@ def profile(request):
         'profile_form': profile_form,
         'password_form': password_form,
         'is_own_profile': is_own_profile,
-        'is_online': True,
-        'friends': [
-        {'friend': friend, 'is_online': friend.is_online()} for friend in request.user.friends.all()
-    ]
+        'is_online': True,  # Display user's online status if needed
+        'friends': friends_data  # Pass the list of friends with their online statuses
     })
 
 def userProfile(request, playername):
@@ -314,6 +345,7 @@ def userProfile(request, playername):
     # Calculate the number of games won by the user
     gamesWon = them.games_won_count
     is_friend = you.is_friend(them)
+    is_online = them.is_online()
     context = {
         'them': them,
         'user': you,
@@ -321,7 +353,8 @@ def userProfile(request, playername):
         'theirprofile': them.profile_data,
         'games': theirgames,
         'gamesWon': gamesWon,
-        'is_friend': is_friend
+        'is_friend': is_friend,
+        'is_online': is_online
     }
 
     return render(request, 'profile-view.html', context)

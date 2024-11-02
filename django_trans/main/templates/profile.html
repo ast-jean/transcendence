@@ -92,13 +92,57 @@
     <!-- Profile Form Collapse -->
     <div class="collapse" id="collapseProfileForm">
         <div class="card card-body">
-            <form method="post" enctype="multipart/form-data">
+            <form id="profileForm" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ profile_form.as_p }}
+                <p id="errorAvatar" class="text-danger"></p>
                 <button type="submit" class="btn btn-primary mt-3">Save Profile Changes</button>
             </form>
         </div>
     </div>
+    
+    <script>
+        const fileInput = document.querySelector('input[name="avatar"]');
+        const maxSize = 2 * 1024 * 1024;  // 2 MB in bytes
+        let fileTooLarge = false;  // Flag to track oversized file
+    
+        // Check file size and preview image when a file is selected
+        fileInput.onchange = function(event) {
+            const file = fileInput.files[0];
+            const avatarViewer = document.getElementById('avatar_viewer');
+            const errorAvatar = document.getElementById('errorAvatar');
+    
+            if (file && file.size > maxSize) {
+                errorAvatar.innerHTML = "The file size exceeds the 2 MB limit. Please upload a smaller file.";
+                console.log("Error: File size exceeds limit");
+                avatarViewer.src = "";  // Clear the preview if the file is too large
+                avatarViewer.style.display = 'none';  // Hide the preview
+                fileTooLarge = true;  // Set flag to indicate file is too large
+                return;  // Exit function to prevent further processing
+            } else {
+                errorAvatar.innerHTML = "";  // Clear any previous error message
+                fileTooLarge = false;  // Reset flag if file size is acceptable
+            }
+    
+            // Preview the selected image
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarViewer.src = e.target.result;  // Set src to the file's Data URL
+                    avatarViewer.style.display = 'block';  // Make sure the preview is visible
+                };
+                reader.readAsDataURL(file);  // Read the file as a Data URL
+            }
+        };
+    
+        // Prevent form submission if file is too large
+        document.getElementById('profileForm').onsubmit = function(event) {
+            if (fileTooLarge) {
+                console.log("Form submission prevented due to file size");
+                event.preventDefault();  // Prevent form submission
+            }
+        };
+    </script>
 
     <!-- Password Form Collapse -->
     <div class="collapse" id="collapsePasswordForm">
