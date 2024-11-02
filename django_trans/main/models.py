@@ -37,14 +37,15 @@ class CustomUser(AbstractUser):
         return is_friend
 
     def set_online(self):
-        """Set the user as online by updating the last_active timestamp."""
         self.last_active = timezone.now()
         self.save()
+        print(f"\033[91m[DEBUG] set_online: last_active set to {self.last_active}\033[0m")
 
     def is_online(self):
-        """Check if the user is online based on the last_active timestamp."""
         if self.last_active:
-            return timezone.now() - self.last_active < timezone.timedelta(minutes=2)
+            online_status = timezone.now() - self.last_active < timezone.timedelta(minutes=2)
+            print(f"\033[91m[DEBUG] is_online: last_active = {self.last_active}, current time = {timezone.now()}, online_status = {online_status}\033[0m")
+            return online_status
         return False
     
     def set_offline(self):
