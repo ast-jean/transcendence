@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.transcendence.somewhat.ca']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.11.244.28', '192.168.6.134', 'www.transcendence.somewhat.ca', 'transcendence.somewhat.ca']
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
