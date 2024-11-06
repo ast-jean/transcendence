@@ -1,7 +1,7 @@
 all:
-	@docker compose up --build
+	@docker-compose up --build
 up:
-	@docker compose up --build
+	@docker-compose up --build
 down:
 	@docker compose -f ./docker compose.yml down
 in_db:
@@ -9,7 +9,7 @@ in_db:
 in_django:
 	docker exec -it django bash
 out:
-	@echo "👨‍❤️‍💋‍👨"
+	@echo ":kiss_mm:"
 
 re: stop_dockers all
 
