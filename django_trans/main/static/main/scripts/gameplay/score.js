@@ -49,6 +49,7 @@ export function updateScoreDisplay() {
         });
         return ;
     } else {
+
         player1ScoreElement.innerHTML = player1Score;
         player2ScoreElement.innerHTML = player2Score;
     }

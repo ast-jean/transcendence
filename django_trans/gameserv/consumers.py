@@ -4,7 +4,7 @@ import json
 from typing import List, Optional
 import random
 from .tournament import *
-
+from asgiref.sync import sync_to_async
 
 class Client:
     def __init__(self, ident, index, websocket, name):
@@ -361,7 +361,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             elif cmd == "roomSearch":
                 await self.searchRoom(text_data_json)
             elif cmd == "roomCreate2":
-                await self.createRoom(2, self.name)
+                await self.createRoom(2, self.name, text_data_json)
             elif cmd == "roomCreate4":
                 await self.createRoom(4)
             elif cmd == "createTournamentLobby":
@@ -555,16 +555,18 @@ class GameConsumer(AsyncWebsocketConsumer):
             return f'User {recipient_name} not found.'
 
     async def handle_profile(self, message, data):
+        from main.models import CustomUser
+        # from main.urls import CustomUser
         parts = message.split(' ', 1)
         if len(parts) < 2:
             return 'Invalid /profile command. Usage: /profile username'
         target_username = parts[1]
         # Check if the user exists
-        target_client = await self.find_client_by_name(target_username)
-        if target_client:
+        # target_client = await self.find_client_by_name(target_username) #searches GameConsumers
+        target_user = await sync_to_async(CustomUser.objects.filter(username=target_username).first)()#Searches Users
+        if target_user:
             # Construct the profile URL
-            base_url = ''  # Replace with your actual domain
-            profile_url = f"{base_url}/profile/{target_username}"
+            profile_url = f"/profile/{target_username}"
             # Send the profile URL back to the sender
             profile_data = {
                 'cmd': 'profile',
@@ -633,7 +635,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if client.ident != self.ident:
                     await client.websocket.send(json.dumps(data))
 
-    async def createRoom(self, playerTotal, creator):
+    async def createRoom(self, playerTotal, creator, data):
+        creator_img = data['img']
         print(f"Creating new room of {playerTotal}")
         try:
             new_room = Room(int(playerTotal), self.existing_room_ids)
@@ -665,7 +668,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                     {
                         "ident": client.ident, 
                         "index": client.index, 
-                        "name": client.name
+                        "name": client.name,
+                        "img": client.img
                     } 
                     for client in found_room.clients
                 ]
@@ -696,6 +700,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps(data))
         except Exception as e:
             error_message = str(e) 
+            print(f"\033[91mError {error_message}\033[0m")
             await self.send(json.dumps({'cmd':'roomNotFound', 'error':error_message}))
 
             

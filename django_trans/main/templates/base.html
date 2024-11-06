@@ -60,11 +60,17 @@
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                 </li>
                 {% elif user and user.is_authenticated%}
+                    <li class="nav-item active">    
+                        <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail" style="max-width: 50px;">
+                    </li>
                     <li class="nav-item active">
                         <a class="nav-link" aria-disabled="true">Hello, <span id="name">{{ user.username }}</span>{% if user.alias %} AKA <span id="alias">{{ user.alias }}</span>{%endif%}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    <li class="nav-item visually-hidden">
+                        <span class="nav-link" id="imgUrl">{{ user.avatar }}</span>
                     </li>
                 {% else %}
                 <li class="nav-item active">

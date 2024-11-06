@@ -59,6 +59,7 @@ function setupWebSocket() {
             getRoomCreateCmd(data.roomId);
             room_id = data.roomId;
             setPlayerNumber(data.clientId)
+            
             sendCmd("resetLocations", data.roomId);
         }
         if (data.cmd === "sync") {

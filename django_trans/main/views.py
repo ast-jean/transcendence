@@ -276,10 +276,6 @@ def profile(request):
     # Retrieve profile data directly from the user's record
     profile_data = user.profile_data
 
-    # Determine if the logged-in user is viewing their own profile
-    is_own_profile = True  # This view is for the user's own profile
-
-
     if request.method == 'POST':
         # Process both profile and password forms
         profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
@@ -318,18 +314,18 @@ def profile(request):
         'games': games,
         'profile_form': profile_form,
         'password_form': password_form,
-        'is_own_profile': is_own_profile,
         'is_online': True,  # Display user's online status if needed
         'friends': friends_data  # Pass the list of friends with their online statuses
     })
 
 def userProfile(request, playername):
     you = request.user
+
     # Check if the user is anonymous
     if you.is_anonymous:
         return redirect('home')
 
-    # Redirect to /profile if the playername matches the logged-in user's username
+    # Redirect to the default profile view if playername matches logged-in user's username
     if you.username == playername:
         return redirect('profile')
 
@@ -340,25 +336,29 @@ def userProfile(request, playername):
         ),
         username=playername
     )
+
     # Retrieve all games the user has participated in
     theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
+
     # Calculate the number of games won by the user
     gamesWon = them.games_won_count
-    is_friend = you.is_friend(them)
-    is_online = them.is_online()
+
+    # Check friendship and online status
+    is_friend = you.is_friend(them) if hasattr(you, 'is_friend') else False
+    is_online = them.is_online() if hasattr(them, 'is_online') else False
+
     context = {
         'them': them,
         'user': you,
-        'profile': you.profile_data,
-        'theirprofile': them.profile_data,
+        'profile': getattr(you, 'profile_data', {}),
+        'theirprofile': getattr(them, 'profile_data', {}),
         'games': theirgames,
         'gamesWon': gamesWon,
         'is_friend': is_friend,
-        'is_online': is_online
+        'is_online': is_online,
     }
 
     return render(request, 'profile-view.html', context)
-
 
 @login_required
 def update_profile(request):
