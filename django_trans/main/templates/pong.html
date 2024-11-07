@@ -119,10 +119,10 @@
 						<div id="tournamentOptions" class="hidden"></div>
 						<button id="createTournamentBtn" class="btn btn-outline-info strokeme hud-btn " data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
 						<button id="joinTournamentBtn" class="btn btn-outline-info strokeme hud-btn ">Join</button>
-						<button id="startTournamentBtn" class="btn btn-outline-info strokeme hud-btn ">Begin Tournament</button>
+						
 						<div id="tournamentJoinForm" class="hidden">
-							<input type="text" id="tournamentIdInput" placeholder="Entrez l'ID du tournoi">
-							<button id="submitJoinTournament">Join</button>
+							<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
+							<button id="submitJoinTournament" class="btn btn-primary">Join</button>
 						</div>
 							<hr class="border border-info border-1">
 							<div id="return_btn_3" class="row hud-btn game-button btn btn-outline-info pt-2">
@@ -241,7 +241,6 @@
 									  </div>
 									<div id="tournamentRoomLabel"></div>
 								</h5>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							<div class="modal-body row">
 								<!-- <div class="container-fluid"></div> -->
@@ -305,7 +304,8 @@
 								</div>
 								<div class="modal-footer">
 									<!-- FOOTER BUTTON NECESSARY ?? -->
-									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Exit </button>
+									<button id="startTournamentBtn" class="btn btn-info strokeme hud-btn visually-hidden">Begin Tournament</button>
+									<button type="button" class="btn btn-danger" data-bs-dismiss="modal"> Exit </button>
 								</div>
 							</div>
 						</div>

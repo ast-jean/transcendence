@@ -60,7 +60,7 @@ export function setupWebSocket() {
     
             if (data.cmd === "tournamentWinner") {
                 console.log(`Le gagnant du tournoi est : ${data.winnerId}`);
-                alert(`Le gagnant du tournoi est : ${data.winnerId}`);
+                alert(`The winner of the tournament : ${data.winnerId}`);
             }
             if (data.cmd === "startGame") {
                 hideAllButtons();
@@ -143,6 +143,7 @@ export function setupWebSocket() {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
+                addChat("Server", "Room id = " + room_id)
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {

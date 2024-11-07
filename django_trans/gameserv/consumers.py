@@ -265,13 +265,13 @@ class GameConsumer(AsyncWebsocketConsumer):
                 response = {
                     "cmd": "joinTournament",
                     "success": False,
-                    "error": "Le tournoi est plein."
+                    "error": "Tournament is full"
                 }
         else:
             response = {
                 "cmd": "joinTournament",
                 "success": False,
-                "error": "Tournoi non trouvé."
+                "error": "Tournament not found"
             }
         
         await self.send(text_data=json.dumps(response))

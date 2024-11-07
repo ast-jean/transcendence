@@ -84,47 +84,63 @@ def home(request):
             oauth_result = get_oauth_session(request)
             if oauth_result is False:
                 return render(request, "home.html")
-            # If the result is a redirect, handle it
             if hasattr(oauth_result, 'url'):
                 return oauth_result  # Redirect to login or error page
 
-            # Otherwise, unpack the session and profile data
             oauth, profile_data = oauth_result
-
-            # Update the user profile data in the database
             if profile_data:
                 request.user.profile_data = profile_data
                 request.user.save()
+
         print(f"\033[91m[DEBUG]NO ERROR\033[0m")
-        
         return render(request, "home.html", {'profile': profile_data})
+
+    except TokenExpiredError:
+        request.session.pop('oauth_token', None)
+        print("\033[91m[DEBUG] Token expired. Please log in again.\033[0m")
+        return redirect('oauth_login')  # Redirect to login to refresh token
+
     except RequestException as e:
         request.session.pop('oauth_token', None)
-        print(f"\033[91m[DEBUG]{e}\033[0m")
+        print(f"\033[91m[DEBUG] RequestException: {e}\033[0m")
         return render(request, "home.html")
-        
 
+    except Exception as e:
+        print(f"\033[91m[DEBUG] Unexpected error: {e}\033[0m")
+        return render(request, "home.html")
+    
 def pong(request):
-    # Use locally stored profile data if it exists
-    if request.user.is_authenticated and request.user.profile_data:
-        profile_data = request.user.profile_data
-    else:
-        # Use the helper function to attempt fetching profile data
-        oauth_result = get_oauth_session(request)
+    try:
+        if request.user.is_authenticated and request.user.profile_data:
+            profile_data = request.user.profile_data
+        else:
+            oauth_result = get_oauth_session(request)
+            if oauth_result is False:
+                return render(request, "pong.html")
+            if hasattr(oauth_result, 'url'):
+                return oauth_result
 
-        # Check if the result is a redirect (e.g., to login if the token expired)
-        if hasattr(oauth_result, 'url'):
-            return oauth_result  # Redirect to login or error page
+            oauth, profile_data = oauth_result
+            if profile_data:
+                request.user.profile_data = profile_data
+                request.user.save()
 
-        # Otherwise, unpack the session and profile data
-        profile_data = oauth_result
+        return render(request, "pong.html", {'profile': profile_data})
 
-        # Update the user profile data in the database if fetched successfully
-        if profile_data:
-            request.user.profile_data = profile_data
-            request.user.save()
+    except TokenExpiredError:
+        request.session.pop('oauth_token', None)
+        print("\033[91m[DEBUG] Token expired. Redirecting to login.\033[0m")
+        return redirect('oauth_login')
 
-    return render(request, "pong.html", {'profile': profile_data})
+    except RequestException as e:
+        request.session.pop('oauth_token', None)
+        print(f"\033[91m[DEBUG] RequestException in pong: {e}\033[0m")
+        return render(request, "pong.html")
+
+    except Exception as e:
+        print(f"\033[91m[DEBUG] Unexpected error in pong: {e}\033[0m")
+        return render(request, "pong.html")
+
 
 def truckleague(request):
     token = request.session.get('oauth_token')
