@@ -254,7 +254,8 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    showBtn('start_btn');
+    //showBtn('start_btn');
+    showBtn('startTournamentBtn');
     
 });
 
