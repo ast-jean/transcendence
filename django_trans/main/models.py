@@ -8,11 +8,11 @@ class CustomUser(AbstractUser):
     profile_data = models.JSONField(null=True, blank=True)  # Store user profile data
     last_connected = models.DateTimeField(auto_now=True)  # Track last login time
     
-    profile_data = models.JSONField(null=True, blank=True)
     alias = models.CharField(max_length=150, null=True, blank=True)
     friends = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg', null=True, blank=True)
     last_active = models.DateTimeField(null=True, blank=True)
+
     def update_profile_data(self, api_data):
         """Updates the profile_data field with data fetched from the API."""
         self.profile_data = api_data

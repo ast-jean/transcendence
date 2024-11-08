@@ -84,47 +84,63 @@ def home(request):
             oauth_result = get_oauth_session(request)
             if oauth_result is False:
                 return render(request, "home.html")
-            # If the result is a redirect, handle it
             if hasattr(oauth_result, 'url'):
                 return oauth_result  # Redirect to login or error page
 
-            # Otherwise, unpack the session and profile data
             oauth, profile_data = oauth_result
-
-            # Update the user profile data in the database
             if profile_data:
                 request.user.profile_data = profile_data
                 request.user.save()
+
         print(f"\033[91m[DEBUG]NO ERROR\033[0m")
-        
         return render(request, "home.html", {'profile': profile_data})
+
+    except TokenExpiredError:
+        request.session.pop('oauth_token', None)
+        print("\033[91m[DEBUG] Token expired. Please log in again.\033[0m")
+        return redirect('oauth_login')  # Redirect to login to refresh token
+
     except RequestException as e:
         request.session.pop('oauth_token', None)
-        print(f"\033[91m[DEBUG]{e}\033[0m")
+        print(f"\033[91m[DEBUG] RequestException: {e}\033[0m")
         return render(request, "home.html")
-        
 
+    except Exception as e:
+        print(f"\033[91m[DEBUG] Unexpected error: {e}\033[0m")
+        return render(request, "home.html")
+    
 def pong(request):
-    # Use locally stored profile data if it exists
-    if request.user.is_authenticated and request.user.profile_data:
-        profile_data = request.user.profile_data
-    else:
-        # Use the helper function to attempt fetching profile data
-        oauth_result = get_oauth_session(request)
+    try:
+        if request.user.is_authenticated and request.user.profile_data:
+            profile_data = request.user.profile_data
+        else:
+            oauth_result = get_oauth_session(request)
+            if oauth_result is False:
+                return render(request, "pong.html")
+            if hasattr(oauth_result, 'url'):
+                return oauth_result
 
-        # Check if the result is a redirect (e.g., to login if the token expired)
-        if hasattr(oauth_result, 'url'):
-            return oauth_result  # Redirect to login or error page
+            oauth, profile_data = oauth_result
+            if profile_data:
+                request.user.profile_data = profile_data
+                request.user.save()
 
-        # Otherwise, unpack the session and profile data
-        profile_data = oauth_result
+        return render(request, "pong.html", {'profile': profile_data})
 
-        # Update the user profile data in the database if fetched successfully
-        if profile_data:
-            request.user.profile_data = profile_data
-            request.user.save()
+    except TokenExpiredError:
+        request.session.pop('oauth_token', None)
+        print("\033[91m[DEBUG] Token expired. Redirecting to login.\033[0m")
+        return redirect('oauth_login')
 
-    return render(request, "pong.html", {'profile': profile_data})
+    except RequestException as e:
+        request.session.pop('oauth_token', None)
+        print(f"\033[91m[DEBUG] RequestException in pong: {e}\033[0m")
+        return render(request, "pong.html")
+
+    except Exception as e:
+        print(f"\033[91m[DEBUG] Unexpected error in pong: {e}\033[0m")
+        return render(request, "pong.html")
+
 
 def truckleague(request):
     token = request.session.get('oauth_token')
@@ -276,10 +292,6 @@ def profile(request):
     # Retrieve profile data directly from the user's record
     profile_data = user.profile_data
 
-    # Determine if the logged-in user is viewing their own profile
-    is_own_profile = True  # This view is for the user's own profile
-
-
     if request.method == 'POST':
         # Process both profile and password forms
         profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
@@ -318,18 +330,18 @@ def profile(request):
         'games': games,
         'profile_form': profile_form,
         'password_form': password_form,
-        'is_own_profile': is_own_profile,
         'is_online': True,  # Display user's online status if needed
         'friends': friends_data  # Pass the list of friends with their online statuses
     })
 
 def userProfile(request, playername):
     you = request.user
+
     # Check if the user is anonymous
     if you.is_anonymous:
         return redirect('home')
 
-    # Redirect to /profile if the playername matches the logged-in user's username
+    # Redirect to the default profile view if playername matches logged-in user's username
     if you.username == playername:
         return redirect('profile')
 
@@ -340,25 +352,29 @@ def userProfile(request, playername):
         ),
         username=playername
     )
+
     # Retrieve all games the user has participated in
     theirgames = Game.objects.filter(players__user=them).distinct().order_by('-id')
+
     # Calculate the number of games won by the user
     gamesWon = them.games_won_count
-    is_friend = you.is_friend(them)
-    is_online = them.is_online()
+
+    # Check friendship and online status
+    is_friend = you.is_friend(them) if hasattr(you, 'is_friend') else False
+    is_online = them.is_online() if hasattr(them, 'is_online') else False
+
     context = {
         'them': them,
         'user': you,
-        'profile': you.profile_data,
-        'theirprofile': them.profile_data,
+        'profile': getattr(you, 'profile_data', {}),
+        'theirprofile': getattr(them, 'profile_data', {}),
         'games': theirgames,
         'gamesWon': gamesWon,
         'is_friend': is_friend,
-        'is_online': is_online
+        'is_online': is_online,
     }
 
     return render(request, 'profile-view.html', context)
-
 
 @login_required
 def update_profile(request):

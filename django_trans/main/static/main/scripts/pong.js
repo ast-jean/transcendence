@@ -54,6 +54,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 document.addEventListener('DOMContentLoaded', function() {
     hideBtn('loading');
+    
 });
 
 function localPlay4Players() {
@@ -237,6 +238,7 @@ const tournamentOptions = document.getElementById('tournamentOptions');
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
     console.log("Création d'un nouveau tournoi");
+    //wait for all players 
 
     // Envoyer la commande au serveur pour créer un tournoi
     const cmd = {
@@ -251,7 +253,8 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    showBtn('start_btn');
+    // showBtn('start_btn');
+    
 });
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi

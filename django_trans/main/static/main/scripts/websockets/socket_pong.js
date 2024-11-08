@@ -60,7 +60,7 @@ export function setupWebSocket() {
     
             if (data.cmd === "tournamentWinner") {
                 console.log(`Le gagnant du tournoi est : ${data.winnerId}`);
-                alert(`Le gagnant du tournoi est : ${data.winnerId}`);
+                alert(`The winner of the tournament : ${data.winnerId}`);
             }
             if (data.cmd === "startGame") {
                 hideAllButtons();
@@ -143,6 +143,7 @@ export function setupWebSocket() {
                     setTournament(data.tournamentId, data.maxPlayers)
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
+                addChat("Server", "Room id = " + room_id)
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
                     data.players.forEach(player => {
@@ -226,6 +227,26 @@ export function disconnectWebSocket() {
     }
 }
 
+export function getImg() {
+    var img;
+    try {
+        const ImgElement = document.getElementById('imgUrl');
+        img = ImgElement.textContent || ImgElement.innerText;
+
+        // If img is invalid, set it to the default image
+        if (!img || img === 'null' || img === 'None') {
+            img = 'default.jpg';
+        }
+    } catch (error) {
+        // If any error occurs, fallback to the default image
+        img = 'default.jpg';
+    }
+
+    // Prepend the location path with "/avatars/"
+    const imgPath = `/avatars/${img}`;
+    return imgPath;
+}
+
 export function getName() {
     var name;
     try {
@@ -246,7 +267,8 @@ export function getName() {
 export function sendCmd(cmd, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
         var name = getName();
-        socketState.socket.send(JSON.stringify({ cmd, roomId, name }));
+        var img = getImg();
+        socketState.socket.send(JSON.stringify({ cmd, roomId, name, img }));
     } else {
         console.error("WebSocket is not ready. Unable to send command.");
     }
@@ -279,8 +301,8 @@ export function receiveExistingPlayers(data) {
     data.data.players.forEach((player, index) => {
         const newPosition = getNewPlayerPosition(index);
         const newColor = getNewPlayerColor(index);
-        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name));
-        // console.log("Existing player added: ", player.ident);    
+        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name, player.img));
+        console.log("Existing player added: ", player.ident);    
         addChat("->", player.name);
     });
 }
@@ -346,7 +368,8 @@ export function sendSync() {
         const movementData = { x, y };
         // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
         var name = getName();
-        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name }));
+        var img = getImg();
+        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name, img }));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }

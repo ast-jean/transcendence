@@ -52,16 +52,33 @@ function pageLoaded() {
 //Listening the button click
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
-export function addChat(name, msg, textColor = 'black') {
+export function addChat(name, msg, textColor = 'black', img = null) {
     var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
     
+    // Handle name fallback
     if (!name || name.trim().toLowerCase() === 'none') {
         name = 'Guest';
     }
+
+    // Create and configure the image element
+    if (img != null) {
+        var imgElement = document.createElement('img');
+        imgElement.src = window.location.origin + img;
+        imgElement.alt = `avatar`;
+        imgElement.style.width = '30px';  // Set width (adjust as needed)
+        imgElement.style.height = '30px';  // Set height (adjust as needed)
+        imgElement.style.borderRadius = '50%';  // Optional: makes the image circular
+        imgElement.style.marginRight = '8px';  // Add space between image and text
+        li.prepend(imgElement);
+    }
+    // Set up the text content and styling
     li.classList.add("text-" + textColor);
-    li.textContent = name +" " + msg;
-    //auto scroll
+    li.append(`${name} ${msg}`);
+    
+    // Prepend the image to the `li` element
+
+    // Append the `li` to the chat box and auto-scroll
     chatBox.appendChild(li);
     li.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }

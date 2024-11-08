@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}Profile | About{% endblock %}
 {% block content %}
-<h1>Profile</h1>
+<h1 id="headers">Profile</h1>
 
-<div class="card m-5" style="max-width: 1000px;">
+<div class="card m-2" style="max-width: 1000px;">
     <div class="row g-0">
         <div class="col-md-4">
 
@@ -42,31 +42,36 @@
                 
                 <p class="profilecard-text">Friend(s):</p>
                 {% if user.friends.exists %}
-                    <div class="profilecard-text mb-3">
-                        {% for friend in friends %}
-                            <a href="{% url 'userProfile' friend.username %}">
+                <div class="profilecard-text mb-3">
+                    {% for friend in friends %}
+                        <!-- This will print the entire friend object (for debugging purposes) -->
+                        {% if friend.friend.username %}
+                            <a class="pb-2" href="{% url 'userProfile' playername=friend.friend.username %}">
                                 <div class="btn btn-primary position-relative rounded">
-
-                                    <img src="{{ friend.avatar.url }}" alt="{{ friend.username }} avatar" class="img-thumbnail" style="width: 100px; height: 100px;">
-                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded"> {{ friend.username }} </span>
-                                    
-                                    {% if friend.is_online is True %}
-                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle">
-                                        <span class="visually-hidden">Online</span>
+                                    <img src="{{ friend.friend.avatar.url }}" alt="{{ friend.friend.username }} avatar" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded">
+                                        {{ friend.friend.username }}
                                     </span>
+            
+                                    {% if friend.is_online %}
+                                        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle">
+                                            <span class="visually-hidden">Online</span>
+                                        </span>
                                     {% else %}
-                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-                                    <span class="visually-hidden">Offline</span>
-                                </span>
-                                {% endif %}
+                                        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+                                            <span class="visually-hidden">Offline</span>
+                                        </span>
+                                    {% endif %}
                                 </div>
                             </a>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="profilecard-text">You have no friends 🥲</p>
-                {% endif %}
-
+                        {% else %}
+                            <p>Unknown friend</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="profilecard-text">You have no friends :( </p>
+            {% endif %}
             </div>
         </div>
     </div>
@@ -158,7 +163,7 @@
 
 <hr style="text-align:left;margin-left:0;height:10px">
 
-<h2>Match Results</h2>
+<h2 id="headers">Match Results</h2>
 {% if games %}
 <ul>
 	{% for game in games %}
@@ -182,7 +187,7 @@
     {% endfor %}
 </ul>
 {% else %}
-<p>No games available.</p>
+<p style="margin-left: 10px;">No games available.</p>
 {% endif %}
 
 {% endblock %}

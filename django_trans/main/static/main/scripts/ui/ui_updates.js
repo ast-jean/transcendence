@@ -89,6 +89,12 @@ export function startCountdown() {
 
 
 export function updateTournamentUI(tournamentId, players) {
+    //enable modal 
+    document.getElementById()
+    //display players in slots
+
+
+
     const playerList = document.getElementById('playerListUl'); // Correction ici, on a playerList et playerListUl c'est pour ça qu'on avait un nul pensez à le renommer pareil ici et dans le html
     
     if (!playerList) {
