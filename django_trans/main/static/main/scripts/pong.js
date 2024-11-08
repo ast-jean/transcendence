@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket} from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
 import { players, setPlayerMode, localPlayerId, setID, setLocalMode } from './utils/setter.js';
@@ -16,6 +16,7 @@ import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 import { tournament } from './utils/setter.js';
 import { displayDebugInfo } from './utils/utils.js';
 import { showTournamentOptions } from './ui/ui_tournament.js';
+import { room_id } from './utils/setter.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -253,7 +254,7 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    // showBtn('start_btn');
+    showBtn('start_btn');
     
 });
 

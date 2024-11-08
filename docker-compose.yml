@@ -58,7 +58,6 @@ services:
         - "80:80"
       depends_on:
         - django
-        - certbotgit 
       networks:
         - transcendence_net
   

@@ -1,4 +1,4 @@
-import { socketState, getRoomId, room_id, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
+import { socketState, getRoomId, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
 import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
 import { deleteBall, scene } from '../pong.js';
@@ -6,6 +6,7 @@ import { sphere } from '../gameplay/ball.js';
 import { hideBtn, showBtn } from '../ui/ui_updates.js';
 import { checkIfHost } from '../utils/utils.js';
 import { walls } from './wall.js';
+import { room_id } from '../utils/setter.js';
 
 let player1Score = 0;
 let player2Score = 0;

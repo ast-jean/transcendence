@@ -1,10 +1,10 @@
 import { players, ballSpeedX, ballSpeedY, localPlayerId } from "./setter.js";
 import { socketState } from "../websockets/socket_pong.js";
-import { room_id } from "../websockets/socket_pong.js";
 import { sphere } from "../gameplay/ball.js";
 import { wallLength, walls } from "../gameplay/wall.js";
 import { tournament } from "./setter.js";
 import { hideBtn, showBtn } from "../ui/ui_updates.js";
+import { room_id } from "./setter.js";
 
 export function removeMeshFromScene(mesh, scene) {
     scene.remove(mesh);

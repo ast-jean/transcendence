@@ -90,7 +90,7 @@ export function startCountdown() {
 
 export function updateTournamentUI(tournamentId, players) {
     //enable modal 
-    document.getElementById()
+    //document.getElementById()
     //display players in slots
 
 

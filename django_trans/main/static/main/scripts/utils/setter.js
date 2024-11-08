@@ -10,6 +10,7 @@ export let isFourPlayerMode = false;
 export let isLocalMode = false;
 export let tournament;
 export let localPlayerId = null;
+export var room_id;
 
 
 export function setID(value){
@@ -76,3 +77,8 @@ export function setTournament(tournamentId, maxPlayers)
 {
     tournament = new Tournament(tournamentId, maxPlayers);
 } 
+
+export function setRoomId(roomId)
+{
+    room_id = roomId;
+}
