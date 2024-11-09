@@ -10,7 +10,7 @@ export let isFourPlayerMode = false;
 export let isLocalMode = false;
 export let tournament;
 export let localPlayerId = null;
-
+export let modal = new bootstrap.Modal(document.getElementById('exampleModal')); 
 
 export function setID(value){
     localPlayerId = value;
@@ -75,4 +75,8 @@ export function removePlayer(playerIdToRemove) {
 export function setTournament(tournamentId, maxPlayers)
 {
     tournament = new Tournament(tournamentId, maxPlayers);
-} 
+}
+
+export function setPlayers(src) {
+    players = src;
+}

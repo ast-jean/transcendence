@@ -8,16 +8,18 @@ export class Tournament {
         this.matches = [];
         this.isLobby = true;
         this.winner = null;
+        this.modal = new bootstrap.Modal(document.getElementById('exampleModal'));
     }
 
     // Méthode pour ajouter un joueur
     addPlayer(player) {
         if (this.players.length < this.maxPlayers) {
             this.players.push(player);
-            console.log(`Joueur ${player.ident} ajouté au tournoi`);
+            console.log(`Joueur ${player.name} ajouté au tournoi`);
         } else {
             console.warn('Le tournoi est plein');
         }
+        this.updatePlayerListUI();
     }
 
     // Méthode pour initialiser les matchs
@@ -61,21 +63,55 @@ export class Tournament {
         }
     }
 
+    // updatePlayerListUI() {
+    //     const playersList = document.getElementById('playersList');
+    //     playersList.innerHTML = '';
+    //     tournament.players.forEach(player => {
+    //         let li = document.createElement('li');
+    //         li.textContent = `Joueur: ${player.id}`;
+    //         playersList.appendChild(li);
+    //     });
+    // }
+
     updatePlayerListUI() {
-        const playersList = document.getElementById('playersList');
-        playersList.innerHTML = '';
-        tournament.players.forEach(player => {
-            let li = document.createElement('li');
-            li.textContent = `Joueur: ${player.id}`;
-            playersList.appendChild(li);
+        console.log(this.players);
+        this.players.forEach((player, index) => {
+            let playerElement = document.getElementById(`player${index + 1}Element`);   
+            if (playerElement) {
+                // Update the playerElement as needed
+                playerElement.textContent = player.name; // Example update
+            } else {
+                console.error(`Element with id 'player${index + 1}Element' not found`);
+            }
         });
     }
+
+    setPlayers(playersJson) {
+        playersJson.forEach(player => {
+            if (this.players.length < this.maxPlayers) {
+                this.players.push({
+                    id: player.id,
+                    name: player.name,
+                    index: player.index
+                });
+            } else {
+                console.log(`Cannot add ${player.name}: Tournament is full.`);
+            }
+        });
+    
+        console.log(`${this.players.length} players added to the tournament.`);
+        console.log(this.players); 
+    }
+
     // Recevoir les données du backend et mettre à jour la liste des joueurs
     handleBackendUpdate(data) {
+        console.log(data);
         if (data.cmd === "updateLobbyPlayers") {
+            console.log(data.players);
             this.players = data.players;
-            this.updatePlayerListUI();
+            console.log(this.players);
         }
+        this.updatePlayerListUI();
     }
 }
 

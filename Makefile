@@ -1,4 +1,5 @@
 all:
+	@sudo kill -9 $(sudo lsof -t -i :80 2>/dev/null) 2>/dev/null || true
 	@docker compose up --build
 up:
 	@docker compose up --build

@@ -122,7 +122,6 @@ class GameConsumer_truck(AsyncWebsocketConsumer):
 
 	async def searchRoom(self, data):
 		try:
-			# print(f"Client {self.ident} is searching for room {data['roomId']}")
 			print(f"\033[91m Rooms: {self.rooms} \033[0m")
 
 			found_room = await self.find_room(data['roomId'])

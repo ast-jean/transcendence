@@ -117,15 +117,17 @@
 							<hr class="border border-info border-1">
 						<!-- Add tournament boutons -->
 						<div id="tournamentOptions" class="hidden"></div>
-						<button id="createTournamentBtn" class="btn btn-outline-info strokeme hud-btn " data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
-						<button id="joinTournamentBtn" class="btn btn-outline-info strokeme hud-btn ">Join</button>
+						<button id="createTournamentBtn" class="btn btn-info strokeme text-white m-1" data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
+						<button id="joinTournamentBtn" class="btn btn-info strokeme text-white m-1">Join</button>
 						
 						<div id="tournamentJoinForm" class="hidden">
-							<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
-							<button id="submitJoinTournament" class="btn btn-primary">Join</button>
+							<span class="d-flex m-1">
+								<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
+								<button id="submitJoinTournament" class="btn btn-primary ms-2"  >Join</button>
+							</span>
 						</div>
 							<hr class="border border-info border-1">
-							<div id="return_btn_3" class="row hud-btn game-button btn btn-outline-info pt-2">
+							<div id="return_btn_3" class="row hud-btn game-button btn btn-info m-2">
 								<h2 class="strokeme">←</h2>
 							</div>
 						</div>
@@ -199,15 +201,6 @@
 				</div>
 			</div>
 		</div>
-				<!-- Placeholder pour afficher la liste des joueurs dans le lobby -->
-			<div id="playersList">
-				<h3>Players in the lobby:</h3>
-				<ul id="playerListUl">
-					<!-- Les joueurs seront ajoutés ici dynamiquement -->
-				</ul>
-			</div>
-				
-
 				<!-- Bouton pour démarrer la partie  STEVEN -->
 				<!-- <div id="startGameDiv" class="game-controls">
 					<button id="startGameButton" class="game-button">Start Game</button>
@@ -231,7 +224,7 @@
 				<!-- !!!!!! -->
 				
 					
-				<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal fade" id="exampleModal" tabindex="-1" data-bs-backdrop="static"  data-bs-keyboard="false"  aria-labelledby="exampleModalLabel" aria-hidden="true">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">
@@ -248,28 +241,28 @@
 									<div class="row"> 
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="p1-row">
-												<p class="my-auto mx-2 overflow-hidden mb-1">  player 1 </p>
+												<p id="player1Element" class="my-auto mx-2 overflow-hidden mb-1">  waiting... </p>
 											</div>
 										</div>
 									</div>
 									<div class="row"> 
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="p2-row">
-												<p class="my-auto mx-2 overflow-hidden mb-1"> player 2 </p>
+												<p id="player2Element" class="my-auto mx-2 overflow-hidden mb-1">waiting... </p>
 											</div>
 										</div>
 									</div>
 									<div class="row"> 
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="p3-row">
-												<p class="my-auto mx-2 overflow-hidden mb-1"> player 3 </p>
+												<p id="player3Element" class="my-auto mx-2 overflow-hidden mb-1">waiting... </p>
 											</div>
 										</div>
 									</div>
 									<div class="row"> 
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="p4-row">
-												<p class="my-auto mx-2 overflow-hidden mb-1"> player 4 </p>
+												<p  id="player4Element"  class="my-auto mx-2 overflow-hidden mb-1">waiting...  </p>
 											</div>
 										</div>
 									</div>
@@ -279,14 +272,14 @@
 									<div class="row ">
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="W1-row">
-												<p class="my-auto mx-2 mb-1"> semi 1 </p>
+												<p class="my-auto mx-2 mb-1"> pending... </p>
 											</div>
 										</div>
 									</div>
 									<div class="row">
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="W2-row">
-												<p class="my-auto mx-2  mb-1"> semi 2 </p>
+												<p class="my-auto mx-2  mb-1"> pending.. </p>
 											</div>
 										</div>
 									</div>
@@ -297,7 +290,7 @@
 									<div class="row">
 										<div class="m-2">
 											<div class="bracket mx-auto border border-black rounded" id="WF-row">
-												<p class="my-auto mx-2 mb-1"> winner </p>
+												<p class="my-auto mx-2 mb-1"> pending... </p>
 											</div>
 										</div>
 									</div>
@@ -305,7 +298,9 @@
 								<div class="modal-footer">
 									<!-- FOOTER BUTTON NECESSARY ?? -->
 									<button id="startTournamentBtn" class="btn btn-info strokeme hud-btn visually-hidden">Begin Tournament</button>
-									<button type="button" class="btn btn-danger" data-bs-dismiss="modal"> Exit </button>
+									<button type="button" class="btn btn-danger" onclick="if (confirm('Are you sure you want to exit?')) { location.reload(); }">
+										Exit
+									  </button>
 								</div>
 							</div>
 						</div>

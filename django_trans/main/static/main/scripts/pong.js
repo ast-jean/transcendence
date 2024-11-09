@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
-import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id } from './websockets/socket_pong.js';
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id, getName } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
 import { players, setPlayerMode, localPlayerId, setID, setLocalMode } from './utils/setter.js';
@@ -221,9 +221,11 @@ document.addEventListener('keydown', function (event) {
 function joinTournament(tournamentId) {
     // Vérifier si le WebSocket est prêt
     if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        let name = getName();
         const cmd = {
             cmd: "joinTournament",
-            tournamentId: tournamentId
+            tournamentId: tournamentId,
+            name: name
         };
         socketState.socket.send(JSON.stringify(cmd));
         console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);

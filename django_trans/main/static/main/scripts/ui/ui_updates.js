@@ -1,5 +1,5 @@
 import { INITIAL_BALL_SPEED_X, INITIAL_BALL_SPEED_Y} from "../gameplay/ball.js"
-import { setBallSpeedX, setBallSpeedY } from "../utils/setter.js";
+import { setBallSpeedX, setBallSpeedY, tournament, modal } from "../utils/setter.js";
 import { setGameOverState } from "../utils/setter.js"
 
 export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
@@ -90,26 +90,26 @@ export function startCountdown() {
 
 export function updateTournamentUI(tournamentId, players) {
     //enable modal 
-    document.getElementById()
+    modal.show();
     //display players in slots
+    tournament.updatePlayerListUI();
 
 
-
-    const playerList = document.getElementById('playerListUl'); // Correction ici, on a playerList et playerListUl c'est pour ça qu'on avait un nul pensez à le renommer pareil ici et dans le html
+    // const playerList = document.getElementById('playerListUl'); // Correction ici, on a playerList et playerListUl c'est pour ça qu'on avait un nul pensez à le renommer pareil ici et dans le html
     
-    if (!playerList) {
-        console.error("Element 'playerListUl' non trouvé dans le DOM.");
-        return; // Arrêtez l'exécution si l'élément n'existe pas
-    }
+    // if (!playerList) {
+    //     console.error("Element 'playerListUl' non trouvé dans le DOM.");
+    //     return; // Arrêtez l'exécution si l'élément n'existe pas
+    // }
     
-    playerList.innerHTML = '';
+    // playerList.innerHTML = '';
 
-    players.forEach((player, index) => {
-        let li = document.createElement('li');
-        li.textContent = `Joueur ${index + 1}: ${player}`;
-        playerList.appendChild(li);
-    });
+    // players.forEach((player, index) => {
+    //     let li = document.createElement('li');
+    //     li.textContent = `Joueur ${index + 1}: ${player}`;
+    //     playerList.appendChild(li);
+    // });
 
-    console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
+    // console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
 }
 
