@@ -11,6 +11,7 @@ export let isLocalMode = false;
 export let tournament;
 export let localPlayerId = null;
 export var room_id;
+export let isTournament = false;
 
 
 export function setID(value){
@@ -43,6 +44,11 @@ export function getBallSpeedY() {
 
 export function setGameOverState(state) {
     isGameOver = state;
+}
+
+export function setIsTournament(value)
+{
+    isTournament = value;
 }
 
 // Ajoute un joueur dans le tableau global players et à la scène

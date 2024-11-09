@@ -1,5 +1,5 @@
 import { socketState, getRoomId, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
-import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode } from '../utils/setter.js';
+import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode, tournament } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
 import { deleteBall, scene } from '../pong.js';
 import { sphere } from '../gameplay/ball.js';
@@ -72,8 +72,15 @@ export function checkEndGame() {
         }
     }
     if (player1Score >= maxScore || player2Score >= maxScore) {
-        console.log('endGame');
-        endGame();
+        if (tournament)
+            console.log("tournament endgame")
+            // établir les gagnants, sauvegarder les points, renvoyer les gagnants pour l'attente de leur prochain match, renvoyer les perdants au lobby
+        else
+        {
+
+            console.log('endGame');
+            endGame();
+        }
     }
 }
 let once = false;
