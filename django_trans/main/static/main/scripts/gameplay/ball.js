@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { room_id, socketState } from '../websockets/socket_pong.js';
+import {socketState } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
 import { getBallSpeedX, getBallSpeedY, isFourPlayerMode, isGameOver, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
+import { room_id } from '../utils/setter.js';
 
 export const INITIAL_BALL_SPEED_X = 5;
 export const INITIAL_BALL_SPEED_Y = 5;
