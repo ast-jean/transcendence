@@ -4,10 +4,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
+<<<<<<< HEAD
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, room_id, getName } from './websockets/socket_pong.js';
+=======
+import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket} from './websockets/socket_pong.js';
+>>>>>>> 8d0f9adaf3a3d42b18fe2140d5c8ff20499f902a
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode, localPlayerId, setID, setLocalMode } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID, setLocalMode, setIsTournament } from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -16,6 +20,7 @@ import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 import { tournament } from './utils/setter.js';
 import { displayDebugInfo } from './utils/utils.js';
 import { showTournamentOptions } from './ui/ui_tournament.js';
+import { room_id } from './utils/setter.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -229,6 +234,7 @@ function joinTournament(tournamentId) {
         };
         socketState.socket.send(JSON.stringify(cmd));
         console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
+        setIsTournament(true);
     } else {
         console.error("WebSocket n'est pas prêt.");
         alert("Connexion WebSocket non établie.");
@@ -251,11 +257,13 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
         console.log("WebSocket prêt.");
         socketState.socket.send(JSON.stringify(cmd));
         console.log(`Commande envoyée pour créer le tournoi`);
+        setIsTournament(true);
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    // showBtn('start_btn');
+    //showBtn('start_btn');
+    showBtn('startTournamentBtn');
     
 });
 

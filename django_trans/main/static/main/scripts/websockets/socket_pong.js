@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { addPlayerToGame, localPlayerId, players, setID } from '../utils/setter.js';
+import { addPlayerToGame, localPlayerId, players, setID, setRoomId } from '../utils/setter.js';
 import { checkIfHost, connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, isPositionValid, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer, removeAllPlayers} from '../utils/setter.js';
@@ -13,8 +13,9 @@ import { updateTournamentUI } from '../ui/ui_updates.js';
 import { scene } from '../pong.js';
 import { displayPlayersInScene } from '../gameplay/add_scene.js';
 import { setCameraPlayer2 } from '../ui/camera.js';
+import { room_id } from '../utils/setter.js';
 
-export var room_id;
+
 export var host_ident;
 
 export const socketState = {
@@ -82,7 +83,7 @@ export function setupWebSocket() {
             if (data.cmd === "joinRoom") {
                 console.log(data);
                 console.log("joined room" + data.roomId);
-                room_id = data.roomId;
+                setRoomId(data.roomId);
                 host_ident = data.host; 
                 if (checkIfHost(data.host)) {
                     showBtn('start_btn');
@@ -140,7 +141,8 @@ export function setupWebSocket() {
                     document.getElementById('tournamentRoomLabel').innerHTML = "Room #:" + data.tournamentId;
                     setTournament(data.tournamentId, data.maxPlayers);
                     tournament.updatePlayerListUI();
-                    console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`);
+                    setRoomId(data.tournamentId);
+                    console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
@@ -185,18 +187,18 @@ export function setupWebSocket() {
                     }
                 });
                 // Connecte les joueurs entre eux via WebSocket
-                room_id = data.roomId;
+                setRoomId(data.roomId);
+                //room_id = data.roomId;
                 //connectPlayersInRoom(data.roomId, data.players);
             }
             if (data.cmd === "joinTournament") {
                 if (data.success) {
-                    console.log(`Rejoint avec succès le tournoi ID : ${data.tournamentId}`);
                     document.getElementById('tournamentRoomLabel').innerHTML = "Room #:" + data.tournamentId;
                     setTournament(data.tournamentId, 4);
                     tournament.handleBackendUpdate(data);
                     tournament.setPlayers(data['players']);
-
-                    console.log(tournament.tournamentId);
+                    // Mise à jour de l'interface utilisateur
+                    setRoomId(data.tournamentId);
                     updateTournamentUI(data.tournamentId, data.players);
                 } else {
                     console.error("Impossible de rejoindre le tournoi :", data.error);

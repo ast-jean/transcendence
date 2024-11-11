@@ -11,6 +11,9 @@ export let isLocalMode = false;
 export let tournament;
 export let localPlayerId = null;
 export let modal = new bootstrap.Modal(document.getElementById('exampleModal')); 
+export var room_id;
+export let isTournament = false;
+
 
 export function setID(value){
     localPlayerId = value;
@@ -42,6 +45,11 @@ export function getBallSpeedY() {
 
 export function setGameOverState(state) {
     isGameOver = state;
+}
+
+export function setIsTournament(value)
+{
+    isTournament = value;
 }
 
 // Ajoute un joueur dans le tableau global players et à la scène
@@ -79,4 +87,9 @@ export function setTournament(tournamentId, maxPlayers)
 
 export function setPlayers(src) {
     players = src;
+} 
+
+export function setRoomId(roomId)
+{
+    room_id = roomId;
 }
