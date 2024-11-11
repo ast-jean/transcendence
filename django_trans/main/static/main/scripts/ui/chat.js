@@ -1,4 +1,4 @@
-import { getRoomId, socketState, getName } from '../websockets/socket_pong.js'
+import { getRoomId, socketState, getName, getAlias } from '../websockets/socket_pong.js'
 
 export let shouldPreventDefault = true;
 
@@ -52,26 +52,14 @@ function pageLoaded() {
 //Listening the button click
 document.addEventListener('DOMContentLoaded', pageLoaded);
 
-export function addChat(name, msg, textColor = 'black', img = null) {
+export function addChat(name, msg, textColor = 'black') {
     var chatBox = document.getElementById('chat-messages');
     var li = document.createElement('li');
     
     // Handle name fallback
     if (!name || name.trim().toLowerCase() === 'none') {
         name = 'Guest';
-    }
-
-    // Create and configure the image element
-    if (img != null) {
-        var imgElement = document.createElement('img');
-        imgElement.src = window.location.origin + img;
-        imgElement.alt = `avatar`;
-        imgElement.style.width = '30px';  // Set width (adjust as needed)
-        imgElement.style.height = '30px';  // Set height (adjust as needed)
-        imgElement.style.borderRadius = '50%';  // Optional: makes the image circular
-        imgElement.style.marginRight = '8px';  // Add space between image and text
-        li.prepend(imgElement);
-    }
+    }   
     // Set up the text content and styling
     li.classList.add("text-" + textColor);
     li.append(`${name} ${msg}`);
@@ -153,7 +141,8 @@ function sendMessage() {
         var cmd = "chat"
         var roomId = getRoomId();
         var data = msg;
+        var alias = getAlias();
         var name = getName();
-        socketState.socket.send(JSON.stringify({ cmd, data, roomId, name }));     
+        socketState.socket.send(JSON.stringify({ cmd, data, roomId, name, alias }));     
     }
 }
