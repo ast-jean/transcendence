@@ -7,9 +7,10 @@ from .tournament import *
 from asgiref.sync import sync_to_async
 
 class Client:
-    def __init__(self, ident, index, websocket, name):
+    def __init__(self, ident, index, websocket, name, alias = None):
         self.ident = ident
         self.name = name
+        self.alias = alias
         self.index = index
         self.websocket = websocket
         self.team = "team1" if index % 2 == 0 else "team2"
@@ -88,7 +89,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     rooms = []
     existing_room_ids = []
     tournaments = []
-
+    
     async def find_room(self, room_id):
         for room in self.rooms:
             if str(room.roomId) == str(room_id):
@@ -106,6 +107,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.ident= str(uuid.uuid4())
         self.name = None
+        self.alias = None
         self.block_list = set()
         GameConsumer.connected_clients.append(self)
         print(f"Client {self.ident} has connected.")
@@ -137,7 +139,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     self.rooms.remove(room)
         
 
-    async def create_tournament_lobby(self, name = "Default"):
+    async def create_tournament_lobby(self, name = "Default", alias = None):
         tournament_id = Room.generate_room_id(self.existing_room_ids)
         max_players = 4
 
@@ -145,7 +147,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         new_tournament = Tournament(tournament_id, max_players)
         self.tournaments.append(new_tournament)
         # Ajouter le créateur du tournoi comme premier joueur
-        new_client = Client(self.ident, 0, self, name)
+        new_client = Client(self.ident, 0, self, name, alias)
         new_tournament.add_player(new_client)
         
         # Envoie une confirmation au client
@@ -322,13 +324,15 @@ class GameConsumer(AsyncWebsocketConsumer):
         if len(text_data) > 0:
             text_data_json = json.loads(text_data)
             text_data_json.update({"ident": self.ident})
-            #print(f"Receive data -> { text_data }")
+            print(f"Receive data -> { text_data }")
             if not hasattr(self, 'name') or self.name is None:
                 name = text_data_json.get('name')
                 if name == 'Guest' or not name:
                     self.name = 'Guest' + str(len(self.connected_clients))
                 else:
                     self.name = name
+            if not hasattr(self, 'alias') or self.alias is None:
+                name = text_data_json.get('alias')
                 
             cmd = text_data_json.get("cmd")
 
@@ -364,11 +368,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             elif cmd == "roomSearch":
                 await self.searchRoom(text_data_json)
             elif cmd == "roomCreate2":
-                await self.createRoom(2, self.name, text_data_json)
+                await self.createRoom(2, self.name, self.alias, text_data_json)
             elif cmd == "roomCreate4":
                 await self.createRoom(4)
             elif cmd == "createTournamentLobby":
-                await self.create_tournament_lobby(self.name) 
+                await self.create_tournament_lobby(self.name, self.alias) 
             elif cmd == "joinTournament":
                 tournament_id = text_data_json.get('tournamentId')
                 name = text_data_json.get('name')
@@ -453,7 +457,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         "cmd": "badChat",
                         "msg": "Chat error: You need to be in a room to send a chat message. Otherwise, use commands like /dm, /block, /invite, /profile."
                     }
-                await self.send(json.dumps(error_data))
+                    await self.send(json.dumps(error_data))
 
     async def parsing_chat(self, data):
         message = data['data']
@@ -664,12 +668,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if client.ident != self.ident:
                     await client.websocket.send(json.dumps(data))
 
-    async def createRoom(self, playerTotal, creator, data):
+    async def createRoom(self, playerTotal, creator,alias, data):
         print(f"Creating new room of {playerTotal}")
         try:
             new_room = Room(int(playerTotal), self.existing_room_ids)
             self.rooms.append(new_room)
-            new_room.add_client(Client(self.ident, 0, self, creator))
+            new_room.add_client(Client(self.ident, 0, self, creator,alias))
             data = {
                 "cmd": "joinRoom",
                 "roomId": new_room.roomId,
@@ -690,13 +694,14 @@ class GameConsumer(AsyncWebsocketConsumer):
                 print(f"Room not found: {room_id}")
                 raise Exception(f"\033[31mRoom {room_id} not found.\033[0m]")
             else:
-                new_client = Client(self.ident, found_room.playerIn, self, data['name'])
+                new_client = Client(self.ident, found_room.playerIn, self, data['name'], data['alias'])
                 found_room.add_client(new_client)
                 existing_players = [
                     {
                         "ident": client.ident, 
                         "index": client.index, 
                         "name": client.name,
+                        "alias": client.alias
                     } 
                     for client in found_room.clients
                 ]
@@ -705,7 +710,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     "roomId": found_room.roomId
                 }
                 await self.broadcast_existingPlayers({ "cmd": "existingPlayers", 'data': data})
-                await self.broadcast_connect({'ident': self.ident, 'cmd' : 'connect', 'roomId':found_room.roomId, 'name':self.name})
+                await self.broadcast_connect({'ident': self.ident, 'cmd' : 'connect', 'roomId':found_room.roomId, 'name':self.name, 'alias':self.alias})
                 
                 if (found_room.isLobby):
                     data = {
@@ -788,7 +793,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             game = await sync_to_async(Game.objects.create)()
             # Iterate over the player data and create Player instances
             for player_data in players_data:
-                # user = CustomUser.objects.get(username=player_data['username'])
                 try:
                     # Attempt to retrieve the user by username
                     user = await sync_to_async(CustomUser.objects.get)(username=player_data['username'])

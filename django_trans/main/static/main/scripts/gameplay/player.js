@@ -8,12 +8,12 @@ import { sphere } from './ball.js';
 export let keyState = {};
 
 export class Player {
-    constructor(ident, x, y, z, color, isVertical, name = null, img = null) {
+    constructor(ident, x, y, z, color, isVertical, name = null, alias = null) {
         this.ident = ident;
         this.lives = 3;
         this.isVertical = isVertical;
         this.name = name;
-        this.img = img;
+        this.alias = alias;
         // Choisir la géométrie en fonction de l'orientation (vertical ou horizontal)
         const geometry = this.isVertical
             ? new THREE.BoxGeometry(0.5, 5, 0.5) // Vertical: hauteur plus grande

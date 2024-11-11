@@ -100,20 +100,18 @@ export function setupWebSocket() {
                 tournament.reportMatchResult(data.matchId, data.winner);
             }
             if (data.cmd === "chat") {
-                // parsingChat(data);
+                console.log(data);
+                var name = data.alias;
+                if (!name)
+                    name = data.name;
                 addChat(data.name, ": " + data.data, 'primary')
-                //receiving error if bad command
             }
             if (data.cmd === "profile") {
-                // parsingChat(data);
                 addChatProfile(data.name, data.data, 'primary')
-                //receiving error if bad command
             }
             if (data.cmd === "badChat") {
-                // parsingChat(data);
                 console.log(data);
                 addChat('Server', ": " + data.msg, 'warning')
-                //receiving error if bad command
             }
             if (data.cmd === "move") {
                 // console.log(data.ident, "before move");
@@ -257,27 +255,43 @@ export function getImg() {
 }
 
 export function getName() {
+    let name = 'Guest'; 
+    try {
+        let nameElement = document.getElementById('name');
+        if (nameElement) {
+            name = nameElement.textContent.trim() || nameElement.innerText.trim() || 'Guest';
+            if (['null', 'None'].includes(name)) {
+                name = 'Guest';
+            }
+        }
+    } catch (error) {
+        console.error("Error retrieving name:", error);
+    }
+    return name;
+}
+
+export function getAlias() {
     var name;
     try {
         var nameElement = document.getElementById('alias');
-        if (!nameElement)
-            nameElement = document.getElementById('name');
         name = nameElement.textContent || nameElement.innerText;
         if (!name || name === 'null' || name == 'None')
             name = 'Guest';
     }
     catch {
-        name = "Guest";
+        name = null;
     }
     return name;
 
 }
 
+
+
 export function sendCmd(cmd, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
         var name = getName();
-        var img = getImg();
-        socketState.socket.send(JSON.stringify({ cmd, roomId, name, img }));
+        var alias = getAlias();
+        socketState.socket.send(JSON.stringify({ cmd, roomId, name, alias }));
     } else {
         console.error("WebSocket is not ready. Unable to send command.");
     }
@@ -308,11 +322,16 @@ export function receiveExistingPlayers(data) {
     console.log(data);
     removeAllPlayers(scene);
     data.data.players.forEach((player, index) => {
+        let name = player.name;
+        let alias = player.alias;
         const newPosition = getNewPlayerPosition(index);
         const newColor = getNewPlayerColor(index);
-        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name, player.img));
-        console.log("Existing player added: ", player.ident);    
-        addChat("->", player.name);
+        players.push(new Player(player.ident, newPosition.x, newPosition.y, 0, newColor,0, player.name, player.alias));
+        console.log("Existing player added: ", player.ident); 
+        if (alias)
+            addChat("->", alias);
+        else
+            addChat("->", name);
     });
 }
 
@@ -377,8 +396,8 @@ export function sendSync() {
         const movementData = { x, y };
         // console.log(`Sending sync: ${JSON.stringify({ cmd, movementData, roomId })}`); #debug
         var name = getName();
-        var img = getImg();
-        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name, img }));
+        var alias = getAlias();
+        socketState.socket.send(JSON.stringify({ cmd, movementData, roomId, name, alias}));
     } else {
         console.error("Player 0 or its mesh is undefined, or WebSocket is not open");
     }
