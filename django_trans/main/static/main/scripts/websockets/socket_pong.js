@@ -139,16 +139,9 @@ export function setupWebSocket() {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
                 if (data.host === true) {
                     document.getElementById('tournamentRoomLabel').innerHTML = "Room #:" + data.tournamentId;
-<<<<<<< HEAD
-                    console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`);
-                    setTournament(data.tournamentId, data.maxPlayers)
-                    setRoomId(data.tournamentId);
-                    tournament.updatePlayerListUI();
-=======
                     setTournament(data.tournamentId, data.maxPlayers);
                     tournament.updatePlayerListUI();
                     setRoomId(data.tournamentId);
->>>>>>> 863f238a007d4b01c35f18d816a97c5678c3ffce
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
                 // Vérifie si data.players est défini et est bien un tableau

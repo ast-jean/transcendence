@@ -1,3 +1,4 @@
+import { modal, setIsTournament, setPlayers, setRoomId } from "../utils/setter.js";
 import { setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
 export class Tournament {
@@ -8,7 +9,7 @@ export class Tournament {
         this.matches = [];
         this.isLobby = true;
         this.winner = null;
-        this.modal = new bootstrap.Modal(document.getElementById('exampleModal'));
+        //this.modal = new bootstrap.Modal(document.getElementById('exampleModal'));
     }
 
     // Méthode pour ajouter un joueur
@@ -161,5 +162,26 @@ function addPlayerToTournament() {
         console.log(`%c[Debug] Joueur ajouté: ID ${player.ident}`, "color: #00ff00;");
     } else {
         console.warn(`%c[Debug] Joueur déjà présent: ID ${player.ident}`, "color: #ffff00;");
+    }
+}
+
+export function goLobby(players, room_id) {
+    if (socketState.socket && socketState.isSocketReady) {
+        const cmd = "goLobby";
+
+        let data = {
+            cmd: cmd,
+            roomId: room_id,
+            players: players.map(player => player.ident)
+        };
+
+        socketState.socket.send(JSON.stringify(data));
+        console.log(`Signal envoyé au backend pour déplacer les joueurs dans le lobby pour la salle ID : ${room_id}`);
+
+        setRoomId(room_id);
+        setPlayers(players);
+        setIsTournament(true);
+    } else {
+        console.error("Le WebSocket n'est pas prêt. Impossible d'envoyer la commande `goLobby`.");
     }
 }

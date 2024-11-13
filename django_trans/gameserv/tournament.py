@@ -8,8 +8,7 @@ class Tournament:
         self.matches = []  # Liste des matchs en cours ou à venir
         self.is_lobby = True  # Etat initial du tournoi, avant le début des matchs
         self.winner = None  # Le gagnant du tournoi une fois terminé
-        self.winners = List[Client] = []
-        self.loosers = List[Client] = []
+        self.lobby_room = None
     
     def add_player(self, client):
         """Ajoute un joueur au tournoi s'il reste de la place."""

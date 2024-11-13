@@ -138,11 +138,47 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if len(room.clients) == 0:
                     self.rooms.remove(room)
         
+    async def go_lobby(self, room_id, players):
+        # Trouver la room existante à partir de l'ID de la room
+        room = await self.find_room(room_id)
+        if room:
+            print(f"Déplacement des joueurs vers le lobby pour la salle ID : {room_id}")
+            # Si la salle est trouvée, on crée un lobby de tournoi
+            lobby_room = Room(len(players), self.existing_room_ids, is_lobby=True)
+            self.rooms.append(lobby_room)
+
+            # Ajouter les joueurs à la salle de lobby
+            for player_ident in players:
+                client = await self.find_client_by_ident(player_ident)
+                if client:
+                    lobby_room.add_client(client)
+                    print(f"Client {client.ident} ajouté au lobby.")
+
+            # Informer les clients qu'ils sont dans le lobby
+            for client in lobby_room.clients:
+                await client.websocket.send(json.dumps({
+                    "cmd": "joinLobby",
+                    "roomId": lobby_room.roomId,
+                    "playerIn": lobby_room.playerIn,
+                    "playerTotal": lobby_room.playerTotal,
+                    "host": lobby_room.host_ident
+                }))
+        else:
+            print(f"Salle ID : {room_id} non trouvée.")
+            await self.send(json.dumps({
+                "cmd": "roomNotFound",
+                "message": f"Room with ID {room_id} not found."
+            }))
 
     async def create_tournament_lobby(self, name = "Default", alias = None):
-        tournament_id = Room.generate_room_id(self.existing_room_ids)
+
+
+        lobby_room = Room(4, self.existing_room_ids, True)
+        self.rooms.append(lobby_room)
+        tournament_id = lobby_room.roomId
         max_players = 4
 
+        
         print(f"Création du tournoi avec ID: {tournament_id}")
         new_tournament = Tournament(tournament_id, max_players)
         self.tournaments.append(new_tournament)
@@ -284,7 +320,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def start_tournament(self, tournament_id):
         """Méthode pour démarrer le tournoi et distribuer les joueurs dans des rooms."""
-        tournament = self.tournaments.get(tournament_id)
+        tournament = next((t for t in self.tournaments if t.tournament_id == tournament_id), None)
         if tournament:
             if len(tournament.clients) == tournament.max_players:
                 print(f"Démarrage du tournoi {tournament_id} avec {len(tournament.clients)} joueurs.")
@@ -396,6 +432,17 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.start_game(text_data_json["roomId"])
             elif cmd == "saveGame":
                 await self.save_game(text_data_json["roomId"])
+            elif cmd == "goLobby":
+                room_id = text_data_json.get('roomId')
+                players = text_data_json.get('players', [])
+                if room_id and players:
+                    await self.go_lobby(room_id, players)
+                else:
+                    await self.send(json.dumps({
+                        "cmd": "goLobby",
+                        "success": False,
+                        "error": "Missing room ID or players list."
+                    }))
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
                 # print('ScoreChange')
