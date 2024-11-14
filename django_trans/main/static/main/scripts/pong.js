@@ -215,11 +215,11 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
-    hideBtn('layer2Btns_online');
-    hideBtn('layer2Btns_tournament');
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
+        hideBtn('layer2Btns_online');
+        hideBtn('layer2Btns_tournament');
         sendCmd("roomSearch", roomId);
         console.log("Searching for Room #" + roomId);
     }

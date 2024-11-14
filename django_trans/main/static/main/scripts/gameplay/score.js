@@ -109,16 +109,22 @@ export function endGame(player=null) {
         // Détermine le gagnant
         let winner;
         if (player) {
-            winner = player.name;
+            winner = player;
         } else {
-            winner = player1Score >= maxScore ? players[0].name : players[1].name;
+            winner = player1Score >= maxScore ? players[0] : players[1];
         }
-        document.getElementById('winner').innerText = winner + " won!";
+        if (winner.alias) {
+            document.getElementById('winner').innerText = winner.alias + " won!";
+            addChat("Server:", `${winner.alias} wins!`);
+        } else {
+            document.getElementById('winner').innerText = winner.name + " won!";
+            addChat("Server:", `${winner.name} wins!`);
+        }
 
         // Crée un message pour afficher le gagnant
-        addChat("Server:", `${winner} wins!`);
         showBtn('end-game-buttons');
-        hideBtn('scoreboard');
+        document.getElementById('end-game-buttons').classList.remove('d-flex');
+
         deleteBall(sphere);
         if(checkIfHost(host_ident) && !once && !isLocalMode) {
             once = true;

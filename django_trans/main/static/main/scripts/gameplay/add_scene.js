@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { startCountdown, showBtn, hideBtn } from '../ui/ui_updates.js';
 import { addBallToScene } from './ball.js';
+import { isFourPlayerMode, localPlayerId } from '../utils/setter.js';
 
 
 /**
@@ -18,7 +19,30 @@ export function displayPlayersInScene(players, scene) {
             console.log(`Joueur ${player.ident} déjà présent dans la scène`);
         }
     });
+    if (!isFourPlayerMode) {
+        if (players[0].alias) {
+            document.getElementById('p1Name').textContent = players[0].alias + ':';
+        } else {
+            if (players[0].name)
+                document.getElementById('p1Name').textContent = players[0].name + ':';
+        }
+        if (players[1].alias) {
+            document.getElementById('p2Name').textContent = players[1].alias + ':';
+        } else {
+            document.getElementById('p2Name').textContent = players[1].name + ':';
+        }
+        if(localPlayerId) {
+            if (players[0]  == localPlayerId) {
+                document.getElementById('p1Name').addClassList = 'text-warning';
+            }
+            if (players[1]  == localPlayerId) {
+                document.getElementById('p1Name').addClassList = 'text-warning';
+            }
+        }
+    }
+        
     showBtn('scoreboard');
+
     hideBtn('start_btn');
     addBallToScene(scene);
     console.log(players);

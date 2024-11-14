@@ -78,6 +78,7 @@ export function initializePlayers(scene, useAI, isOnline ) {
             console.log('PLAY AGAINST AI');
             // Ajoute un joueur IA
             addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true, "AI🤖"); // IA (rouge)
+            players[0].name = "Player 1"
         } else {
             // Ajoute un deuxième joueur humain
             addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0x0000ff, scene, false, false, 'Player 2'); // Joueur 2 (bleu)
