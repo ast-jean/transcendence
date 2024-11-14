@@ -318,7 +318,8 @@ def profile(request):
 
     # Fetch user's games
     games = Game.objects.filter(players__user=user).distinct().order_by('-id')
-
+    CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True)))
+    gamesWon = user.games_won_count
     # Build a list of friends with online status
     friends_data = [
         {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
@@ -329,6 +330,7 @@ def profile(request):
         'profile': profile_data,
         'games': games,
         'profile_form': profile_form,
+        'gamesWon': gamesWon,
         'password_form': password_form,
         'is_online': True,  # Display user's online status if needed
         'friends': friends_data  # Pass the list of friends with their online statuses
