@@ -1,7 +1,7 @@
 import { socketState, getRoomId, sendCmd, host_ident } from '../websockets/socket_pong.js'; // Pour envoyer les scores au serveur
 import { setBallSpeedX, setBallSpeedY, setGameOverState, isGameOver, players, isFourPlayerMode, isLocalMode, tournament } from '../utils/setter.js';
 import { addChat } from '../ui/chat.js';
-import { deleteBall, scene } from '../pong.js';
+import { controls, deleteBall, scene } from '../pong.js';
 import { sphere } from '../gameplay/ball.js';
 import { hideBtn, showBtn } from '../ui/ui_updates.js';
 import { checkIfHost } from '../utils/utils.js';
@@ -60,40 +60,49 @@ export function updateScoreDisplay() {
 export function checkEndGame() {
     console.log('CHECKENDGAME');
 
-    if (isFourPlayerMode) {
-        // Check if one player still has lives and others don't
-        let remainingPlayers = players.filter(player => player.lives > 0);
-        console.log(remainingPlayers);
-        console.log(remainingPlayers.length);
-        if (remainingPlayers.length === 1) {
-            // Send the last remaining player to endGame
-            isGameOver == true;
-            endGame(remainingPlayers[0]);
-            return; // Stop further checks if game is over
-        }
-    }
-    if (player1Score >= maxScore || player2Score >= maxScore) {
-        if (tournament)
-        {
+    if (!isGameOver)
+    {
 
-            console.log("tournament endgame")
-            goLobby(players, tournament.tournamentId);
-            endGame();
+        if (isFourPlayerMode) {
+            // Check if one player still has lives and others don't
+            let remainingPlayers = players.filter(player => player.lives > 0);
+            console.log(remainingPlayers);
+            console.log(remainingPlayers.length);
+            if (remainingPlayers.length === 1) {
+                // Send the last remaining player to endGame
+                isGameOver == true;
+                endGame(remainingPlayers[0]);
+                return; // Stop further checks if game is over
+            }
         }
-            // établir les gagnants, sauvegarder les points, renvoyer les gagnants pour l'attente de leur prochain match, renvoyer les perdants au lobby
-        else
-        {
-
-            console.log('endGame');
-            endGame();
-        }
+        if (player1Score >= maxScore || player2Score >= maxScore) {
+            if (tournament)
+                {
+                    
+                    console.log("tournament endgame")
+                    goLobby(players, tournament.tournamentId);
+                    endGame();
+                }
+                // établir les gagnants, sauvegarder les points, renvoyer les gagnants pour l'attente de leur prochain match, renvoyer les perdants au lobby
+                else
+                {
+                    
+                    console.log('endGame');
+                    endGame();
+                }
+            }
     }
+    else
+        console.log("Game Over");
+
 }
+
 let once = false;
 // Fonction pour mettre fin à la partie et afficher des options
 export function endGame(player=null) {
     // Déclare que le jeu est terminé
     //Assure it is called once
+    console.log("endgame Call");
     if (isGameOver == false) {
         setGameOverState(true);
         hideBtn('scoreboard');

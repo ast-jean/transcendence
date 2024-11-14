@@ -19,29 +19,34 @@ export function addBallToScene(scene) {
 }
 
 export function moveBall(delta, walls, players) {
-    // Mise à jour de la position de la balle
-    sphere.position.x += getBallSpeedX() * delta;
-    sphere.position.y += getBallSpeedY() * delta;
+    
+    if(!isGameOver)
+    {
 
-    let ballSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
-
-    // Gestion des collisions avec les murs
-
-    let scored = handleWallCollision(walls, sphere, isFourPlayerMode);
-    // Gestion des collisions avec les joueurs
-    handlePlayerCollision(players, sphere, ballSpeed);
-
-    // Si un score est marqué, réinitialise la position et la vitesse de la balle
-    if (scored) {
-        updateScore(scored.player);
-        sphere.position.set(0, 0, 0);
-        setBallSpeedX(INITIAL_BALL_SPEED_X);
-        setBallSpeedY(INITIAL_BALL_SPEED_Y);
-    } else {
-        sphere.position.set(sphere.position.x, sphere.position.y);
+        // Mise à jour de la position de la balle
+        sphere.position.x += getBallSpeedX() * delta;
+        sphere.position.y += getBallSpeedY() * delta;
+        
+        let ballSpeed = new THREE.Vector2(getBallSpeedX(), getBallSpeedY());
+        
+        // Gestion des collisions avec les murs
+        
+        let scored = handleWallCollision(walls, sphere, isFourPlayerMode);
+        // Gestion des collisions avec les joueurs
+        handlePlayerCollision(players, sphere, ballSpeed);
+        
+        // Si un score est marqué, réinitialise la position et la vitesse de la balle
+        if (scored) {
+            updateScore(scored.player);
+            sphere.position.set(0, 0, 0);
+            setBallSpeedX(INITIAL_BALL_SPEED_X);
+            setBallSpeedY(INITIAL_BALL_SPEED_Y);
+        } else {
+            sphere.position.set(sphere.position.x, sphere.position.y);
+        }
     }
 }
-
+    
 // Fonction pour envoyer périodiquement l'état de la balle au serveur
 export function sendBallState() {
     if (socketState.socket && socketState.isSocketReady && room_id && !isGameOver) {

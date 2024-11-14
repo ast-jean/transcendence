@@ -55,7 +55,7 @@ export function handleWallCollision(walls, sphere, isFourPlayerMode) {
                     sphere.position.x += getBallSpeedX() * delta * 2;
                 }
                 updateScoreDisplay();
-                checkEndGame();
+                //checkEndGame();
             } else {
                 // Mode 2 joueurs : seuls les murs du haut et du bas comptent
                 if (wall.name === 'topWall') {

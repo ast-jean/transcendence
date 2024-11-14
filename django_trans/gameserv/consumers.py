@@ -144,8 +144,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         if room:
             print(f"Déplacement des joueurs vers le lobby pour la salle ID : {room_id}")
             # Si la salle est trouvée, on crée un lobby de tournoi
-            lobby_room = Room(len(players), self.existing_room_ids, is_lobby=True)
-            self.rooms.append(lobby_room)
+            #lobby_room = Room(len(players), self.existing_room_ids, is_lobby=True)
+            #self.rooms.append(lobby_room)
+
+            lobby_room = room
 
             # Ajouter les joueurs à la salle de lobby
             for player_ident in players:
@@ -156,7 +158,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
             # Informer les clients qu'ils sont dans le lobby
             for client in lobby_room.clients:
-                await client.websocket.send(json.dumps({
+                await self.send(json.dumps({
                     "cmd": "joinLobby",
                     "roomId": lobby_room.roomId,
                     "playerIn": lobby_room.playerIn,
