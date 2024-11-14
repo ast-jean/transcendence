@@ -49,7 +49,7 @@
                             <a class="pb-2" href="{% url 'userProfile' playername=friend.friend.username %}">
                                 <div class="btn btn-primary position-relative rounded">
                                     <img src="{{ friend.friend.avatar.url }}" alt="{{ friend.friend.username }} avatar" class="img-thumbnail" style="width: 100px; height: 100px;">
-                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded">
+                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded" style=" white-space: nowrap;">
                                         {{ friend.friend.username }}
                                     </span>
             
