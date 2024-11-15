@@ -36,7 +36,7 @@
                     <a class="nav-link" href="/Pong/" {% if current_path == '/Pong/' %}aria-current="page"{% endif %}>Pong</a>
                 </li>
                 <li class="nav-item {% if current_path == '/truckleague/' %}active{% endif %}">
-                    <a class="nav-link" href="/truckleague/" {% if current_path == '/truckleague/' %}aria-current="page"{% endif %}>🚧Truck League🚧(🛠️WIP⚠️)</a>
+                    <a class="nav-link" href="/truckleague/" {% if current_path == '/truckleague/' %}aria-current="page"{% endif %}>Trucks(🛠️WIP⚠️)</a>
                 </li>
                 <li class="nav-item {% if current_path == '/about/' %}active{% endif %}">
                     <a class="nav-link" href="/about/" {% if current_path == '/about/' %}aria-current="page"{% endif %}>About</a>
@@ -61,7 +61,7 @@
                 </li>
                 {% elif user and user.is_authenticated%}
                     <li class="nav-item active">    
-                        <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail d-flex mt-3" style="max-width: 50px;">
+                        <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail d-flex mt-1" style="max-width: 50px;">
                     </li>
                     <li class="nav-item active">
                         <a class="nav-link" aria-disabled="true">Hello, <span id="name">{{ user.username }}</span>{% if user.alias %} AKA <span id="alias">{{ user.alias }}</span>{%endif%}</a>
