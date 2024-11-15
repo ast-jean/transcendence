@@ -36,16 +36,23 @@ renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
 
-
-
-
-
-
-
-
-
-
-
+function resizeBackground() {
+    const loader = document.querySelector('.loader');
+    if (loader) {
+        loader.style.backgroundSize = `${window.innerWidth}px ${window.innerHeight}px`;
+    }
+}
+function handleScroll() {
+    console.log('User scrolled! Scroll position:', window.scrollY);
+    resizeBackground(); // Adjust background on scroll
+}
+function handleResize() {
+    console.log('Window resized!');
+    resizeBackground(); // Adjust background on resize
+}
+window.addEventListener('scroll', handleScroll);
+window.addEventListener('resize', handleResize);
+resizeBackground();
 
 
 // Configuration des murs
@@ -215,11 +222,11 @@ function handleSubmit(event) {
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
     console.log('Room ID:', roomId); // Vérifie la valeur du champ
-    hideBtn('layer2Btns_online');
-    hideBtn('layer2Btns_tournament');
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
+        hideBtn('layer2Btns_online');
+        hideBtn('layer2Btns_tournament');
         sendCmd("roomSearch", roomId);
         console.log("Searching for Room #" + roomId);
     }

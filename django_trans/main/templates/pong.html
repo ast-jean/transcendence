@@ -36,14 +36,14 @@
 		<div class="row">
 			<div class="col">
 				<div class="gamediv">
-					<button id="menu-btn" class="d-flex flex-column top-50 start-50 translate-middle hud btn btn-danger visually-hidden">Exit</button>
-					<div id="scoreboard" class="pongScoreboard visually-hidden" >
+					<button id="menu-btn" class="d-flex flex-column hud btn btn-danger visually-hidden">Exit</button>
+					<div id="scoreboard" class="pongScoreboard mt-3 visually-hidden" style="z-index: 6969;">
                         <div>
-							    <div class="pongScoreP1 ">Player 1: </div>
+							    <div id="p1Name" class="pongScoreP1 ">Player 1: </div>
 							    <div id="player1Score" class="strokemeP1 pongScoreP1"></div>
 						</div>
                         <div>
-							<div class="pongScoreP2">Player 2: </div>
+							<div id="p2Name" class="pongScoreP2">Player 2: </div>
 							<div id="player2Score" class="strokemeP2 pongScoreP2"></div>
 						</div>
                         
@@ -54,85 +54,108 @@
 						</div> -->
 					</div>
 					<div id="ui-btns" class="ui-btns">
-						<div id="play_btns" class="col d-flex flex-column hud " style="z-index: 6969;"> <!-- unnecessary arguments:start-50 translate-middle mx-1 position-absolute  start-60/////text-center align-items-center align-self-center -->
-							<div id="onlineplay_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient">
-								<b class="strokeme">Play Online</b> <br>
-								<small  class="strokeme">(2 players)</small>
+						<div class="position-absolute top-50 start-50 translate-middle">
+							<div id="play_btns" class="position-relative container hud">
+								<div class="row" style="width: 300px;">
+										<div class="col d-block">
+											<div id="onlineplay_btn" class="row  d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<b class="strokeme">Play Online</b> <br>
+												<small  class="strokeme">(2 players)</small>
+											</div>
+											<div id="localplay_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<b  class="strokeme">Play Local</b> <br>
+												<small  class="strokeme">(2 players / 4 players)</small>
+											</div>
+											<div id="versusai_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<div class="">
+													<b  class="strokeme">Versus AI</b>
+													<br>
+													🤖
+												</div>
+										</div>
+										<div id="tournament_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient" >
+											<b  class="strokeme">Tournament</b><br>
+											<small  class="strokeme">(4 players)</small>
+										</div>
+									</div>
+								</div>
 							</div>
-							<div id="localplay_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient">
-								<b  class="strokeme">Play Local</b> <br>
-								<small  class="strokeme">(2 players / 4 players)</small>
-							</div>
-							<div id="versusai_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient">
-								<b  class="strokeme">Versus AI</b>
-								<br>
-								🤖
-							</div>
-							<button type="button" id="tournament_btn" class="row hud-btn game-button btn btn-primary bg-primary bg-gradient" >
-								<b  class="strokeme">Tournament</b><br>
-								<small  class="strokeme">(4 players)</small>
-							</button>
-
-						</div>
 
 						<!---------------------------------------------- SECOND LAYERS-------------------------------------------------- -->
-						<div id="layer2Btns_online" class="col flex-column hud visually-hidden">
-							<h1 class="strokeme">ONLINE</h1>
-							<hr class="border border-info border-1">
-
-							<div id="online_1v1_btn" class="row hud-btn game-button btn btn-info ">
-								<b class="strokeme">2 Players</b>
-							</div>
-							<div id="online_2v2_btn" class="row hud-btn game-button btn btn-info visually-hidden">
-								<b class="strokeme">4 Players</b>
-							</div>
-							<form id="online_join_btn">
-								<input type="number" placeholder="0000" name="searchRoom" style="width:75px;">
-								<button type="submit " class="btn btn-secondary text-white strokeme">Search</button>
-							</form>
-							<hr class="border border-info border-1">
-
-							<div id="return_btn_1" class="row hud-btn game-button btn btn-info pt-1">
-								<h2 class="strokeme">←</h2>
-							</div>
-						</div>
-
-						<div id="layer2Btns_local" class="col flex-column hud visually-hidden">
-							<h1 class="strokeme">LOCALPLAY</h1>
-							<hr class="border border-info border-1">
-							<div id="local_1v1_btn" class="row hud-btn game-button btn btn-info">
-								<b class="strokeme">2 Players</b>
-							</div>
-							<div id="local_2v2_btn" class="row hud-btn game-button btn btn-info">
-								<b class="strokeme">4 Players</b>
-							</div>
-							<hr class="border border-info border-1">
-							<div id="return_btn_2" class="row hud-btn game-button btn pt-2 btn-info">
-								<h2 class="strokeme">←</h2>
+						<div id="layer2Btns_online" class="position-relative container visually-hidden">
+							<div class="row" style="width: 300px;">
+										<h1 class="strokeme text-center">ONLINE</h1>
+										<hr class="border border-info border-1">
+										
+										<div id="online_1v1_btn" class="row ms-1 hud-btn btn btn-info ">
+											<b class="strokeme">2 Players</b>
+										</div>
+										<div id="online_2v2_btn" class="row ms-1 hud-btn btn btn-info visually-hidden">
+											<b class="strokeme">4 Players</b>
+									</div>
+									<div class='ms-1'>
+										<form id="online_join_btn" class="">
+											<div class="row bg-info py-1 my-3 rounded">
+												<div class="col">
+													<input class="form-control" type="number" placeholder="0000" name="searchRoom">
+												</div>
+												<div class="col">
+													<button type="submit " class="border border-dark btn btn-secondary text-white strokeme" style="width:120px" >Search</button>
+												</div>
+											</div>
+										</form>
+									</div>
+									<hr class="border border-info border-1">
+									
+									<div id="return_btn_1" class="row hud-btn game-button btn btn-info ms-1">
+										<h2 class="strokeme">←</h2>
+									</div>
 							</div>
 						</div>
 
-						<div id="layer2Btns_tournament" class=" col flex-column hud visually-hidden">
-							<h1 class="strokeme">TOURNAMENT</h1>
-							<hr class="border border-info border-1">
-						<!-- Add tournament boutons -->
-						<div id="tournamentOptions" class="hidden"></div>
-						<button id="createTournamentBtn" class="btn btn-info strokeme text-white m-1" data-bs-toggle="modal" data-bs-target="#exampleModal">Host </button>
-						<button id="joinTournamentBtn" class="btn btn-info strokeme text-white m-1">Join</button>
-						
-						<div id="tournamentJoinForm" class="hidden">
-							<span class="d-flex m-1">
-								<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
-								<button id="submitJoinTournament" class="btn btn-primary ms-2"  >Join</button>
-							</span>
+						<div id="layer2Btns_local" class="position-relative container visually-hidden">
+							<div class="row" style="width: 300px;">
+								<div class='ms-1'>
+									<h1 class="strokeme text-center">LOCALPLAY</h1>
+									<hr class="border border-info border-1">
+									<div id="local_1v1_btn" class="row mb-2 d-flex btn btn-info">
+										<b class="strokeme">2 Players</b>
+									</div>
+									<div id="local_2v2_btn" class="row d-flex  btn btn-info">
+										<b class="strokeme">4 Players</b>
+									</div>
+									<hr class="border border-info border-1">
+									<div id="return_btn_2" class="row d-flex btn btn-info">
+										<h2 class="strokeme">←</h2>
+									</div>
+								</div>
+							</div>
 						</div>
-							<hr class="border border-info border-1">
-							<div id="return_btn_3" class="row hud-btn game-button btn btn-info m-2">
-								<h2 class="strokeme">←</h2>
+
+						<div id="layer2Btns_tournament" class=" col visually-hidden">
+							<div class="row" style="width: 300px;">
+
+								<h1 class="strokeme text-center">TOURNAMENT</h1>
+								<hr class="border border-info border-1">
+								<!-- Add tournament boutons -->
+								<div id="tournamentOptions" class="hidden"></div>
+								<button id="createTournamentBtn" class="btn btn-info d-flex strokeme text-white m-1" data-bs-toggle="modal" data-bs-target="#exampleModal"><b class="strokeme mx-auto">Host</b> </button>
+								<button id="joinTournamentBtn" class="btn btn-info d-flex m-1 mb-2"><b class="strokeme mx-auto">Join</b></button>
+								
+								<div id="tournamentJoinForm" class="hidden">
+									<span class="d-flex">
+										<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
+										<button id="submitJoinTournament" class="btn btn-primary ms-2"  ><b>Join</b></button>
+									</span>
+								</div>
+								<hr class="border border-info border-1">
+								<div id="return_btn_3" class="row hud-btn game-button btn btn-info m-2">
+									<h2 class="strokeme">←</h2>
+								</div>
 							</div>
 						</div>
 						<div id="start_btn" class=" col flex-column hud visually-hidden">
-							<button id="startGameButton" class="btn btn-secondary game-button">Start Game</button>
+							<button id="startGameButton" class="btn btn-secondary game-button mt-5 ms-5">Start Game</button>
 						</div>
 						<div id="playerCount" class="visually-hidden strokeme">
 							<div id="joining" class="row d-flex">
@@ -157,21 +180,29 @@
 								</div>
 							</div>
 						</div>
-						<div id="end-game-buttons" class="row visually-hidden" style="z-index: 2500;">
-							{% comment %} <button id="replay-btn" class="btn btn-danger">Replay</button> {% endcomment %}
-							<h1 id="endGameMessage" class="strokeme d-flex" >GAME OVER</h1>
-							<h2 id='winner' class="strokeme d-flex"></h2>
-							<button id="menu-btn-quit" class="btn btn-primary" style="width: 100px;">Menu</button>
+						<div id="end-game-buttons" class="col position-relative visually-hidden">
+							<div  class="row" style="width:300px;">
+								<div  class="col">
+									<h1 id="endGameMessage" class="strokeme text-center"
+									style="  text-shadow: 2px 2px 0 black, -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 0 0 black,-2px 0 0 black, 0 2px 0 black,0 -2px 0 black;">
+									GAME OVER
+								</h1>
+									<h2 id='winner' class="strokeme text-center"></h2>
+									<button id="menu-btn-quit" class="btn btn-primary mt-5 d-flex mx-auto">Menu</button>
+								</div>
+							</div>
 						</div>
 					</div>
 					<div id="gameCont" class="three-js-canvas">
-						<div id='loading' class="bg-dark opacity-50 d-flex justify-content-center" style='height:600px; z-index: 9999;'>
+						<div id='loading' class="bg-dark opacity-75 d-flex justify-content-center" style='height:600px; z-index: 9999;'>
 							<div class="spinner-border text-white my-auto" role="status" style="width: 3rem; height: 3rem;">
 								<span class="visually-hidden">Loading...</span>
 							</div>
 						</div>
 					</div> <!-- d-flex justify-content-center align-items-center -->	
 				</div>
+
+				</div><!-- ui-btns -->	
 
 				<div id="cameraControls setting-btns" class="btn-group" >
 					<button id="randomize-colors-btn" class="btn btn-secondary play-button randomize-colors-btn">Randomize Colors</button>

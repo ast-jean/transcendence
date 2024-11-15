@@ -370,7 +370,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 else:
                     self.name = name
             if not hasattr(self, 'alias') or self.alias is None:
-                name = text_data_json.get('alias')
+                self.alias = text_data_json.get('alias')
                 
             cmd = text_data_json.get("cmd")
 
