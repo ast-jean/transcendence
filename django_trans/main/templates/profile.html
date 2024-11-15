@@ -2,18 +2,18 @@
 {% load static %}
 {% block title %}Profile | About{% endblock %}
 {% block content %}
-<h1 id="headers">Profile</h1>
+<h1 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Profile</h1>
 
-<div class="card m-2" style="max-width: 1000px;">
+<div class="card mx-auto m-2" style="max-width: 1000px;">
     <div class="row g-0">
         <div class="col-md-4">
 
             {% if user.avatar and user.avatar.url %}
-                <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail" style="max-width: 200px;">
+                <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="d-flex mt-5 m-auto rounded" style="max-width: 200px;">
             {% elif profile.image %}
                 <img src="{{ profile.image.versions.medium }}" alt="{{ profile.login }}">
             {% else %}
-                <img src="{{ MEDIA_URL }}avatars/default.jpg" alt=" {{ user.username }}" class="img-thumbnail" style="max-width: 200px;">
+                <img src="{{ MEDIA_URL }}avatars/default.jpg" alt=" {{ user.username }}" class="d-flex m-auto" style="max-width: 200px;">
 
             {% endif %}
         </div>
@@ -40,16 +40,16 @@
                     <p class="profilecard-text">Games won: 0</p>
                 {% endif %}
                 
-                <p class="profilecard-text">Friend(s):</p>
+                <p class="profilecard-text">Friends:</p>
                 {% if user.friends.exists %}
-                <div class="profilecard-text mb-3">
+                <div class="profilecard-text mb-3 mx-auto">
                     {% for friend in friends %}
                         <!-- This will print the entire friend object (for debugging purposes) -->
                         {% if friend.friend.username %}
-                            <a class="pb-2" href="{% url 'userProfile' playername=friend.friend.username %}">
-                                <div class="btn btn-primary position-relative rounded">
-                                    <img src="{{ friend.friend.avatar.url }}" alt="{{ friend.friend.username }} avatar" class="img-thumbnail" style="width: 100px; height: 100px;">
-                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded" style=" white-space: nowrap;">
+                            <a class="pb-2" style="text-decoration: none;" href="{% url 'userProfile' playername=friend.friend.username %}">
+                                <div class="btn btn-primary position-relative mx-2 rounded">
+                                    <img src="{{ friend.friend.avatar.url }}" alt="{{ friend.friend.username }} avatar" class="img-thumbnail d-flex mx-auto my-auto" style="width: 100px; height: 100px;">
+                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded px-1" style=" white-space: nowrap;">
                                         {{ friend.friend.username }}
                                     </span>
             
@@ -78,7 +78,7 @@
 </div>
 
 
-<div class="card ms-5 mb-1" style="max-width: 1000px;">
+<div class="card mx-auto mb-1" style="max-width: 1000px;">
     <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProfileForm" aria-expanded="false" aria-controls="collapseProfileForm">Edit Profile</button>
     <button class="btn btn-secondary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePasswordForm" aria-expanded="false" aria-controls="collapsePasswordForm">Change Password</button>
 
@@ -161,14 +161,14 @@
     </div>
 </div>
 
-<hr style="text-align:left;margin-left:0;height:10px">
+<hr class="mx-auto border border-dark border-2" style="max-width: 1000px;">
 
-<h2 id="headers">Match Results</h2>
+<h2 style="max-width: 1000px;" id="headers strokeme" class="mx-auto ps-2 strokeme bg-dark rounded">Match Results</h2>
 {% if games %}
-<ul>
+<ul class="list-group mx-auto" style="max-width: 1000px;">
 	{% for game in games %}
-        <li>
-			<div class="card col-md-6" >
+        <li class="list-group-item">
+			<div class="card" >
 				<div class="matchcard-body">
 					<strong>Game ID:</strong> {{ game.id }} <br>
             		<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>

@@ -61,7 +61,7 @@
                 </li>
                 {% elif user and user.is_authenticated%}
                     <li class="nav-item active">    
-                        <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail" style="max-width: 50px;">
+                        <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="img-thumbnail d-flex mt-3" style="max-width: 50px;">
                     </li>
                     <li class="nav-item active">
                         <a class="nav-link" aria-disabled="true">Hello, <span id="name">{{ user.username }}</span>{% if user.alias %} AKA <span id="alias">{{ user.alias }}</span>{%endif%}</a>
@@ -91,6 +91,17 @@
     {% block content %}
     {% endblock %}
 </main>
+
+<script>
+    function fitBackgroundOnScroll() {
+        document.body.style.height = `${Math.max(window.innerHeight, document.documentElement.scrollHeight)}px`;
+    }
+    window.addEventListener('scroll', fitBackgroundOnScroll);
+    window.addEventListener('resize', fitBackgroundOnScroll);
+    fitBackgroundOnScroll();
+</script>
+
+
 <div class="py-3 my-4">
     <footer class="justify-content-center border-top">
         <p class=" text-center text-light"> 2024 Transcendence</p>

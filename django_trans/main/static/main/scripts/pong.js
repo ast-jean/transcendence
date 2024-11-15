@@ -36,16 +36,23 @@ renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
 container.appendChild(renderer.domElement);
 
-
-
-
-
-
-
-
-
-
-
+function resizeBackground() {
+    const loader = document.querySelector('.loader');
+    if (loader) {
+        loader.style.backgroundSize = `${window.innerWidth}px ${window.innerHeight}px`;
+    }
+}
+function handleScroll() {
+    console.log('User scrolled! Scroll position:', window.scrollY);
+    resizeBackground(); // Adjust background on scroll
+}
+function handleResize() {
+    console.log('Window resized!');
+    resizeBackground(); // Adjust background on resize
+}
+window.addEventListener('scroll', handleScroll);
+window.addEventListener('resize', handleResize);
+resizeBackground();
 
 
 // Configuration des murs

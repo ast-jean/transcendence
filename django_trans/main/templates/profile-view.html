@@ -3,9 +3,8 @@
 {% block title %}Profile | About{% endblock %}
 {% block content %}
 
-<h1>Profile</h1>
-
-<div class="card m-5" style="max-width: 1000px;">
+<h1 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Profile</h1>
+<div class="card mx-auto" style="max-width: 1000px;">
     <div class="row g-0">
         <div class="col-md-4">
             {% if them.avatar and them.avatar.url %}
@@ -54,28 +53,28 @@
     </div>
 </div>
 
-<hr style="text-align:left;margin-left:0;height:10px">
+<hr class="mx-auto border border-dark border-2" style="max-width: 1000px;">
 
-<h2>Match Results</h2>
+<h2 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Match Results</h2>
 {% if games %}
-<ul>
-    {% for game in games %}
-        <li>
-            <div class="card col-md-6">
-                <div class="matchcard-body">
-                    <strong>Game ID:</strong> {{ game.id }} <br>
-                    <strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
-                    <strong>Players:</strong>
-                    <ul>
-                        {% for player in game.players.all %}
-                            <li>
-                                {{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}
-                                {% if player.winner %} Winner 👑{% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
+<ul class="list-group mx-auto" style="max-width: 1000px;">
+	{% for game in games %}
+        <li class="list-group-item">
+			<div class="card" >
+				<div class="matchcard-body">
+					<strong>Game ID:</strong> {{ game.id }} <br>
+            		<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+            		<strong>Players:</strong>
+            		<ul>
+                		{% for player in game.players.all %}
+                    <li>
+                        {{ player.user.username }} - Score: {{ player.score }} - Team: {{ player.team }}
+                        {% if player.winner %} Winner👑{% endif %}
+                    </li>
+                		{% endfor %}
+            		</ul>
+				</div>
+			</div>
         </li>
     {% endfor %}
 </ul>

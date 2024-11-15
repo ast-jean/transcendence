@@ -244,6 +244,7 @@ def login_view(request):
     else:
         form = CustomAuthenticationForm()
     return render(request, 'login.html', {'form': form})
+
 @csrf_exempt
 @login_required
 def set_online(request):
@@ -284,57 +285,72 @@ def games_view(request):
 
 
 def profile(request):
-    user = request.user
-    if not user.is_authenticated:
-        # Redirect unauthenticated users to the home page or login page
-        return redirect('home')
+    try:
+        user = request.user
+        if not user.is_authenticated:
+            # Redirect unauthenticated users to the home page or login page
+            return redirect('home')
 
-    # Retrieve profile data directly from the user's record
-    profile_data = user.profile_data
+        # Use locally stored profile data
+        profile_data = user.profile_data if hasattr(user, 'profile_data') else {}
 
-    if request.method == 'POST':
-        # Process both profile and password forms
-        profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
-        password_form = CustomUserChangeFormPassword(request.POST, user=user)
+        if request.method == 'POST':
+            # Process both profile and password forms
+            profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
+            password_form = CustomUserChangeFormPassword(request.POST, user=user)
 
-        # Process profile form independently
-        if profile_form.is_valid():
-            profile_form.save()
-            messages.success(request, "Your profile information has been updated!")
+            # Process profile form independently
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Your profile information has been updated!")
 
-        # Process password form independently
-        if password_form.is_valid():
-            password_form.save()
-            update_session_auth_hash(request, user)  # Keep the user logged in after password change
-            messages.success(request, "Your password has been updated!")
+            # Process password form independently
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, user)  # Keep the user logged in after password change
+                messages.success(request, "Your password has been updated!")
 
-        # If either form is valid, redirect to profile
-        if profile_form.is_valid() or password_form.is_valid():
-            return redirect('profile')
-    else:
-        # Initialize empty profile and password forms if GET request
-        profile_form = CustomUserChangeForm(instance=user)
-        password_form = CustomUserChangeFormPassword(user=user)
+            # If either form is valid, redirect to profile
+            if profile_form.is_valid() or password_form.is_valid():
+                return redirect('profile')
+        else:
+            # Initialize empty profile and password forms if GET request
+            profile_form = CustomUserChangeForm(instance=user)
+            password_form = CustomUserChangeFormPassword(user=user)
 
-    # Fetch user's games
-    games = Game.objects.filter(players__user=user).distinct().order_by('-id')
-    CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True)))
-    gamesWon = user.games_won_count
-    # Build a list of friends with online status
-    friends_data = [
-        {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
-    ]
+        # Fetch user's games
+        games = Game.objects.filter(players__user=user).distinct().order_by('-id')
+        user = CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True))).get(pk=user.pk)
+        games_won = user.games_won_count
 
-    return render(request, 'profile.html', {
-        'user': user,
-        'profile': profile_data,
-        'games': games,
-        'profile_form': profile_form,
-        'gamesWon': gamesWon,
-        'password_form': password_form,
-        'is_online': True,  # Display user's online status if needed
-        'friends': friends_data  # Pass the list of friends with their online statuses
-    })
+        # Build a list of friends with online status
+        friends_data = [
+            {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
+        ]
+
+        return render(request, 'profile.html', {
+            'user': user,
+            'profile': profile_data,
+            'games': games,
+            'games_won': games_won,
+            'profile_form': profile_form,
+            'password_form': password_form,
+            'is_online': True,  # User's own online status
+            'friends': friends_data  # Pass the list of friends with their online statuses
+        })
+
+    except TokenExpiredError:
+        request.session.pop('oauth_token', None)
+        print("\033[91m[DEBUG] Token expired. Redirecting to home.\033[0m")
+        return redirect('home')  # Redirect to home if token expired
+
+    except RequestException as e:
+        print(f"\033[91m[DEBUG] RequestException: {e}\033[0m")
+        return redirect('home')  # Redirect to home for request errors
+
+    except Exception as e:
+        print(f"\033[91m[DEBUG] Unexpected error: {e}\033[0m")
+        return redirect('home')  # Redirect to home for unexpected errors
 
 def userProfile(request, playername):
     you = request.user
