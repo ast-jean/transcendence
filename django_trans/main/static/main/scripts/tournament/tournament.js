@@ -1,4 +1,4 @@
-import { modal, setIsTournament, setPlayers, setRoomId } from "../utils/setter.js";
+import { isTournament, modal, setIsTournament, setPlayers, setRoomId } from "../utils/setter.js";
 import { setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
 export class Tournament {
@@ -179,8 +179,11 @@ export function goLobby(players, room_id) {
         console.log(`Signal envoyé au backend pour déplacer les joueurs dans le lobby pour la salle ID : ${room_id}`);
 
         setRoomId(room_id);
+        console.log("room Id set: ", room_id);
         setPlayers(players);
+        console.log("players set: ", players);
         setIsTournament(true);
+        console.log("set tournament: ", isTournament);
     } else {
         console.error("Le WebSocket n'est pas prêt. Impossible d'envoyer la commande `goLobby`.");
     }

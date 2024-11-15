@@ -248,7 +248,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 
                 # Envoyer les nouveaux matchs aux joueurs
                 for match in tournament.matches:
-                    room_id = Room.generate_room_id(self.existing_room_ids)
+                    #room_id = Room.generate_room_id(self.existing_room_ids)
                     new_room = Room(2, self.existing_room_ids)
                     self.rooms.append(new_room)
                     
@@ -258,7 +258,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     # Informer les joueurs de leur nouveau match
                     data = {
                         "cmd": "startMatch",
-                        "roomId": room_id,
+                        "roomId": new_room.roomId,
                         "players": [match.player1.ident, match.player2.ident]
                     }
                     await match.player1.websocket.send(json.dumps(data))
@@ -375,22 +375,24 @@ class GameConsumer(AsyncWebsocketConsumer):
             cmd = text_data_json.get("cmd")
 
             if cmd == "getBackendInfo":
-                    tournament_ids = list(self.tournaments.keys())
-                    if tournament_ids:
-                        response = {
-                            "cmd": "backendInfo",
-                            "tournamentId": tournament_ids,
-                            #"maxPlayers": tournament.max_players,
-                            "connected_clients": [client.ident for client in self.connected_clients],
-                            #"players": [client.ident for client in tournament.players],
-                            #"matches": len(tournament.matches),
-                        }
-                    else:
-                        response = {
-                            "cmd": "backendInfo",
-                            "message": "No tournament found"
-                        }
-                    await self.send(text_data=json.dumps(response))
+                # Extraire les `tournament_id` à partir de la liste des tournois
+                tournament_ids = [tournament.tournament_id for tournament in self.tournaments]
+
+                if tournament_ids:
+                    response = {
+                        "cmd": "backendInfo",
+                        "tournamentIds": tournament_ids,  # Correction de la clé pour refléter une liste d'identifiants
+                        "connected_clients": [client.ident for client in self.connected_clients],
+                    }
+                else:
+                    response = {
+                        "cmd": "backendInfo",
+                        "message": "No tournament found"
+                    }
+
+                # Envoi de la réponse au client
+                await self.send(text_data=json.dumps(response))
+
             elif cmd == "chat":
                 await self.broadcast_chat(text_data_json)
             elif cmd == "move":
