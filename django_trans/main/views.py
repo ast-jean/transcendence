@@ -380,7 +380,7 @@ def userProfile(request, playername):
     # Check friendship and online status
     is_friend = you.is_friend(them) if hasattr(you, 'is_friend') else False
     is_online = them.is_online() if hasattr(them, 'is_online') else False
-
+    theirgames.team_scores = {ts['team']: ts['team_score'] for ts in team_scores}
     context = {
         'them': them,
         'user': you,

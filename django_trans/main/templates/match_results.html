@@ -1,0 +1,63 @@
+<link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+<h2 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Match Results</h2>
+{% if games %}
+<ul class="list-group mx-auto" style="max-width: 1000px;">
+	{% for game in games %}
+	<li class="list-group-item">
+		<div class="card">
+			<div class="matchcard-body">
+				<div class="row">
+					<div class="col">
+						<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
+					</div>
+					<div class="col-auto  text-white bg-dark rounded"style="font-family: 'Orbitron', sans-serif;">
+						<div class="mx-auto">
+							{% for player in game.players.all %}
+							<span class="fs-2 fw-bold">{{player.score}}</span>
+							{% if forloop.first %}<span>:</span>{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+					<div class="col">
+					</div>
+				</div>
+				<strong>Players:</strong>
+				<ul>
+					{% for player in game.players.all %}
+						<li class="d-flex align-items-center">
+							<div class="col-auto">
+
+								<div class="position-relative">
+									<img src="{{ player.user.avatar.url }}" alt="{{ player.user.username }}'s avatar" class="mb-1" style="width: 100px; height: 100px; margin-right: 10px;">
+									<div class="position-absolute top-0 start-50 translate-middle fs-3" style="z-index: 9999;">{% if player.winner %}👑{% endif %}</div>
+								</div>
+							</div>
+							<div class="col-2">
+
+								<a href="{% url 'userProfile' playername=player.user.username %}" style=" white-space: nowrap; overflow:hidden;">
+									{{ player.user.username }}
+								</a>
+							</div>
+							<div class="col-2">
+
+								{% if player.user.alias %}
+									AKA {{player.user.alias}}
+								{%endif%}
+							</div>
+
+							<div class="col-4">
+
+								Score: {{ player.score }} - Team: {{ player.team }}
+								{% if player.winner %} Winner👑{% endif %}
+							</div>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No games available.</p>
+{% endif %}

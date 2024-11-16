@@ -3,41 +3,6 @@
 {% block title %}Games | About{% endblock %}
 {% block content %}
 
-<h1 id="headers">All Games</h1>
-
-{% if games %}
-    <ul>
-	{% for game in games %}
-	<li>
-		<div class="card col-md-6">
-			<div class="matchcard-body">
-				<strong>Game ID:</strong> {{ game.id }} <br>
-				<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
-				<strong>Players:</strong>
-				<ul>
-					{% for player in game.players.all %}
-						<li class="d-flex align-items-center">
-							<img src="{{ player.user.avatar.url }}" alt="{{ player.user.username }}'s avatar" class="mb-1" style="width: 100px; height: 100px; margin-right: 10px;">
-							<a href="{% url 'userProfile' playername=player.user.username %}">
-								{{ player.user.username }}
-							</a>
-							{% if player.user.alias %}
-								AKA {{player.user.alias}}
-							{%endif%}
-							- Score: {{ player.score }} - Team: {{ player.team }}
-							{% if player.winner %} Winner👑{% endif %}
-						</li>
-					{% endfor %}
-				</ul>
-			</div>
-		</div>
-	</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No games available.</p>
-{% endif %}
-
-
+{% include 'match_results.html' %}
 
 {% endblock %}
