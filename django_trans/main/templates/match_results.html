@@ -1,4 +1,21 @@
 <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+<style>	
+	.jersey-25-regular {
+		font-family: "Jersey 25", sans-serif;
+		font-weight: 400;
+		font-style: normal;
+	  }
+	  
+$position-values: (
+	0: 0,
+	10: 10%,
+	50: 50%,
+	90: 90%,
+	100: 100%
+	);
+</style>
+
+
 <h2 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Match Results</h2>
 {% if games %}
 <ul class="list-group mx-auto" style="max-width: 1000px;">
@@ -10,49 +27,51 @@
 					<div class="col">
 						<strong>Date:</strong> {{ game.date|date:"Y-m-d H:i:s" }} <br>
 					</div>
-					<div class="col-auto  text-white bg-dark rounded"style="font-family: 'Orbitron', sans-serif;">
+					<div class="col-auto  text-white bg-dark rounded" style="font-family: 'Orbitron', sans-serif;">
 						<div class="mx-auto">
 							{% for player in game.players.all %}
 							<span class="fs-2 fw-bold">{{player.score}}</span>
-							{% if forloop.first %}<span>:</span>{% endif %}
+							{% if forloop.first %}<span class="fs-2">:</span>{% endif %}
 							{% endfor %}
 						</div>
 					</div>
 					<div class="col">
 					</div>
 				</div>
-				<strong>Players:</strong>
-				<ul>
-					{% for player in game.players.all %}
-						<li class="d-flex align-items-center">
+				<div class="row mt-1 text-white pb-1  bg-secondary rounded-bottom-0 border border-black rounded ms-0 me-2">
+					<strong>Players:</strong>
+				</div>
+				<div class="row ms-0 me-2">
+					<ul class="bg-secondary-subtle rounded-top-0 border rounded border-black">
+						{% for player in game.players.all %}
+						<li class="d-flex align-items-center border-secondary border-bottom pt-1">
 							<div class="col-auto">
-
 								<div class="position-relative">
 									<img src="{{ player.user.avatar.url }}" alt="{{ player.user.username }}'s avatar" class="mb-1" style="width: 100px; height: 100px; margin-right: 10px;">
-									<div class="position-absolute top-0 start-50 translate-middle fs-3" style="z-index: 9999;">{% if player.winner %}👑{% endif %}</div>
+									<div class="position-absolute top-0 start-50 translate-middle-x fs-5" style="z-index: 9999;">{% if player.winner %}👑{% endif %}</div>
 								</div>
 							</div>
 							<div class="col-2">
-
-								<a href="{% url 'userProfile' playername=player.user.username %}" style=" white-space: nowrap; overflow:hidden;">
+								
+								<a href="{% url 'userProfile' playername=player.user.username %}" style=" white-space: nowrap;">
 									{{ player.user.username }}
 								</a>
 							</div>
 							<div class="col-2">
-
+								
 								{% if player.user.alias %}
-									AKA {{player.user.alias}}
+								AKA {{player.user.alias}}
 								{%endif%}
 							</div>
 
 							<div class="col-4">
-
-								Score: {{ player.score }} - Team: {{ player.team }}
+								Score: {{ player.score }}
 								{% if player.winner %} Winner👑{% endif %}
 							</div>
 						</li>
-					{% endfor %}
-				</ul>
+						{% endfor %}
+					</ul>
+				</div>
 			</div>
 		</div>
 	</li>
