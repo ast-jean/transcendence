@@ -1,0 +1,164 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h2 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Statistics</h2>
+<div class="card mx-auto mb-1" style="max-width: 1000px;">
+	<div class="row">
+		<div class="col-4">
+			<div class="card ms-2 my-2" style="height: 95%;">
+				<div id="pieSpin" class="m-auto spinner-grow text-secondary fs-1" role="status">
+					<span class="visually-hidden">Loading...</span>
+				  </div>
+				  
+				<canvas id="winLossChart" class="mx-auto my-auto"></canvas>
+			</div>
+		</div>
+		<div class="col-8 ps-0">
+			<div class="card me-2">
+				<div id="chartSpin" class="m-auto spinner-grow text-secondary fs-1" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+                <canvas id="cumulativeChart"  class="mx-auto" style="width: 100%; max-width: 800px; height: 400px;"></canvas>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+    // Wait for the DOM to fully load
+    document.addEventListener("DOMContentLoaded", function () {
+        const cumulativeChart = document.getElementById('cumulativeChart').getContext('2d');
+		
+        // Data passed from the Django view
+        const gameIndices = {{ game_indices|safe }};
+        const cumulativeScores = {{ cumulative_scores|safe }};
+
+        new Chart(cumulativeChart, {
+            type: 'line',
+            data: {
+                labels: gameIndices,
+                datasets: [{
+                    label: 'Cumulative Score',
+                    data: cumulativeScores,
+                    borderColor:cumulativeScores.map((score, index) => {
+						if (index === 0) {
+							return 'black';
+						}
+						return cumulativeScores[index] > cumulativeScores[index - 1] ? 'green' : 'red';
+					}), // Line color
+                    borderWidth: 5,
+                    pointRadius: 5, // Size of points
+                    fill: false, // No area fill
+                    pointBackgroundColor: cumulativeScores.map((score, index) => {
+						if (index === 0) {
+							return 'black';
+						}
+						return cumulativeScores[index] > cumulativeScores[index - 1] ? 'green' : 'red';
+					}),
+                    segment: {
+                        borderColor: (cumulativeChart) => {
+                            const prevValue = cumulativeChart.p0.parsed.y; // Previous point value
+                            const currValue = cumulativeChart.p1.parsed.y; // Current point value
+                            return currValue > prevValue ? 'green' : 'red'; // Green for up, Red for down
+                        }
+                    }
+                }]
+            },
+            options: {
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                responsive: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                        position: 'top',
+                    },
+                    title: {
+                        display: true, // Enable the title
+                        text: 'Cumulative Game Score Over Time', // Title text
+                        font: {
+                            size: 18, // Font size for the title
+                            family: 'Arial', // Font family (optional)
+                            weight: 'bold' // Font weight (optional)
+                        },
+                        padding: {
+                            top: 10, // Padding above the title
+                            bottom: 20 // Padding below the title
+                        },
+                        align: 'center', // Align the title: 'start', 'center', or 'end'
+                        color: '#000', // Title color
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Game Index',
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            display: false, // This removes the numbers from the Y-axis
+                        },
+                        title: {
+                            display: false,
+                            text: 'Cumulative Score',
+                        },
+                        beginAtZero: true, // Start Y-axis from zero
+                    }
+                }
+            }
+        });
+
+        const winLossChart = document.getElementById('winLossChart').getContext('2d');
+        console.log("wins: " + {{ gamesWon }});
+        console.log("losses: " + {{ gamesLost }});
+
+        new Chart(winLossChart, 
+		{
+            type: 'pie', // Chart type
+            data: {
+                labels: ['Wins', 'Losses'], // Labels for the segments
+                datasets: [{
+                    label: 'Win/Loss',
+                    data: [{{ gamesWon }}, {{ gamesLost }}], // Data values for each segment
+                    backgroundColor: [
+                        'rgba(54, 235, 162, 0.6)',
+                        'rgba(255, 99, 132, 0.6)', // Colors for each segment
+                    ],
+                    borderColor: [
+                        'rgba(54, 235, 162, 1)',
+                        'rgba(255, 99, 132, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options:
+			{
+                responsive: false, // Makes the chart responsive
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    title: {
+                        display: true, // Enable the title
+                        text: 'Win/Loss ', // Title text
+                        font: {
+                            size: 18, // Font size for the title
+                            family: 'Arial', // Font family (optional)
+                            weight: 'bold' // Font weight (optional)
+                        },
+                        padding: {
+                            top: 10, // Padding above the title
+                            bottom: 20 // Padding below the title
+                        },
+                        align: 'center', // Align the title: 'start', 'center', or 'end'
+                        color: '#000', // Title color
+                    }
+                },
+			}
+        });
+		document.getElementById("pieSpin").classList.add("visually-hidden");
+		document.getElementById("chartSpin").classList.add("visually-hidden");
+    });
+</script>

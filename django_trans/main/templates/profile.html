@@ -35,7 +35,7 @@
                 <p class="profilecard-text">Email: {{ user.email }}</p>
 
                 {% if games %}
-                    <p class="profilecard-text">Games won: {{ gamesWon }} out of {{ games|length }}</p>
+                <p class="profilecard-text"> Games won: {{ gamesWon }} out of {{ games|length }}</p>
                 {% else %}
                     <p class="profilecard-text">Games won: 0</p>
                 {% endif %}
@@ -162,6 +162,9 @@
 </div>
 
 <hr class="mx-auto border border-dark border-2" style="max-width: 1000px;">
+
+{% include 'stats.html' %}
+
 
 {% include 'match_results.html' %}
 
