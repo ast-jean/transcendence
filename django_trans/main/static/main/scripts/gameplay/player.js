@@ -12,6 +12,7 @@ export class Player {
         this.ident = ident;
         this.lives = 3;
         this.isVertical = isVertical;
+        this.winner = false;
         this.name = name;
         this.alias = alias;
         // Choisir la géométrie en fonction de l'orientation (vertical ou horizontal)
@@ -169,8 +170,6 @@ export function movePlayer4(delta) {
         }
     }
 }
-
-
 
 
 

@@ -1,5 +1,6 @@
-import { isTournament, modal, setIsTournament, setPlayers, setRoomId } from "../utils/setter.js";
-import { setupWebSocket, socketState } from "../websockets/socket_pong.js";
+import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament } from "../utils/setter.js";
+import { checkIfHost } from "../utils/utils.js";
+import { host_ident, setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
 export class Tournament {
     constructor(tournamentId, maxPlayers) {
@@ -34,18 +35,8 @@ export class Tournament {
     }
 
     // Méthode pour gérer les résultats de match
-    reportMatchResult(matchId, winner) {
-        let match = this.matches.find(m => m.id === matchId);
-        if (match) {
-            match.setWinner(winner);
-            console.log(`Match ${matchId} terminé. Gagnant: ${winner.id}`);
-        }
 
-        // Logique pour gérer la fin des matchs ou avancer au prochain tour
-        if (this.allMatchesCompleted()) {
-            this.advanceToNextRound();
-        }
-    }
+    
 
     // Méthode pour vérifier si tous les matchs sont terminés
     allMatchesCompleted() {
@@ -134,8 +125,6 @@ class Match {
     }
 }
 
-
-
 // Fonction pour créer un tournoi (demande envoyée au backend)
 export async function createTournamentLobby(tournamentId, maxPlayers) {
     try {
@@ -152,7 +141,6 @@ export async function createTournamentLobby(tournamentId, maxPlayers) {
     };
     socketState.socket.send(JSON.stringify(cmd));
 }
-
 
 function addPlayerToTournament() {
     // Fonction pour ajouter le joueur courant au tournoi
@@ -186,5 +174,23 @@ export function goLobby(players, room_id) {
         console.log("set tournament: ", isTournament);
     } else {
         console.error("Le WebSocket n'est pas prêt. Impossible d'envoyer la commande `goLobby`.");
+    }
+}
+
+export function sendMatchWinner(winnerId, roomId) {
+    if (socketState.socket && socketState.isSocketReady) {
+        // Construire le message de commande à envoyer au backend
+        const data = {
+            cmd: "reportMatchResult",
+            roomId: roomId,
+            winnerId: winnerId,
+            tournamentId: tournament.tournamentId
+        };
+
+        // Envoyer la commande via le WebSocket
+        socketState.socket.send(JSON.stringify(data));
+        console.log(`Signal envoyé au backend : Gagnant du match pour la salle ${roomId} est ${winnerId} du tournoi ${tournament.tournamentId}`);
+    } else {
+        console.error("WebSocket n'est pas prêt ou vous n'êtes pas l'hôte. Impossible d'envoyer les informations du gagnant.");
     }
 }

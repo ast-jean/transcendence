@@ -9,6 +9,7 @@ class Tournament:
         self.is_lobby = True  # Etat initial du tournoi, avant le début des matchs
         self.winner = None  # Le gagnant du tournoi une fois terminé
         self.lobby_room = None
+        self.winners = []
     
     def add_player(self, client):
         """Ajoute un joueur au tournoi s'il reste de la place."""
@@ -24,6 +25,20 @@ class Tournament:
     def get_players(self):
         """Retourne la liste des joueurs actuellement inscrits."""
         return [{"id": player.ident} for player in self.players]
+    
+    def add_winner(self, winner_id):
+        """Ajoute le gagnant à la liste des gagnants."""
+        self.winners.append(winner_id)
+        print(f"Le joueur {winner_id} a été ajouté à la liste des gagnants.")
+
+    def all_matches_reported(self):
+        """Vérifie si les deux gagnants sont prêts pour la finale."""
+        return len(self.winners) == 2
+#
+       # # Si tous les matchs de la demi-finale sont terminés, organiser la finale
+       # if len(self.winners) == 2:
+       #     print("Deux gagnants ont été déterminés. Organisation de la finale.")
+       #     self.organize_final()
 #   
 #   async def start_tournament(self, tournament_id):
 #       # Récupère le tournoi via son ID
@@ -104,14 +119,42 @@ class Tournament:
                             }))
 
 
-    def advance_to_next_round(self):
-        """Passe au tour suivant si le tournoi n'est pas encore terminé."""
-        if len(self.matches) == 1:
-            self.winner = self.matches[0].winner  # Un seul match, donc un gagnant
-        else:
-            winners = [m.winner for m in self.matches if m.winner]
-            self.players = winners  # Les gagnants deviennent les joueurs du prochain tour
-            self.create_matches()  # Crée les nouveaux matchs du tour suivant
+    async def advance_to_next_round(self):
+            """Crée une nouvelle room pour la finale entre les deux gagnants."""
+            if self.all_matches_reported():
+                # Créer une nouvelle room pour le match final
+                room_id = Room.generate_room_id(GameConsumer.existing_room_ids)
+                final_room = Room(2, GameConsumer.existing_room_ids)  # Room de match 1v1
+                self.lobby_room = final_room
+
+                # Ajouter les gagnants à la nouvelle room de finale
+                winner_1_id = self.winners[0]
+                winner_2_id = self.winners[1]
+
+                # Trouver les clients correspondants aux gagnants
+                winner_1 = next((client for client in self.clients if client.ident == winner_1_id), None)
+                winner_2 = next((client for client in self.clients if client.ident == winner_2_id), None)
+
+                if winner_1 and winner_2:
+                    final_room.add_client(winner_1)
+                    final_room.add_client(winner_2)
+
+                    # Envoi des informations aux deux joueurs concernant la finale
+                    data = {
+                        "cmd": "startMatch",
+                        "roomId": final_room.roomId,
+                        "players": [winner_1.ident, winner_2.ident]
+                    }
+
+                    # Envoi des informations via les websockets des deux joueurs
+                    await winner_1.websocket.send(json.dumps(data))
+                    await winner_2.websocket.send(json.dumps(data))
+
+                    print(f"Match final organisé entre {winner_1.ident} et {winner_2.ident} dans la room {final_room.roomId}.")
+                else:
+                    print("Erreur : un des gagnants est introuvable.")
+            else:
+                print("Tous les matchs ne sont pas encore terminés pour avancer au prochain tour.")
 
 class Match:
     def __init__(self, player1, player2):
