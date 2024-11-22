@@ -7,7 +7,7 @@ import { hideBtn, showBtn } from '../ui/ui_updates.js';
 import { checkIfHost } from '../utils/utils.js';
 import { walls } from './wall.js';
 import { room_id } from '../utils/setter.js';
-import { goLobby } from '../tournament/tournament.js';
+import { goLobby, sendMatchWinner } from '../tournament/tournament.js';
 
 let player1Score = 0;
 let player2Score = 0;
@@ -78,9 +78,18 @@ export function checkEndGame() {
         if (player1Score >= maxScore || player2Score >= maxScore) {
             if (tournament)
                 {
-                    
+                    if (player1Score >= maxScore )
+                    {
+
+                        sendMatchWinner(players[0].ident, getRoomId());
+                        //players[0].winner = true;
+                    }
+                    else
+                        sendMatchWinner(players[1].ident, getRoomId());
+                        //players[1].winner = true;
                     console.log("tournament endgame")
-                    goLobby(players, tournament.tournamentId);
+                    //goLobby(players, tournament.tournamentId);
+
                     endGame();
                 }
                 // établir les gagnants, sauvegarder les points, renvoyer les gagnants pour l'attente de leur prochain match, renvoyer les perdants au lobby
