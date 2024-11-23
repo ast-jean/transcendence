@@ -583,7 +583,7 @@ body {
 
 
 .bracket {
-    width: 100px;
+    width: auto;
     background-color: #d3caff;
 }
 

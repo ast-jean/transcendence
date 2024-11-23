@@ -5,14 +5,14 @@
 - [X] Minor Module - Bootstrap
 - [x] Minor Module - PostgreSQL
 ### User Management
-- [ ] Major Module - Standard User Management
+- [X] Major Module - Standard User Management
     - [X] Users can subscribe to the website in a secure way.
     - [X] Registered users can log in in a secure way.
     - [X] Users can select a unique display name to play the tournaments.
     - [X] Users can update their information.
     - [X] Users can upload an avatar, with a default option if none is provided.
     - [X] Users can add others as friends and view their online status.
-    - [ ] User profiles display stats, such as wins and losses.
+    - [X] User profiles display stats, such as wins and losses.
     - [X] Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users
 - [X] Major Module - OAuth 2.0 42
     - [X] Integrate the authentication system, allowing users to securely sign in.

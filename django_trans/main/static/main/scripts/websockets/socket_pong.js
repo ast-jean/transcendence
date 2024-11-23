@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { addPlayerToGame, localPlayerId, players, setID, setRoomId } from '../utils/setter.js';
+import { addPlayerToGame, localPlayerId, modal, players, setID, setRoomId } from '../utils/setter.js';
 import { checkIfHost, connectPlayersInRoom, determineIfVertical, getNewPlayerColor, getNewPlayerPosition, getPlayerStartingPosition, isPositionValid, removeMeshFromScene } from '../utils/utils.js';
 import { sphere } from '../gameplay/ball.js';
 import { setBallSpeedX, setBallSpeedY, removePlayer, removeAllPlayers} from '../utils/setter.js';
@@ -7,7 +7,7 @@ import { Player } from '../gameplay/player.js';
 import { wallLength } from '../gameplay/wall.js';
 import { addChat, addChatProfile } from '../ui/chat.js'
 import { startGame_online } from '../pong.js';
-import { hideAllButtons, hideBtn, showBtn } from '../ui/ui_updates.js';
+import { hideAllButtons, hideBtn, showBtn, startCountdown } from '../ui/ui_updates.js';
 import { tournament, setTournament } from '../utils/setter.js';
 import { updateTournamentUI } from '../ui/ui_updates.js';
 import { scene } from '../pong.js';
@@ -58,7 +58,7 @@ export function setupWebSocket() {
         
         socketState.socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
-    
+            console.log(data);
             if (data.cmd === "tournamentWinner") {
                 console.log(`Le gagnant du tournoi est : ${data.winnerId}`);
                 alert(`The winner of the tournament : ${data.winnerId}`);
@@ -131,10 +131,14 @@ export function setupWebSocket() {
             if (data.cmd === "disconnect") {
                 addChat("Server:", "The other player has disconnected", 'danger');
                 removePlayer(data.ident);
+                modal.hide();
+                alert("A player has disconnect. Restarting..");
                 new Promise(resolve => setTimeout(resolve, 5000)); //wait 5 sec
                 location.reload();  
             }
-
+            if (data.cmd === "startTourney") {
+                showBtn("startTournamentBtn");
+            }
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
                 if (data.host === true) {
@@ -146,7 +150,6 @@ export function setupWebSocket() {
                 }
                 // Vérifie si data.players est défini et est bien un tableau
                 if (Array.isArray(data.players)) {
-
                     data.players.forEach(player => {
                         tournament.addPlayer(player);
                     });
@@ -169,12 +172,12 @@ export function setupWebSocket() {
             if (data.cmd === "startMatch") {
                 console.log(`Match démarré dans la Room ID ${data.roomId} avec les joueurs : ${data.players.join(", ")}`);
                 let index = 0;
+                modal.hide();
+                hideBtn("layer2Btns_tournament");
                 // Pour chaque joueur dans la room, les ajouter à la scène et au tableau global players
                 data.players.forEach(playerId => {
                     // Vérifie si le joueur est déjà dans la liste (évite les doublons)
                     if (!players.find(p => p.ident === playerId)) {
-                        // Ajoute le joueur à la scène avec une position spécifique
-                        // On suppose que tu veux que les joueurs soient placés sur les murs (par exemple, vertical/horizontal)
                         if (checkIfHost(data.host)) {
                             showBtn('start_btn');
                         }

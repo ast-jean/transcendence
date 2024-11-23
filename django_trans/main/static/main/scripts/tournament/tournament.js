@@ -1,3 +1,4 @@
+import { showBtn } from "../ui/ui_updates.js";
 import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament } from "../utils/setter.js";
 import { checkIfHost } from "../utils/utils.js";
 import { host_ident, setupWebSocket, socketState } from "../websockets/socket_pong.js";
@@ -10,7 +11,6 @@ export class Tournament {
         this.matches = [];
         this.isLobby = true;
         this.winner = null;
-        //this.modal = new bootstrap.Modal(document.getElementById('exampleModal'));
     }
 
     // Méthode pour ajouter un joueur
@@ -70,8 +70,11 @@ export class Tournament {
         this.players.forEach((player, index) => {
             let playerElement = document.getElementById(`player${index + 1}Element`);   
             if (playerElement) {
-                // Update the playerElement as needed
-                playerElement.textContent = player.name; // Example update
+                if (player.alias) {
+                    playerElement.textContent = player.alias;
+                } else {
+                    playerElement.textContent = player.name;
+                } 
             } else {
                 console.error(`Element with id 'player${index + 1}Element' not found`);
             }
@@ -84,6 +87,7 @@ export class Tournament {
                 this.players.push({
                     id: player.id,
                     name: player.name,
+                    alias: player.alias,
                     index: player.index
                 });
             } else {
@@ -102,6 +106,9 @@ export class Tournament {
             console.log(data.players);
             this.players = data.players;
             console.log(this.players);
+        }
+        if (data.success === true) {
+            modal.show();
         }
         this.updatePlayerListUI();
     }

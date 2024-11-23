@@ -43,11 +43,11 @@ function resizeBackground() {
     }
 }
 function handleScroll() {
-    console.log('User scrolled! Scroll position:', window.scrollY);
+    // console.log('User scrolled! Scroll position:', window.scrollY);
     resizeBackground(); // Adjust background on scroll
 }
 function handleResize() {
-    console.log('Window resized!');
+    // console.log('Window resized!');
     resizeBackground(); // Adjust background on resize
 }
 window.addEventListener('scroll', handleScroll);
@@ -241,13 +241,7 @@ document.addEventListener('keydown', function (event) {
 function joinTournament(tournamentId) {
     // Vérifier si le WebSocket est prêt
     if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-        let name = getName();
-        const cmd = {
-            cmd: "joinTournament",
-            tournamentId: tournamentId,
-            name: name
-        };
-        socketState.socket.send(JSON.stringify(cmd));
+        sendCmd('joinTournament', tournamentId);
         console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
         setIsTournament(true);
     } else {
@@ -261,25 +255,17 @@ const tournamentOptions = document.getElementById('tournamentOptions');
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
     console.log("Création d'un nouveau tournoi");
-    //wait for all players 
-
     // Envoyer la commande au serveur pour créer un tournoi
-    const cmd = {
-        cmd: "createTournamentLobby",
-    };
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
-        socketState.socket.send(JSON.stringify(cmd));
+        sendCmd("createTournamentLobby");
         console.log(`Commande envoyée pour créer le tournoi`);
         setIsTournament(true);
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    //showBtn('start_btn');
-    showBtn('startTournamentBtn');
-    
 });
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi
