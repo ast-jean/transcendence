@@ -3,8 +3,8 @@ import uuid
 import json
 from typing import List, Optional
 import random
-from .tournament import *
 from asgiref.sync import sync_to_async
+import asyncio
 
 class Client:
     def __init__(self, ident, index, websocket, name, alias = None):
@@ -14,13 +14,17 @@ class Client:
         self.index = index
         self.websocket = websocket
         self.winner = False
-        self.team = "team1" if index % 2 == 0 else "team2"
+        if index is not None:
+            self.team = "team1" if index % 2 == 0 else "team2"
+        else:
+            self.team = None
 
     def to_dict(self):
         return {
             'ident': self.ident,
             'index': self.index,
-            'team': self.team
+            'name': self.name,
+            'alias':self.alias,
         }
 
 class Room:
@@ -33,6 +37,7 @@ class Room:
         self.scoreTeam2 = 0
         self.host_ident = None  # Identifiant de l'hôte
         self.game_over = True
+        self.game_start = False
         self.isLobby = is_lobby
         self.game_saved = False
 
@@ -46,7 +51,7 @@ class Room:
         existing_room_ids.append(room_id)
         return room_id
 
-    async def find_client_by_ident(self, ident):
+    def find_client_by_ident(self, ident):
         for client in self.connected_clients:
             if client.ident == ident:
                 return client
@@ -91,6 +96,13 @@ class GameConsumer(AsyncWebsocketConsumer):
     existing_room_ids = []
     tournaments = []
     
+    def to_dict(self):
+        return {
+            'ident': self.ident,
+            'name': self.name,
+            'alias':self.alias,
+        }
+
     async def find_room(self, room_id):
         for room in self.rooms:
             if str(room.roomId) == str(room_id):
@@ -106,7 +118,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         return None
 
     async def connect(self):
-        self.ident= str(uuid.uuid4())
+        self.ident = str(uuid.uuid4())
         self.name = None
         self.alias = None
         self.block_list = set()
@@ -161,7 +173,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             lobby_room = room
             # Ajouter les joueurs à la salle de lobby
             for player_ident in players:
-                client = await self.find_client_by_ident(player_ident)
+                client = self.find_client_by_ident(player_ident)
                 if client:
                     lobby_room.add_client(client)
                     print(f"Client {client.ident} ajouté au lobby.")
@@ -183,6 +195,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             }))
 
     async def create_tournament_lobby(self, name = "Host", alias = None):
+        from .tournament import Tournament
         lobby_room = Room(4, self.existing_room_ids, True)
         self.rooms.append(lobby_room)
         tournament_id = lobby_room.roomId
@@ -217,68 +230,83 @@ class GameConsumer(AsyncWebsocketConsumer):
             await client.websocket.send(json.dumps(data))
 
 
-    async def end_match(self, tournament_id, room_id, winner_id):
-        # Trouver la room par l'ID de room
-        room = await self.find_room(room_id)
+    async def construct_all_players_data(self, tournament, cmd):
+        """Construct data for all players in the tournament."""
+        # Extract the winners based on their `ident` values in `self.winners`
+        winners = [
+            client.to_dict() 
+            for client in tournament.clients 
+            if client.ident in tournament.winners[:2]  # First and second winners
+        ]
         
-        if room:
-            print(f"Le match dans la salle {room_id} est terminé. Le gagnant est {winner_id}")
-            
-            # Si la room fait partie d'un tournoi, on veut faire avancer au tour suivant
-            tournament = await self.find_tournament(tournament_id)
-            if tournament:
-                # Vérifier si le gagnant n'est pas déjà dans la liste des gagnants
-                if winner_id not in tournament.winners:
-                    # Ajouter le gagnant à la liste des joueurs qualifiés pour le tour suivant
-                    tournament.add_winner(winner_id)
-                    print(f"Joueur {winner_id} ajouté aux gagnants du tournoi {tournament_id}")
-                    
-                    # Vérifier si tous les matchs sont terminés pour avancer au prochain tour
-                    if tournament.all_matches_reported():
-                        await tournament.advance_to_next_round(tournament_id)
-                else:
-                    print(f"Le joueur {winner_id} est déjà dans la liste des gagnants du tournoi {tournament_id}.")
+        # The third winner, if available
+        tournamentWinner = next(
+            (client.to_dict() for client in tournament.clients if client.ident == tournament.winners[2]),
+            None
+        ) if len(tournament.winners) > 2 else None
+
+        # Construct the all_players data dictionary
+        data = {
+            "cmd": cmd,
+            "tournamentId": tournament.tournament_id,
+            "players": [client.to_dict() for client in tournament.clients],  # Convert clients to dictionaries
+            "winners": winners,  # First and second winners
+            "tournamentWinner": tournamentWinner,  # Third winner
+            "host": tournament.clients[0].ident,  # Assuming first client is the host
+            "doneRooms": tournament.doneRooms,  # Ensure doneRooms is serializable
+        }
+
+        return data
+
+    async def resolve_winners(self, winners):
+        import asyncio
+        for i in range(len(winners)):
+            winner = winners[i]
+            if asyncio.iscoroutine(winner):
+                print(f"Resolving coroutine at index {i}")
+                resolved_value = await winner  # Await the coroutine
+                winners[i] = resolved_value    # Replace it in the original list
+                print(f"Replaced coroutine with resolved value at index {i}")
             else:
-                print(f"Tournoi non trouvé pour l'ID {tournament_id}")
-        else:
-            print(f"Salle non trouvée : {room_id}")
+                print(f"Winner at index {i} is already resolved")
 
-
-
-    async def advance_to_next_round(self, tournament_id):
-        tournament = self.tournaments.get(tournament_id)
-
-        if tournament:
-            winners = [match.winner for match in tournament.matches if match.winner]
-
-            if len(winners) == 1:
-                # S'il ne reste qu'un seul gagnant, le tournoi est terminé
-                tournament.winner = winners[0]
-                await self.declare_winner(tournament_id)
-            else:
-                # Sinon, on crée de nouveaux matchs pour le prochain tour
-                tournament.create_matches(winners)
-                print(f"Tour suivant pour le tournoi {tournament_id} avec {len(winners)} joueurs.")
+    async def end_match(self, tournament_id, room_id, winner_id, winner_name, winner_alias):
+        # Trouver la room par l'ID de room
+        tournament = await self.find_tournament(tournament_id)
+        if room_id not in tournament.doneRooms:
+            tournament.add_doneRooms(room_id)
+            room = await self.find_room(room_id)
+            if room:
+                print(f"Le match dans la salle {room_id} est terminé. Le gagnant est {winner_id}")
                 
-                # Envoyer les nouveaux matchs aux joueurs
-                for match in tournament.matches:
-                    #room_id = Room.generate_room_id(self.existing_room_ids)
-                    new_room = Room(2, self.existing_room_ids)
-                    self.rooms.append(new_room)
+                # Si la room fait partie d'un tournoi, on veut faire avancer au tour suivant
+                if tournament:
+                    print(f"None Resolved winners[{len(tournament.winners)}: {tournament.winners}")
+                    await self.resolve_winners(tournament.winners)
+                    print(f"Resolved winners[{len(tournament.winners)}: {tournament.winners}")
+                    #Correctly store the winner's ident
+                    ident = winner_id['ident']
+                    # Ajouter le gagnant à la liste des joueurs qualifiés pour le tour suivant
+                    if len (tournament.winners) >= 2:
+                        await tournament.add_winner(ident)
+                    else:
+                        await tournament.add_winner(ident)
+                    print(f"Joueur {ident} ajouté aux gagnants du tournoi {tournament_id}")
+                    # Vérifier si tous les matchs sont terminés pour avancer au prochain tour
+                    data = await self.construct_all_players_data(tournament, "reportMatchResult")
+                    print(f"This is data:{data}")
                     
-                    new_room.add_client(match.player1)
-                    new_room.add_client(match.player2)
-
-                    # Informer les joueurs de leur nouveau match
-                    data = {
-                        "cmd": "startMatch",
-                        "roomId": new_room.roomId,
-                        "players": [{'ident': match.player1.ident}, { "ident": match.player2.ident,  }]
-                    }
-                    await match.player1.websocket.send(json.dumps(data))
-                    await match.player2.websocket.send(json.dumps(data))
+                    #for match that match.winner = someone
+                    for client in tournament.clients:
+                        await client.websocket.send(json.dumps(data))
+                    if tournament.all_matches_reported():
+                        await tournament.advance_to_next_round()
+                else:
+                    print(f"Tournoi non trouvé pour l'ID {tournament_id}")
+            else:
+                print(f"Salle non trouvée : {room_id}")
         else:
-            print(f"Tournoi {tournament_id} non trouvé.")
+                print(f"Already in doneRooms : {room_id}")
 
     async def declare_winner(self, tournament_id):
         tournament = self.tournaments.get(tournament_id)
@@ -349,13 +377,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             }
         await self.send(text_data=json.dumps(response))
 
-
     async def start_tournament(self, tournament_id):
         """Méthode pour démarrer le tournoi et distribuer les joueurs dans des rooms."""
         tournament = next((t for t in self.tournaments if t.tournament_id == tournament_id), None)
         if tournament:
             if len(tournament.clients) == tournament.max_players:
-                print(f"Démarrage du tournoi {tournament_id} avec {len(tournament.clients)} joueurs.")
+                # print(f"Démarrage du tournoi {tournament_id} avec {len(tournament.clients)} joueurs.\n{tournament.clients[0].to_dict()},{tournament.clients[1].to_dict()}",{tournament.clients[2].to_dict()},{tournament.clients[3].to_dict()})
                 tournament.create_matches()  # Crée les matchs
                 # Envoie chaque match dans une room dédiée
                 for match in tournament.matches:
@@ -366,13 +393,23 @@ class GameConsumer(AsyncWebsocketConsumer):
                     new_room.add_client(match.player2)
                     print(f"Room créée pour {match.player1.ident} et {match.player2.ident}, Room ID: {new_room.roomId}")
 
-                    # Envoi des infos aux joueurs
                     data = {
-                        "cmd": "startMatch",
-                        "roomId": new_room.roomId,
-                        "host": new_room.host_ident,
-                        "players": [match.player1.ident, match.player2.ident]
-                    }
+                    "cmd": "startMatch",
+                    "roomId": new_room.roomId,
+                    "host": new_room.host_ident,
+                    "players": [
+                        {
+                            "ident": match.player1.ident,
+                            "name": match.player1.name,
+                            "alias": match.player1.alias
+                        },
+                        {
+                            "ident": match.player2.ident,
+                            "name": match.player2.name,
+                            "alias": match.player2.alias
+                        }
+                    ]
+}
                     await match.player1.websocket.send(json.dumps(data))
                     await match.player2.websocket.send(json.dumps(data))
             else:
@@ -382,9 +419,17 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def start_game(self, room_id):
         room = await self.find_room(room_id)
-        if room:
+        if room and room.game_start is False:
             for client in room.clients:
-                await client.websocket.send(json.dumps({"cmd": "startGame"}))
+                # Check if client has an async websocket.send method
+                if hasattr(client, 'websocket') and hasattr(client.websocket, 'send') and callable(client.websocket.send):
+                    room.game_start = True
+                    await client.websocket.send(json.dumps({"cmd": "startGame"}))
+                elif hasattr(client, 'send') and callable(client.send):
+                    room.game_start = True
+                    await client.send(json.dumps({"cmd": "startGame"}))
+                else:
+                    print(f"Client {client} does not support sending messages.")
             print(f"Le jeu a démarré pour la room {room_id}")
 
 
@@ -481,17 +526,35 @@ class GameConsumer(AsyncWebsocketConsumer):
             elif cmd == "reportMatchResult":
                 room_id = text_data_json.get("roomId")
                 winner_id = text_data_json.get("winnerId")
+                winner_name = text_data_json.get("winnerName")
+                winner_alias = text_data_json.get("winnerAlias")
                 tournament_id = text_data_json.get("tournamentId")
 
                 if room_id and winner_id:
-                    await self.end_match(tournament_id=tournament_id, room_id=room_id, winner_id=winner_id)
+                    await self.end_match(tournament_id=tournament_id, room_id=room_id, winner_id=winner_id, winner_name=winner_name, winner_alias=winner_alias)
                 else:
                     await self.send(text_data=json.dumps({
                         "cmd": "reportMatchResult",
                         "success": False,
                         "error": "Missing room ID or winner ID."
                     }))
-
+            elif cmd == "startFinal":
+                room = await self.find_room(text_data_json["roomId"])
+                if room is not None:
+                    players_in_lobby = [{"ident": client.ident, "name":client.name, "alias": client.alias} for client in room.clients]
+                    data = {
+                        "cmd": "startMatch",
+                        "roomId": text_data_json["roomId"],
+                        "players": players_in_lobby
+                    }
+                    #send to players in the room
+                    # print(f"Room trouvée avec host_ident: {room.host_ident}")
+                    for client in room.clients:
+                        await client.send(json.dumps(data))#Client is a GameConsumer
+                    else:
+                        print(f"Client {self.ident} is not the host and cannot update the score.")
+                else:
+                    print(f"Aucune room trouvée avec roomId: {text_data_json['roomId']}")
             elif cmd == "score":
                 room = await self.find_room(text_data_json["roomId"])
                 # print('ScoreChange')
@@ -680,13 +743,15 @@ class GameConsumer(AsyncWebsocketConsumer):
             return None  # No error
         else:
             return f'User {target_username} not found.'
-
+        
+    @classmethod
     async def find_client_by_name(self, name):
         for client in self.connected_clients:
             if client.name == name:
                 return client
         return None
-
+    
+    @classmethod
     async def find_client_by_ident(self, ident):
         for client in self.connected_clients:
             if client.ident == ident:
@@ -775,7 +840,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         if room is not None:
             for client in room.clients:
                 if client.ident != self.ident:
-                    await client.websocket.send(json.dumps(data))
+                    if hasattr(client, 'websocket') and hasattr(client.websocket, 'send') and callable(client.websocket.send):
+                        await client.websocket.send(json.dumps(data))
+                    elif hasattr(client, 'send') and callable(client.send):
+                        await client.send(json.dumps(data))
+                    else:
+                        print(f"Client {client} does not support sending messages.")
 
     async def createRoom(self, playerTotal, creator,alias, data):
         print(f"Creating new room of {playerTotal}")

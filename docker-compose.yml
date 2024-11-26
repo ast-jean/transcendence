@@ -49,8 +49,8 @@ services:
       volumes:
         - ./nginx/nginx.conf:/etc/nginx/nginx.conf
         - ./nginx/certs:/etc/nginx/certs:ro
-        - static_volume:/usr/src/app/static/  # Consistent static volume mount
-        - media_volume:/usr/src/app/media/  # Consistent media volume mount
+        - static_volume:/usr/src/app/static/ 
+        - media_volume:/usr/src/app/media/ 
         - ./certbot/conf:/etc/letsencrypt
         - ./certbot/www:/var/www/certbot
       ports:
@@ -58,9 +58,15 @@ services:
         - "80:80"
       depends_on:
         - django
+        - certbot
       networks:
         - transcendence_net
-  
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email adam.stjean.lejeune@gmail.com --agree-tos --no-eff-email -d transcendence.somewhat.ca -d www.transcendence.somewhat.ca
 volumes:
   postgres_data:
   static_volume:

@@ -1,5 +1,5 @@
-import { showBtn } from "../ui/ui_updates.js";
-import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament } from "../utils/setter.js";
+import { hideBtn, showBtn } from "../ui/ui_updates.js";
+import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament, room_id } from "../utils/setter.js";
 import { checkIfHost } from "../utils/utils.js";
 import { host_ident, setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
@@ -21,7 +21,7 @@ export class Tournament {
         } else {
             console.warn('Le tournoi est plein');
         }
-        this.updatePlayerListUI();
+        this.updatePlayerListUI(this.players);
     }
 
     // Méthode pour initialiser les matchs
@@ -55,30 +55,54 @@ export class Tournament {
         }
     }
 
-    // updatePlayerListUI() {
-    //     const playersList = document.getElementById('playersList');
-    //     playersList.innerHTML = '';
-    //     tournament.players.forEach(player => {
-    //         let li = document.createElement('li');
-    //         li.textContent = `Joueur: ${player.id}`;
-    //         playersList.appendChild(li);
-    //     });
-    // }
+    getPlayerIndex(players, winnerIdent) {
+        return players.findIndex(player => player.ident === winnerIdent);
+    }
 
-    updatePlayerListUI() {
-        console.log(this.players);
-        this.players.forEach((player, index) => {
-            let playerElement = document.getElementById(`player${index + 1}Element`);   
+    updatePlayerListUI(allPlayers, matchWinners = [], tournamentWinner = null) {
+        let colors = ["#F86259", "#00B7FF", "#ffff66","#00ff00"]
+        // Update all players
+        allPlayers.forEach((player, index) => {
+            let playerElement = document.getElementById(`player${index + 1}Element`);
             if (playerElement) {
-                if (player.alias) {
-                    playerElement.textContent = player.alias;
-                } else {
-                    playerElement.textContent = player.name;
-                } 
+                playerElement.textContent = player.alias ? player.alias : player.name;
             } else {
                 console.error(`Element with id 'player${index + 1}Element' not found`);
             }
         });
+    
+        // Update match winners
+        if (matchWinners.length > 0) {
+            matchWinners.forEach((winner, index) => {
+                let winnerElement = document.getElementById(`winner${index + 1}Element`);
+                let winnerElementBox = document.getElementById(`W${index + 1}-row`);
+
+                if (winnerElement) {
+                    let i = this.getPlayerIndex(allPlayers, winner.ident);
+                    winnerElement.textContent = winner.alias || winner.name || "pending..";
+                    winnerElementBox.style.backgroundColor = colors[i];
+                } else {
+                    console.error(`Element with id 'winner${index + 1}Element' not found`);
+                }
+            });
+        }
+    
+        // Update tournament winner
+        if (tournamentWinner) {
+            document.getElementById("exampleModalLabel").textContent = "BRAVO! Tournament has ended";
+            hideBtn('startFinalBtn');
+            let tournamentWinnerElement = document.getElementById("tournamentWinnerElement");
+            let tournamentWinnerElementBox = document.getElementById("WF-row");
+            if (tournamentWinnerElement) {
+                if (tournamentWinner){
+                    let i = this.getPlayerIndex(allPlayers, tournamentWinner.ident);
+                    tournamentWinnerElement.textContent = tournamentWinner.alias || tournamentWinner.name || "pending..";
+                    tournamentWinnerElementBox.style.backgroundColor = colors[i];
+                }
+            } else {
+                console.error(`Element with id 'tournamentWinnerElement' not found`);
+            }
+        }
     }
 
     setPlayers(playersJson) {
@@ -101,7 +125,6 @@ export class Tournament {
 
     // Recevoir les données du backend et mettre à jour la liste des joueurs
     handleBackendUpdate(data) {
-        console.log(data);
         if (data.cmd === "updateLobbyPlayers") {
             console.log(data.players);
             this.players = data.players;
@@ -110,7 +133,19 @@ export class Tournament {
         if (data.success === true) {
             modal.show();
         }
-        this.updatePlayerListUI();
+        this.updatePlayerListUI(data.players, data.winners, data.tournamentWinner);
+    }
+
+    reportMatchResult(data){
+        if (data['doneRooms'].includes(room_id)) {
+            console.log("THE ROOM IS DONE");
+            modal.show();
+        } else {
+            console.log("THE ROOM IS NOT DONE!!!!");
+        }
+        document.getElementById("exampleModalLabel").textContent = "Waiting for next round...";
+        this.updatePlayerListUI(data.players, data.winners,  data.tournamentWinner);
+        hideBtn('startTournamentBtn');
     }
 }
 
@@ -184,13 +219,15 @@ export function goLobby(players, room_id) {
     }
 }
 
-export function sendMatchWinner(winnerId, roomId) {
+export function sendMatchWinner(winnerId, winnerName, winnerAlias, roomId) {
     if (socketState.socket && socketState.isSocketReady) {
         // Construire le message de commande à envoyer au backend
         const data = {
             cmd: "reportMatchResult",
             roomId: roomId,
             winnerId: winnerId,
+            winnerName: winnerName,
+            winnerAlias: winnerAlias,
             tournamentId: tournament.tournamentId
         };
 
@@ -199,5 +236,5 @@ export function sendMatchWinner(winnerId, roomId) {
         console.log(`Signal envoyé au backend : Gagnant du match pour la salle ${roomId} est ${winnerId} du tournoi ${tournament.tournamentId}`);
     } else {
         console.error("WebSocket n'est pas prêt ou vous n'êtes pas l'hôte. Impossible d'envoyer les informations du gagnant.");
-    }
+    } 
 }

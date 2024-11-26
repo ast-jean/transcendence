@@ -7,7 +7,7 @@ import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, getName } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode, localPlayerId, setID, setLocalMode, setIsTournament, modal, setBallSpeedX, setBallSpeedY } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID, setLocalMode, setIsTournament, modal, setBallSpeedX, setBallSpeedY, room_id} from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -16,7 +16,6 @@ import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 import { tournament } from './utils/setter.js';
 import { displayDebugInfo } from './utils/utils.js';
 import { showTournamentOptions } from './ui/ui_tournament.js';
-import { room_id } from './utils/setter.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -34,7 +33,9 @@ export const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
-container.appendChild(renderer.domElement);
+let winGame = renderer.domElement;
+winGame.classList.add("rounded");
+container.appendChild(winGame);
 
 function resizeBackground() {
     const loader = document.querySelector('.loader');
@@ -43,17 +44,15 @@ function resizeBackground() {
     }
 }
 function handleScroll() {
-    // console.log('User scrolled! Scroll position:', window.scrollY);
     resizeBackground(); // Adjust background on scroll
 }
 function handleResize() {
-    // console.log('Window resized!');
     resizeBackground(); // Adjust background on resize
 }
+
 window.addEventListener('scroll', handleScroll);
 window.addEventListener('resize', handleResize);
 resizeBackground();
-
 
 // Configuration des murs
 setupWalls(scene);
@@ -295,9 +294,24 @@ document.getElementById('submitJoinTournament').addEventListener('click', () => 
 });
 
 
+document.getElementById('startFinalBtn').addEventListener('click', () => {
+    // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
+    if (tournament && tournament.tournamentId) {
+        const data = {
+            "cmd": "startFinal",
+            "roomId": room_id,
+        }
+        // Envoie la commande au serveur via le WebSocket
+        socketState.socket.send(JSON.stringify(data));
+        console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
+    } else {
+        console.log("Aucun tournoi actif à démarrer.");
+    }
+});
+
+
 document.getElementById('startTournamentBtn').addEventListener('click', () => {
     console.log("Début du tournoi !");
-    
     // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
     if (tournament && tournament.tournamentId) {
         const cmd = {

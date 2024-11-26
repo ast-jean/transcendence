@@ -20,31 +20,37 @@ export function displayPlayersInScene(players, scene) {
         }
     });
     if (!isFourPlayerMode) {
-        if (players[0].alias) {
-            document.getElementById('p1Name').textContent = players[0].alias + ':';
-        } else {
-            if (players[0].name)
-                document.getElementById('p1Name').textContent = players[0].name + ':';
+        let player1 = players[0];
+        let player2 = players[1];
+        console.log("Players:>", players);
+        if (players[0].ident.ident){
+            player1 =  players[0].ident;
+            player2 =  players[1].ident;
         }
-        if (players[1].alias) {
-            document.getElementById('p2Name').textContent = players[1].alias + ':';
+        if (player1.alias) {
+            document.getElementById('p1Name').textContent = player1.alias + ':';
         } else {
-            document.getElementById('p2Name').textContent = players[1].name + ':';
+            if (player1.name)
+                document.getElementById('p1Name').textContent = player1.name + ':';
+        }
+        if (player2.alias) {
+            document.getElementById('p2Name').textContent = player2.alias + ':';
+        } else {
+            document.getElementById('p2Name').textContent = player2.name + ':';
         }
         if(localPlayerId) {
-            if (players[0]  == localPlayerId) {
+            if (player1  == localPlayerId) {
                 document.getElementById('p1Name').addClassList = 'text-warning';
             }
-            if (players[1]  == localPlayerId) {
+            if (player2  == localPlayerId) {
                 document.getElementById('p1Name').addClassList = 'text-warning';
             }
         }
     }
         
     showBtn('scoreboard');
-
     hideBtn('start_btn');
     addBallToScene(scene);
-    console.log(players);
+    console.log("End of displayPlayersInScene", players);
     startCountdown();
 }

@@ -14,6 +14,7 @@ import { scene } from '../pong.js';
 import { displayPlayersInScene } from '../gameplay/add_scene.js';
 import { setCameraPlayer2 } from '../ui/camera.js';
 import { room_id } from '../utils/setter.js';
+import { resetGame } from '../gameplay/score.js';
 
 
 export var host_ident;
@@ -98,7 +99,7 @@ export function setupWebSocket() {
             if (data.cmd === "updateTournament") {
                 tournament.addPlayer(data.player);
             } else if (data.cmd === "reportMatchResult") {
-                tournament.reportMatchResult(data.matchId, data.winner);
+                tournament.reportMatchResult(data);
             }
             if (data.cmd === "chat") {
                 console.log(data);
@@ -128,6 +129,13 @@ export function setupWebSocket() {
                 receiveConnect(data.ident);
                 addChat(data.name, " has joined");
             }
+            if (data.cmd === "PrepFinal") {
+                setRoomId(data.roomId);
+                addChat("Server:", "Prepare for the final!");
+                hideBtn("end-game-buttons")
+                showBtn("startFinalBtn");
+                resetGame();
+            }
             if (data.cmd === "disconnect") {
                 addChat("Server:", "The other player has disconnected", 'danger');
                 removePlayer(data.ident);
@@ -139,12 +147,25 @@ export function setupWebSocket() {
             if (data.cmd === "startTourney") {
                 showBtn("startTournamentBtn");
             }
+            if (data.cmd === "loserMsg") {
+                addChat("Server:", "You lost!");
+
+                document.getElementById("exampleModalLabel").innerHTML = 
+                    '<span class="text-danger">You lost!</span> Sorry! Waiting for others to finish..';
+            }
+            if (data.cmd === "WinMsg") {
+                addChat("Server:", "You Won!");
+                addChat("Server:", "Queuing for next match!");
+
+                document.getElementById("exampleModalLabel").innerHTML = 
+                    '<span class="text-success">You Won!</span> Nice! Waiting for others to finish..';
+            }
             if (data.cmd === "joinLobby") {
                 console.log(`Player joined lobby for tournament ${data.tournamentId}`);
                 if (data.host === true) {
                     document.getElementById('tournamentRoomLabel').innerHTML = "Room #:" + data.tournamentId;
                     setTournament(data.tournamentId, data.maxPlayers);
-                    tournament.updatePlayerListUI();
+                    tournament.updatePlayerListUI(data.players);
                     setRoomId(data.tournamentId);
                     console.log(`Tournament ${data.tournamentId} initialized with max ${data.maxPlayers} players`)
                 }
@@ -173,26 +194,33 @@ export function setupWebSocket() {
                 console.log(`Match démarré dans la Room ID ${data.roomId} avec les joueurs : ${data.players.join(", ")}`);
                 let index = 0;
                 modal.hide();
+                if (!checkIfHost(data.host)){
+                    setCameraPlayer2();
+                }
                 hideBtn("layer2Btns_tournament");
+                hideBtn("endGameMessage");
+                hideBtn("menu-btn-quit");
+
                 // Pour chaque joueur dans la room, les ajouter à la scène et au tableau global players
                 data.players.forEach(playerId => {
+
                     // Vérifie si le joueur est déjà dans la liste (évite les doublons)
                     if (!players.find(p => p.ident === playerId)) {
+                        let col = 0x00ff00;
                         if (checkIfHost(data.host)) {
                             showBtn('start_btn');
+                        } else {
+                            col = 0xff0000;
                         }
                         const isVertical = determineIfVertical(index);  // Remplace par ta logique pour déterminer le placement du joueur
                         const playerPosition = getPlayerStartingPosition(index); // Logique pour assigner une position spécifique au joueur
-
-                        addPlayerToGame(playerId, playerPosition.x, playerPosition.y, playerPosition.z, 0x00ff00, scene, false, isVertical);
+                        addPlayerToGame(playerId, playerPosition.x, playerPosition.y, playerPosition.z, col, scene, false, isVertical);
                         console.log(`Player ${playerId} ajouté à la scène à la position (${playerPosition.x}, ${playerPosition.y})`);
                         index++;
                     }
                 });
-                // Connecte les joueurs entre eux via WebSocket
                 setRoomId(data.roomId);
-                //room_id = data.roomId;
-                //connectPlayersInRoom(data.roomId, data.players);
+                sendCmd("startGame", room_id);
             }
             if (data.cmd === "joinTournament") {
                 if (data.success) {
@@ -204,7 +232,6 @@ export function setupWebSocket() {
                     console.log(tournament.tournamentId);
                     // Mise à jour de l'interface utilisateur
                     setRoomId(data.tournamentId);
-                    updateTournamentUI(data.tournamentId, data.players);
                 } else {
                     console.error("Impossible de rejoindre le tournoi :", data.error);
                     alert(data.error);

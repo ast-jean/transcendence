@@ -58,11 +58,8 @@ export function updateScoreDisplay() {
 }
 
 export function checkEndGame() {
-    console.log('CHECKENDGAME');
-
     if (!isGameOver)
     {
-
         if (isFourPlayerMode) {
             // Check if one player still has lives and others don't
             let remainingPlayers = players.filter(player => player.lives > 0);
@@ -76,30 +73,22 @@ export function checkEndGame() {
             }
         }
         if (player1Score >= maxScore || player2Score >= maxScore) {
-            if (tournament)
-                {
-                    if (player1Score >= maxScore )
-                    {
-
-                        sendMatchWinner(players[0].ident, getRoomId());
-                        //players[0].winner = true;
-                    }
-                    else
-                        sendMatchWinner(players[1].ident, getRoomId());
-                        //players[1].winner = true;
-                    console.log("tournament endgame")
-                    //goLobby(players, tournament.tournamentId);
-
-                    endGame();
+            if (tournament){
+                if (player1Score >= maxScore ){
+                    sendMatchWinner(players[0].ident, players[0].name, players[0].alias, getRoomId());
                 }
-                // établir les gagnants, sauvegarder les points, renvoyer les gagnants pour l'attente de leur prochain match, renvoyer les perdants au lobby
-                else
-                {
-                    
-                    console.log('endGame');
-                    endGame();
+                else{
+                    sendMatchWinner(players[1].ident,players[1].name, players[1].alias, getRoomId());
                 }
+                endGame();
             }
+            else
+            {
+                
+                console.log('endGame');
+                endGame();
+            }
+        }
     }
     else
         console.log("Game Over");
@@ -122,6 +111,9 @@ export function endGame(player=null) {
         } else {
             winner = player1Score >= maxScore ? players[0] : players[1];
         }
+        console.log("Player in EndGame", winner);
+        if (winner.ident.ident)
+            winner = winner.ident;
         if (winner.alias) {
             document.getElementById('winner').innerText = winner.alias + " won!";
             addChat("Server:", `${winner.alias} wins!`);
@@ -159,5 +151,8 @@ export function resetGame() {
     sphere.position.set(0, 0, 0);
     setBallSpeedX(0);
     setBallSpeedY(0);
-  
+    player1Score = 0;
+    player2Score = 0;
+    updateScoreDisplay();
+
 }
