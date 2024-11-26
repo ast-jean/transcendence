@@ -1,14 +1,20 @@
-from .consumers import *
+from .consumers import Client, Room, GameConsumer
+from typing import List
+import json
+from asyncio import Lock
 
 class Tournament:
     def __init__(self, tournament_id, max_players):
         self.tournament_id = tournament_id
         self.max_players = max_players
-        self.clients: List[Client] = []
+        self.clients: List[GameConsumer] = []
         self.matches = []  # Liste des matchs en cours ou à venir
         self.is_lobby = True  # Etat initial du tournoi, avant le début des matchs
         self.winner = None  # Le gagnant du tournoi une fois terminé
         self.lobby_room = None
+        self.winners = []
+        self.lock = Lock()
+        self.doneRooms = []
     
     def add_player(self, client):
         """Ajoute un joueur au tournoi s'il reste de la place."""
@@ -24,35 +30,23 @@ class Tournament:
     def get_players(self):
         """Retourne la liste des joueurs actuellement inscrits."""
         return [{"id": player.ident} for player in self.players]
-#   
-#   async def start_tournament(self, tournament_id):
-#       # Récupère le tournoi via son ID
-#       tournament = next((t for t in self.tournaments if t.tournament_id == tournament_id), None)
-#       
-#       if tournament and tournament.start_tournament():
-#           print(f"Le tournoi {tournament.tournament_id} commence avec {len(tournament.players)} joueurs.")
-#           data = {
-#               "cmd": "tournamentStarted",
-#               "tournamentId": tournament.tournament_id,
-#               "players": [{"id": p.ident} for p in tournament.players]
-#           }
-#           for player in tournament.players:
-#               await player.websocket.send(json.dumps(data))
-#
-#           # Créer les matchs après le démarrage du tournoi
-#           for match in tournament.matches:
-#               match_data = {
-#                   "cmd": "matchCreated",
-#                   "player1": match.player1.ident,
-#                   "player2": match.player2.ident
-#               }
-#               await match.player1.websocket.send(json.dumps(match_data))
-#               await match.player2.websocket.send(json.dumps(match_data))
-#       else:
-#           print(f"Impossible de démarrer le tournoi {tournament_id}.")
-#
+    
+    async def add_winner(self, winner_id):
+        async with self.lock:
+            """Ajoute le gagnant à la liste des gagnants."""
+            if winner_id is not None:
+                self.winners.append(winner_id)
+                print(f"Le joueur {winner_id} a été ajouté à la liste des gagnants.")
 
 
+    def add_doneRooms(self, room):
+        """Ajoute le gagnant à la liste des gagnants."""
+        self.doneRooms.append(room)
+
+
+    def all_matches_reported(self):
+        """Vérifie si les deux gagnants sont prêts pour la finale."""
+        return len(self.winners) == 2
 
     def create_matches(self):
         """Crée des matchs en distribuant les joueurs par paires."""
@@ -104,14 +98,69 @@ class Tournament:
                             }))
 
 
-    def advance_to_next_round(self):
-        """Passe au tour suivant si le tournoi n'est pas encore terminé."""
-        if len(self.matches) == 1:
-            self.winner = self.matches[0].winner  # Un seul match, donc un gagnant
-        else:
-            winners = [m.winner for m in self.matches if m.winner]
-            self.players = winners  # Les gagnants deviennent les joueurs du prochain tour
-            self.create_matches()  # Crée les nouveaux matchs du tour suivant
+    async def advance_to_next_round(self):
+            """Crée une nouvelle room pour la finale entre les deux gagnants."""
+            if self.all_matches_reported():
+                # Créer une nouvelle room pour le match final
+                final_room = Room(2, GameConsumer.existing_room_ids)  # Room de match 1v1
+                GameConsumer.rooms.append(final_room)
+                self.lobby_room = final_room
+                # Ajouter les gagnants à la nouvelle room de finale
+                # print(f"Winner[0] = {self.winner[0].to_dict()}")
+                print(f"self.winner (type: {type(self.winners)}): {self.winner}")
+                for client in GameConsumer.connected_clients:
+                    if client.ident == self.winners[0]:
+                        winner_1 = client
+                for client in GameConsumer.connected_clients:
+                    if client.ident == self.winners[1]:
+                        winner_2 = client
+                print(f"The winners are {winner_1},{winner_2}")
+                winner_ids = {winner_1.ident, winner_2.ident}
+                losers = [client for client in self.clients if client.ident not in winner_ids]
+                loser_data = {
+                    "cmd": "loserMsg",
+                }
+                for loser in losers:
+                    await loser.websocket.send(json.dumps(loser_data))
+                winner_data = {
+                    "cmd": "WinMsg",
+                }
+                winners = [client for client in self.clients if client.ident in winner_ids]
+                for winner in winners:
+                    await winner.websocket.send(json.dumps(winner_data))
+                if winner_1 and winner_2:
+                    print("Winner 1 Details:", winner_1.__dict__)
+                    print("Winner 2 Details:", winner_2.__dict__)
+                    final_room.add_client(winner_1)
+                    final_room.add_client(winner_2)
+                    print(f"Winner1 and winner2 are true")
+                    # Envoi des informations aux deux joueurs concernant la finale
+                    data = {
+                        "cmd": "PrepFinal",
+                        "tournamentId": self.tournament_id,
+                        "roomId": final_room.roomId,
+                        "players": [
+                            {
+                                "ident": winner_1.ident,
+                                "name": winner_1.name,
+                                "alias": winner_1.alias
+                            },
+                            {
+                                "ident": winner_2.ident,
+                                "name": winner_2.name,
+                                "alias": winner_2.alias
+                            }
+                        ]
+                    }
+                    # Envoi des informations via les websockets des deux joueurs
+                    for winner in winners:
+                        await winner.websocket.send(json.dumps(data))
+
+                    print(f"Match final organisé entre {winner_1.ident} et {winner_2.ident} dans la room {final_room.roomId}.")
+                else:
+                    print("Erreur : un des gagnants est introuvable.")
+            else:
+                print("Tous les matchs ne sont pas encore terminés pour avancer au prochain tour.")
 
 class Match:
     def __init__(self, player1, player2):

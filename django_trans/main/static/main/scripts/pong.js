@@ -7,7 +7,7 @@ import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
 import { checkAllPlayersConnected, getRoomId, sendCmd, socketState, setupWebSocket, disconnectWebSocket, getName } from './websockets/socket_pong.js';
 import { randomizeColors } from './ui/colors.js';
 import { hideAllButtons, hideBtn, showBtn } from './ui/ui_updates.js';
-import { players, setPlayerMode, localPlayerId, setID, setLocalMode, setIsTournament, modal, setBallSpeedX, setBallSpeedY } from './utils/setter.js';
+import { players, setPlayerMode, localPlayerId, setID, setLocalMode, setIsTournament, modal, setBallSpeedX, setBallSpeedY, room_id} from './utils/setter.js';
 
 import { displayPlayersInScene } from './gameplay/add_scene.js';
 import { addChat, showChat } from './ui/chat.js';
@@ -16,7 +16,6 @@ import { Tournament, createTournamentLobby } from './tournament/tournament.js';
 import { tournament } from './utils/setter.js';
 import { displayDebugInfo } from './utils/utils.js';
 import { showTournamentOptions } from './ui/ui_tournament.js';
-import { room_id } from './utils/setter.js';
 
 // Variables globales du jeu
 var clock = new THREE.Clock();
@@ -34,7 +33,9 @@ export const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
 renderer.setClearColor(0x000001);
-container.appendChild(renderer.domElement);
+let winGame = renderer.domElement;
+winGame.classList.add("rounded");
+container.appendChild(winGame);
 
 function resizeBackground() {
     const loader = document.querySelector('.loader');
@@ -43,17 +44,15 @@ function resizeBackground() {
     }
 }
 function handleScroll() {
-    console.log('User scrolled! Scroll position:', window.scrollY);
     resizeBackground(); // Adjust background on scroll
 }
 function handleResize() {
-    console.log('Window resized!');
     resizeBackground(); // Adjust background on resize
 }
+
 window.addEventListener('scroll', handleScroll);
 window.addEventListener('resize', handleResize);
 resizeBackground();
-
 
 // Configuration des murs
 setupWalls(scene);
@@ -199,18 +198,6 @@ function resizeRendererToDisplaySize(renderer) {
     }
 }
 
-// // Gestion des scores
-// function updateScore(player) {
-//     let team = player === 1 ? "team1" : "team2";
-//     if (player === 1) {
-//         player1Score++;
-//     } else if (player === 2) {
-//         player2Score++;
-//     }
-//     updateScoreDisplay(player1Score, player2Score);
-//     checkEndGame(player1Score, player2Score);
-// }
-
 // Lancement de l'animation
 animate();
 
@@ -241,13 +228,7 @@ document.addEventListener('keydown', function (event) {
 function joinTournament(tournamentId) {
     // Vérifier si le WebSocket est prêt
     if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-        let name = getName();
-        const cmd = {
-            cmd: "joinTournament",
-            tournamentId: tournamentId,
-            name: name
-        };
-        socketState.socket.send(JSON.stringify(cmd));
+        sendCmd('joinTournament', tournamentId);
         console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
         setIsTournament(true);
     } else {
@@ -261,25 +242,17 @@ const tournamentOptions = document.getElementById('tournamentOptions');
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
     console.log("Création d'un nouveau tournoi");
-    //wait for all players 
-
     // Envoyer la commande au serveur pour créer un tournoi
-    const cmd = {
-        cmd: "createTournamentLobby",
-    };
     try {
         await setupWebSocket();
         console.log("WebSocket prêt.");
-        socketState.socket.send(JSON.stringify(cmd));
+        sendCmd("createTournamentLobby");
         console.log(`Commande envoyée pour créer le tournoi`);
         setIsTournament(true);
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
     }
-    //showBtn('start_btn');
-    showBtn('startTournamentBtn');
-    
 });
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi
@@ -309,9 +282,24 @@ document.getElementById('submitJoinTournament').addEventListener('click', () => 
 });
 
 
+document.getElementById('startFinalBtn').addEventListener('click', () => {
+    // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
+    if (tournament && tournament.tournamentId) {
+        const data = {
+            "cmd": "startFinal",
+            "roomId": room_id,
+        }
+        // Envoie la commande au serveur via le WebSocket
+        socketState.socket.send(JSON.stringify(data));
+        console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
+    } else {
+        console.log("Aucun tournoi actif à démarrer.");
+    }
+});
+
+
 document.getElementById('startTournamentBtn').addEventListener('click', () => {
     console.log("Début du tournoi !");
-    
     // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
     if (tournament && tournament.tournamentId) {
         const cmd = {
@@ -368,9 +356,6 @@ document.getElementById('tournament_btn').addEventListener('click', () => { show
 document.getElementById('localplay_btn').addEventListener('click', () => { showBtn('layer2Btns_local'); hideBtn('play_btns'); });
 document.getElementById('local_1v1_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay(); });
 document.getElementById('local_2v2_btn').addEventListener('click', () => { hideBtn('layer2Btns_local'); showBtn('start_btn'); localPlay4Players(); });
-
-
-
 document.querySelector('#online_join_btn').addEventListener('submit', handleSubmit);
 document.getElementById('versusai_btn').addEventListener('click', playAI);
 document.getElementById('online_1v1_btn').addEventListener('click', () => {
@@ -396,7 +381,6 @@ document.getElementById('onlineplay_btn').addEventListener('click', async () => 
     }
 });
 
-//document.getElementById('tournament_btn').addEventListener('click', initTournament);
 // Appel au backend pour créer un tournoi
 document.getElementById('tournament_btn').addEventListener('click', () => {
     // Basculer la classe hidden
@@ -428,218 +412,3 @@ export function deleteBall(sphere){
     sphere = null;
     
 }
-
-///* Btns layer 1     Btns layer 2
-//
-//    [ ONLINE ]  --->   [ New 1v1 ]
-//    [  LOCAL ]         [ New 2v2 ]
-//    [   AI   ]         [ Search  ]
-//
-//*/
-//
-
-//const tournamentButton = document.getElementById('tournament_btn');
-//const startTournamentButton = document.getElementById('startTournament');
-//const joinTournamentButton = document.getElementById('joinTournament');
-//
-//if (tournamentButton) {
-//    tournamentButton.addEventListener('click', () => {
-//        hideAllButtons();
-//        showTournamentOptions();
-//    });
-//}
-//
-//export function showTournamentOptions() {
-//    const tournamentOptions = document.getElementById('tournamentOptions');
-//    tournamentOptions.classList.add('active');
-//    tournamentOptions.classList.remove('hidden');
-//}
-//
-//export function hideTournamentOptions() {
-//    const tournamentOptions = document.getElementById('tournamentOptions');
-//    tournamentOptions.classList.remove('active');
-//    tournamentOptions.classList.add('hidden');
-//}
-//
-//
-//if (startTournamentButton) {
-//    startTournamentButton.addEventListener('click', async () => {
-//        console.log("Starting tournament lobby");
-//
-//        hideTournamentOptions();
-//
-//        hideAllButtons();
-//        showLobbyPlayers();
-//
-//        setupWebSocket().then(() => {
-//            console.log("WebSocket ready, sending tournamentLobby command.");
-//            sendCmd("tournamentLobby");
-//        }).catch(err => {
-//            console.error("WebSocket connection failed:", err);
-//        });
-//    });
-//}
-//
-//if (joinTournamentButton) {
-//    joinTournamentButton.addEventListener('click', async () => {
-//        console.log("Joining an existing tournament");
-//
-//        hideTournamentOptions();
-//
-//        hideAllButtons();
-//        showRoomSearch(); 
-//    });
-//}
-//
-//function showRoomSearch() {
-//    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
-//    if (roomSearchDiv) {
-//        roomSearchDiv.classList.remove('hidden');
-//    }
-//}
-//
-//function hideRoomSearch() {
-//    const roomSearchDiv = document.getElementById('tournamentRoomSearch');
-//    if (roomSearchDiv) {
-//        roomSearchDiv.classList.add('hidden');
-//    }
-//}
-//
-//const roomSearchForm = document.getElementById('roomSearchForm');
-//if (roomSearchForm) {
-//    roomSearchForm.addEventListener('submit', function(event) {
-//        event.preventDefault(); 
-//
-//        const roomIdInput = document.getElementById('roomIdInput');
-//        const roomId = roomIdInput.value.trim();
-//
-//        if (roomId) {
-//            hideRoomSearch();
-//
-//            setupWebSocket().then(() => {
-//                sendCmd("roomSearch", roomId);
-//            }).catch(err => {
-//                console.error("WebSocket connection failed:", err);
-//            });
-//        } else {
-//            alert("Please enter a valid Room ID.");
-//        }
-//    });
-//}
-//
-//
-//function onPlayerJoinedRoom(roomId, playerCount, maxPlayers) {
-//    updateTournamentInfo(roomId, playerCount, maxPlayers);
-//}
-//
-//export function updateTournamentInfo(roomId, playerCount, maxPlayers) {
-//    const tournamentRoomElement = document.getElementById('tournamentRoom');
-//    const connectedPlayersElement = document.getElementById('connectedPlayers');
-//
-//    if (tournamentRoomElement && connectedPlayersElement) {
-//        tournamentRoomElement.innerHTML = `Tournament Room: ${roomId}`;
-//        connectedPlayersElement.innerHTML = `Players Connected: ${playerCount}/${maxPlayers}`;
-//    } else {
-//        console.error("Tournament info elements not found in DOM.");
-//    }
-//}
-//
-//function showLobbyPlayers() {
-//    const playersList = document.getElementById('playersList');
-//    playersList.innerHTML = '<h3>Players in the lobby:</h3>';
-//    playersList.style.display = 'block';
-//}
-//
-
-//
-
-//}
-//
-//document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
-//document.querySelectorAll('.game-button').forEach(button => {
-//    if (!button.classList.contains('randomize-colors-btn')) {
-//        button.addEventListener('click', hideAllButtons);
-//    }
-//});
-//
-
-//export function movePlayer(delta) {
-//    const speed = 20;
-//    let x1 = 0;
-//    let x2 = 0;
-//
-//    if (players[0]){        
-//        if (keyState['ArrowLeft']) x1 -= speed * delta;
-//        if (keyState['ArrowRight']) x1 += speed * delta;
-//        
-//        if (local_game){
-//            if (keyState['KeyA']) x2 -= speed * delta;
-//            if (keyState['KeyD']) x2 += speed * delta;
-//        }
-//        
-//        if (x1 !== 0) {
-//        let newX = players[0].mesh.position.x + x1;
-//        if (newX - players[0].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-//            newX + players[0].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-//                players[0].mesh.position.x = newX;
-//                if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-//                    //sendMove
-//                    let cmd = "move";
-//                    const movementData = { x: x1, y: 0 };
-//                    let roomId = getRoomId();
-//                    // console.log(movementData, roomId);
-//                    socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-//                }
-//            }
-//            // if (socketState.socket)
-//            //     console.log(socketState.socket);
-//        }
-//        
-//        if (x2 !== 0) {
-//            let newX = players[1].mesh.position.x + x2;
-//            if (newX - players[1].mesh.geometry.parameters.width / 2 >= -wallLength / 2 &&
-//        newX + players[1].mesh.geometry.parameters.width / 2 <= wallLength / 2) {
-//            players[1].mesh.position.x = newX;
-//            if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-//                let cmd = "move";
-//                const movementData = { x: x2 * -1, y: 0 };
-//                let roomId = getRoomId();
-//                // console.log(movementData, roomId);
-//                socketState.socket.send(JSON.stringify({ cmd, movementData, roomId }));
-//            }
-//        }
-//        // console.log("For X2");
-//        if (socketState.socket) {
-//            console.log(socketState.socket);
-//        } else {
-//            console.error("Socket is undefined in movePlayer (X2)");
-//        }
-//    }
-//    
-//        updatePlayerVisualization();
-//    }
-//}
-//
-//
-
-
-
-//// // Function to adjust the camera for the local player
-//// function adjustCameraForPlayer(player) {
-////     const offsetDistance = 15;  // Distance behind the player
-////     const height = 10;  // Height of the camera above the player
-//    
-////     camera.position.set(player.mesh.position.x, player.mesh.position.y - offsetDistance, height);
-////     camera.lookAt(player.mesh.position.x, player.mesh.position.y, 0);
-//// }
-//
-
-
-
-
-//
-//
-
-
-//
-
