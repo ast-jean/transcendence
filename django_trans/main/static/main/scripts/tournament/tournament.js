@@ -1,6 +1,7 @@
 import { hideBtn, showBtn } from "../ui/ui_updates.js";
-import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament, room_id } from "../utils/setter.js";
+import { isTournament, localPlayerId, modal, setIsTournament, setPlayers, setRoomId, tournament, room_id, removeAllPlayers, players, setPlayerName} from "../utils/setter.js";
 import { checkIfHost } from "../utils/utils.js";
+import { scene } from "../pong.js";
 import { host_ident, setupWebSocket, socketState } from "../websockets/socket_pong.js";
 
 export class Tournament {
@@ -126,9 +127,9 @@ export class Tournament {
     // Recevoir les données du backend et mettre à jour la liste des joueurs
     handleBackendUpdate(data) {
         if (data.cmd === "updateLobbyPlayers") {
-            console.log(data.players);
+            // console.log(data.players);
             this.players = data.players;
-            console.log(this.players);
+            // console.log(this.players);
         }
         if (data.success === true) {
             modal.show();
@@ -138,11 +139,9 @@ export class Tournament {
 
     reportMatchResult(data){
         if (data['doneRooms'].includes(room_id)) {
-            console.log("THE ROOM IS DONE");
+            removeAllPlayers(scene);
             modal.show();
-        } else {
-            console.log("THE ROOM IS NOT DONE!!!!");
-        }
+        } 
         document.getElementById("exampleModalLabel").textContent = "Waiting for next round...";
         this.updatePlayerListUI(data.players, data.winners,  data.tournamentWinner);
         hideBtn('startTournamentBtn');
@@ -198,16 +197,13 @@ function addPlayerToTournament() {
 export function goLobby(players, room_id) {
     if (socketState.socket && socketState.isSocketReady) {
         const cmd = "goLobby";
-
         let data = {
             cmd: cmd,
             roomId: room_id,
             players: players.map(player => player.ident)
         };
-
         socketState.socket.send(JSON.stringify(data));
         console.log(`Signal envoyé au backend pour déplacer les joueurs dans le lobby pour la salle ID : ${room_id}`);
-
         setRoomId(room_id);
         console.log("room Id set: ", room_id);
         setPlayers(players);
@@ -230,7 +226,6 @@ export function sendMatchWinner(winnerId, winnerName, winnerAlias, roomId) {
             winnerAlias: winnerAlias,
             tournamentId: tournament.tournamentId
         };
-
         // Envoyer la commande via le WebSocket
         socketState.socket.send(JSON.stringify(data));
         console.log(`Signal envoyé au backend : Gagnant du match pour la salle ${roomId} est ${winnerId} du tournoi ${tournament.tournamentId}`);

@@ -285,7 +285,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     await self.resolve_winners(tournament.winners)
                     print(f"Resolved winners[{len(tournament.winners)}: {tournament.winners}")
                     #Correctly store the winner's ident
-                    ident = winner_id['ident']
+                    ident = winner_id
                     # Ajouter le gagnant à la liste des joueurs qualifiés pour le tour suivant
                     if len (tournament.winners) >= 2:
                         await tournament.add_winner(ident)
@@ -294,7 +294,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                     print(f"Joueur {ident} ajouté aux gagnants du tournoi {tournament_id}")
                     # Vérifier si tous les matchs sont terminés pour avancer au prochain tour
                     data = await self.construct_all_players_data(tournament, "reportMatchResult")
-                    print(f"This is data:{data}")
                     
                     #for match that match.winner = someone
                     for client in tournament.clients:
@@ -432,12 +431,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                     print(f"Client {client} does not support sending messages.")
             print(f"Le jeu a démarré pour la room {room_id}")
 
-
     async def receive(self, text_data):
         if len(text_data) > 0:
             text_data_json = json.loads(text_data)
             text_data_json.update({"ident": self.ident})
-            print(f"Receive data -> { text_data }")
+            # print(f"Receive data -> { text_data }")
             if not hasattr(self, 'name') or self.name is None:
                 name = text_data_json.get('name')
                 if name == 'Guest' or not name:
@@ -545,6 +543,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     data = {
                         "cmd": "startMatch",
                         "roomId": text_data_json["roomId"],
+                        "host": room.host_ident,
                         "players": players_in_lobby
                     }
                     #send to players in the room
@@ -777,7 +776,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         if room is not None:
             for client in room.clients:
                 if client.ident != self.ident:
-                    await client.websocket.send(json.dumps(data))
+                    if hasattr(client, 'websocket') and hasattr(client.websocket, 'send') and callable(client.websocket.send):
+                        await client.websocket.send(json.dumps(data))
+                    elif hasattr(client, 'send') and callable(client.send):
+                        await client.send(json.dumps(data))
+                    else:
+                        print(f"Client {client} does not support sending messages.")
 
 
     async def broadcast_existingPlayers_Tournament(self, room_id):

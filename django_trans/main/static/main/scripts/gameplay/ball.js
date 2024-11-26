@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import {socketState } from '../websockets/socket_pong.js';
 import { updateScore } from './score.js';
 import { handlePlayerCollision, handleWallCollision } from './collision.js';
-import { getBallSpeedX, getBallSpeedY, isFourPlayerMode, isGameOver, setBallSpeedX, setBallSpeedY } from '../utils/setter.js';
-import { room_id } from '../utils/setter.js';
+import { getBallSpeedX, getBallSpeedY, isFourPlayerMode, isGameOver, setBallSpeedX, setBallSpeedY, setPingId } from '../utils/setter.js';
+import { room_id, ping_id } from '../utils/setter.js';
 
 export const INITIAL_BALL_SPEED_X = 5;
 export const INITIAL_BALL_SPEED_Y = 5;
@@ -52,11 +52,13 @@ export function sendBallState() {
     if (socketState.socket && socketState.isSocketReady && room_id && !isGameOver) {
         let cmd = "ballSync";
         let roomId = room_id;
+        setPingId(); //increment pingId
         const ballData = {
             x: sphere.position.x,
             y: sphere.position.y,
             vx: getBallSpeedX(),
-            vy: getBallSpeedY()
+            vy: getBallSpeedY(),
+            ping_id: ping_id
         };
         socketState.socket.send(JSON.stringify({ cmd, roomId, ballData }));
     }

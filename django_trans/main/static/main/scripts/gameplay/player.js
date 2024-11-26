@@ -67,7 +67,7 @@ export function initializePlayers4() {
 // Initialisation des joueurs (locale ou avec IA)
 export function initializePlayers(scene, useAI, isOnline ) {
     removeAllPlayers(scene);  // Retire tous les joueurs existants
-
+    
     // Ajoute le premier joueur
     if (localPlayerId)
         addPlayerToGame(localPlayerId, 0, -wallLength / 2 + 0.5, 0, 0x00ff00, scene); // Joueur 1 (vert)
@@ -185,7 +185,8 @@ export function movePlayer(delta, scene) {
 
     // Identifie le joueur localement connecté (assume que playerId est l'ID local du joueur)
     const localPlayer = players.find(p => p.ident === localPlayerId);
-    if (!localPlayer) { return; }
+    if (!localPlayer) { 
+        return; }
     // Gestion des mouvements avec les touches
     if (keyState['ArrowLeft']) {
         movement.x -= speed * delta;
@@ -237,7 +238,7 @@ export function resetPlayer() {
 // Event listener for keydown events
 document.addEventListener('keydown', function (e) {
     keyState[e.code] = true; // Mark the key as pressed
-    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
     }
     // Prevent default behavior for Left and Right arrow keys

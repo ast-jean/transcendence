@@ -13,7 +13,11 @@ export let localPlayerId = null;
 export let modal = new bootstrap.Modal(document.getElementById('exampleModal')); 
 export var room_id;
 export let isTournament = false;
+export let ping_id = 0;
 
+export function setPingId(){
+    ping_id++;
+}
 
 export function setID(value){
     localPlayerId = value;
@@ -53,14 +57,14 @@ export function setIsTournament(value)
 }
 
 // Ajoute un joueur dans le tableau global players et à la scène
-export function addPlayerToGame(id, x, y, z, color, scene, AI = false, isVertical = false, name = null) {
+export function addPlayerToGame(id, x, y, z, color, scene, AI = false, isVertical = false, name = null, alias = null) {
     if (AI) {
         // Ajouter un joueur IA
         const newAIPlayer = new AIPlayer(id, x, y, z, color, false, 'AI');
         players.push(newAIPlayer);
     } else {
         // Ajouter un joueur humain
-        const newPlayer = new Player(id, x, y, z, color, isVertical, name);
+        const newPlayer = new Player(id, x, y, z, color, isVertical, name, alias);
         players.push(newPlayer);
     }
 }
@@ -87,6 +91,22 @@ export function setTournament(tournamentId, maxPlayers)
 
 export function setPlayers(src) {
     players = src;
+}
+
+export function setPlayerName(ident, name) {
+    players.forEach(player => {
+        if (player.ident === ident) {
+            player.name = name;
+        }
+    });
+} 
+
+export function setPlayerAlias(ident, alias) {
+    players.forEach(player => {
+        if (player.ident === ident) {
+            player.alias = alias;
+        }
+    });
 } 
 
 export function setRoomId(roomId)

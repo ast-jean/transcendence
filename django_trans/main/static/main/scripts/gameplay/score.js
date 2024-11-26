@@ -75,16 +75,17 @@ export function checkEndGame() {
         if (player1Score >= maxScore || player2Score >= maxScore) {
             if (tournament){
                 if (player1Score >= maxScore ){
-                    sendMatchWinner(players[0].ident, players[0].name, players[0].alias, getRoomId());
+                    if (players[0])
+                        sendMatchWinner(players[0].ident, players[0].name, players[0].alias, getRoomId());
                 }
                 else{
-                    sendMatchWinner(players[1].ident,players[1].name, players[1].alias, getRoomId());
+                    if (players[1])
+                        sendMatchWinner(players[1].ident,players[1].name, players[1].alias, getRoomId());
                 }
                 endGame();
             }
             else
             {
-                
                 console.log('endGame');
                 endGame();
             }
@@ -111,8 +112,9 @@ export function endGame(player=null) {
         } else {
             winner = player1Score >= maxScore ? players[0] : players[1];
         }
-        console.log("Player in EndGame", winner);
-        if (winner.ident.ident)
+        if (winner === undefined)
+            return;
+        if (winner && winner.ident.ident)
             winner = winner.ident;
         if (winner.alias) {
             document.getElementById('winner').innerText = winner.alias + " won!";
@@ -121,11 +123,9 @@ export function endGame(player=null) {
             document.getElementById('winner').innerText = winner.name + " won!";
             addChat("Server:", `${winner.name} wins!`);
         }
-
         // Crée un message pour afficher le gagnant
         showBtn('end-game-buttons');
         document.getElementById('end-game-buttons').classList.remove('d-flex');
-
         deleteBall(sphere);
         if(checkIfHost(host_ident) && !once && !isLocalMode) {
             once = true;
