@@ -7,7 +7,7 @@ export function setCameraPlayer1() {
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
     controls.update();  // Met à jour les contrôles
-    console.log("Caméra Joueur 1 activée");
+    //console.log("Caméra Joueur 1 activée");
     // Uncheck all radios except for Player 1's camera
     document.getElementById('btnradio1').checked = true;
     document.getElementById('btnradio2').checked = false;
@@ -22,7 +22,7 @@ export function setCameraPlayer2() {
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
     controls.update();  // Met à jour les contrôles
-    console.log("Caméra Joueur 2 activée");
+    //console.log("Caméra Joueur 2 activée");
     // Uncheck all radios except for Player 2's camera
     document.getElementById('btnradio1').checked = false;
     document.getElementById('btnradio2').checked = true;
@@ -37,7 +37,7 @@ export function setCameraTopView() {
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);  // Assure que les contrôles pointent toujours vers le centre
     controls.update();  // Met à jour les contrôles
-    console.log("Vue de dessus activée");
+    //console.log("Vue de dessus activée");
     // Uncheck all radios except for Player 2's camera
     document.getElementById('btnradio1').checked = false;
     document.getElementById('btnradio2').checked = false;

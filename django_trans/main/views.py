@@ -328,7 +328,7 @@ def profile(request):
             {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
         ]
 
-        cumulative_scores = []
+        cumulative_scores = [0]
         current_score = 0
 
         for game in games.order_by('id'):  # Ensure games are ordered chronologically
@@ -341,7 +341,7 @@ def profile(request):
             cumulative_scores.append(current_score)  # Append the score after each game
 
         # Generate game indices for the graph
-        game_indices = list(range(1, len(cumulative_scores) + 1))
+        game_indices = list(range(0, len(cumulative_scores) + 1))
         
         return render(request, 'profile.html', {
             'user': user,
@@ -385,7 +385,7 @@ def userProfile(request, playername):
     theirgames = Game.objects.filter(players__user=them).distinct().order_by('id')  # Ascending order for cumulative scores
     gamesWon = them.games_won_count
     gamesLost = theirgames.count() - gamesWon
-    cumulative_scores = []
+    cumulative_scores = [0]
     current_score = 0
     for game in theirgames:
         # Check if the user is the winner in this game
@@ -395,7 +395,7 @@ def userProfile(request, playername):
         else:
             current_score -= 1 
         cumulative_scores.append(current_score) 
-    game_indices = list(range(1, len(cumulative_scores) + 1))
+    game_indices = list(range(0, len(cumulative_scores)+ 1))
     is_friend = you.is_friend(them) if hasattr(you, 'is_friend') else False
     is_online = them.is_online() if hasattr(them, 'is_online') else False
 

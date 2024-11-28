@@ -119,7 +119,7 @@
     
             if (file && file.size > maxSize) {
                 errorAvatar.innerHTML = "The file size exceeds the 2 MB limit. Please upload a smaller file.";
-                console.log("Error: File size exceeds limit");
+                //console.log("Error: File size exceeds limit");
                 avatarViewer.src = "";  // Clear the preview if the file is too large
                 avatarViewer.style.display = 'none';  // Hide the preview
                 fileTooLarge = true;  // Set flag to indicate file is too large
@@ -143,7 +143,7 @@
         // Prevent form submission if file is too large
         document.getElementById('profileForm').onsubmit = function(event) {
             if (fileTooLarge) {
-                console.log("Form submission prevented due to file size");
+                //console.log("Form submission prevented due to file size");
                 event.preventDefault();  // Prevent form submission
             }
         };
@@ -164,7 +164,6 @@
 <hr class="mx-auto border border-dark border-2" style="max-width: 1000px;">
 
 {% include 'stats.html' %}
-
 
 {% include 'match_results.html' %}
 

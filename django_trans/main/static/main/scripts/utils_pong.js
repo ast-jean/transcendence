@@ -13,5 +13,5 @@ export function broadcastToPlayers(players, message) {
 // Fonction pour la transition entre les phases
 export function transitionToNextPhase(tournament) {
     tournament.nextPhase();
-    console.log(`Transition vers la phase: ${tournament.phase}`);
+    ////console.log(`Transition vers la phase: ${tournament.phase}`);
 }

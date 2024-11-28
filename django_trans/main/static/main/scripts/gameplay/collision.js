@@ -80,9 +80,9 @@ function handlePlayerLifeLoss(playerId) {
     let player = players.find(p => p.ident === playerId);
     if (player && player.lives > 0) {
         player.loseLife();
-        console.log(`Player ${playerId} has ${player.lives} lives remaining.`);
+        //console.log(`Player ${playerId} has ${player.lives} lives remaining.`);
         if (!player.isAlive()) {
-            console.log(`Player ${playerId} is out of the game!`);
+            //console.log(`Player ${playerId} is out of the game!`);
             player.mesh.material.color.setHex(0x808080); // Le joueur devient gris
             // Accélère la balle quand un joueur est éliminé
             increaseBallSpeed();
@@ -94,10 +94,14 @@ function handlePlayerLifeLoss(playerId) {
 function increaseBallSpeed() {
     const currentSpeedX = getBallSpeedX();
     const currentSpeedY = getBallSpeedY();
-    setBallSpeedX(currentSpeedX * 1.2);  // Augmente la vitesse de 20%
-    setBallSpeedY(currentSpeedY * 1.2);
+    const currentSpeed = Math.sqrt(currentSpeedX * currentSpeedX + currentSpeedY * currentSpeedY);
+    
+    const maxSpeed = 15;
+    if (currentSpeed < maxSpeed) {
+        setBallSpeedX(currentSpeedX * 1.2);  // Augmente la vitesse de 20%
+        setBallSpeedY(currentSpeedY * 1.2);
+    }
 }
-
 
 export function handlePlayerCollision(players, sphere, ballSpeed) {
     players.forEach((player, index) => {
@@ -128,6 +132,8 @@ export function handlePlayerCollision(players, sphere, ballSpeed) {
 
             setBallSpeedX(ballSpeed.x);
             setBallSpeedY(ballSpeed.y);
+            increaseBallSpeed();
+            //console.log(ballSpeed.x, ballSpeed.y);
         }
     });
 }
@@ -145,7 +151,7 @@ export function handlePlayerCollision(players, sphere, ballSpeed) {
 
 //             // Calcul de la vitesse après collision
 //             let speed = Math.sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
-//             console.log(`Bounce angle: ${bounceAngle}, Speed: ${speed}`);
+//             //console.log(`Bounce angle: ${bounceAngle}, Speed: ${speed}`);
 
 //             // Mise à jour de la vitesse de la balle après la collision
 //             ballSpeedX = speed * Math.cos(bounceAngle) * (sphere.position.x > player.mesh.position.x ? 1 : -1);

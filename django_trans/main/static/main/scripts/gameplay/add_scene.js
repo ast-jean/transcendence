@@ -14,15 +14,15 @@ export function displayPlayersInScene(players, scene) {
         if (!scene.children.includes(player.mesh)) {
             // Ajoute le joueur à la scène s'il n'y est pas déjà
             scene.add(player.mesh);
-            console.log(`Joueur ${player.ident} ajouté à la scène à la position x=${player.mesh.position.x}, y=${player.mesh.position.y}`);
+            ////console.log(`Joueur ${player.ident} ajouté à la scène à la position x=${player.mesh.position.x}, y=${player.mesh.position.y}`);
         } else {
-            console.log(`Joueur ${player.ident} déjà présent dans la scène`);
+            ////console.log(`Joueur ${player.ident} déjà présent dans la scène`);
         }
     });
     if (!isFourPlayerMode) {
         let player1 = players[0];
         let player2 = players[1];
-        console.log("Players:>", players);
+        ////console.log("Players:>", players);
         if (players[0].ident.ident){
             player1 =  players[0].ident;
             player2 =  players[1].ident;
@@ -51,6 +51,6 @@ export function displayPlayersInScene(players, scene) {
     showBtn('scoreboard');
     hideBtn('start_btn');
     addBallToScene(scene);
-    console.log("End of displayPlayersInScene", players);
+    ////console.log("End of displayPlayersInScene", players);
     startCountdown();
 }

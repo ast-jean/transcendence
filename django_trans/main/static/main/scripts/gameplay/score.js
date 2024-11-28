@@ -26,13 +26,20 @@ export function updateScore(player) {
     }
     updateScoreDisplay();
     // Envoie les scores au serveur si on est en ligne
-    if (socketState.socket && socketState.isSocketReady && checkIfHost(host_ident) ) {
+    if (socketState.socket && socketState.isSocketReady && players[0] && checkIfHost(players[0].ident) ) {
         let cmd = "score";
         let roomId = getRoomId(); // Probablement undefined pour les tournois, à vérifier
         let data = { cmd, team, roomId };
         socketState.socket.send(JSON.stringify(data));
     }
     checkEndGame();
+}
+
+export function receiveUpdateScore(p1, p2){
+    player1Score = p1;
+    player2Score = p2;
+    checkEndGame();
+    updateScoreDisplay();
 }
 
 const player1ScoreElement = document.getElementById('player1Score');
@@ -63,8 +70,8 @@ export function checkEndGame() {
         if (isFourPlayerMode) {
             // Check if one player still has lives and others don't
             let remainingPlayers = players.filter(player => player.lives > 0);
-            console.log(remainingPlayers);
-            console.log(remainingPlayers.length);
+            //console.log(remainingPlayers);
+            //console.log(remainingPlayers.length);
             if (remainingPlayers.length === 1) {
                 // Send the last remaining player to endGame
                 isGameOver == true;
@@ -86,7 +93,7 @@ export function checkEndGame() {
             }
             else
             {
-                console.log('endGame');
+                //console.log('endGame');
                 endGame();
             }
         }
@@ -101,7 +108,7 @@ let once = false;
 export function endGame(player=null) {
     // Déclare que le jeu est terminé
     //Assure it is called once
-    console.log("endgame Call");
+    //console.log("endgame Call");
     if (isGameOver == false) {
         setGameOverState(true);
         hideBtn('scoreboard');
@@ -129,7 +136,7 @@ export function endGame(player=null) {
         deleteBall(sphere);
         if(checkIfHost(host_ident) && !once && !isLocalMode) {
             once = true;
-            console.log("Send saveGame")
+            //console.log("Send saveGame")
             sendCmd("saveGame", room_id);
         }
     }

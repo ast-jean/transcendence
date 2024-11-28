@@ -27,7 +27,7 @@ function calculatePing() {
 	{
 		if (lastCallTime !== null) {
 			let timeDifference = currentTime - lastCallTime;
-			// console.log(`Time since last call: ${timeDifference} ms`);
+			// //console.log(`Time since last call: ${timeDifference} ms`);
 			document.getElementById('ping').textContent = "ping: " + timeDifference + 'ms'
 		}
 		lastCallTime = currentTime;
@@ -37,12 +37,12 @@ document.getElementById("truckTeam1Score").style.backgroundColor = team1ColorPic
 document.getElementById("truckTeam2Score").style.backgroundColor = team2ColorPicker.value;
 
 function showLoader() {
-	console.log("Start Loading");
+	//console.log("Start Loading");
 	document.querySelector('.loader').style.display = 'block';
 }
 
 function hideLoader() {
-	console.log("Stop Loading");
+	//console.log("Stop Loading");
 	document.querySelector('.loader').style.display = 'none';
 }
 
@@ -631,7 +631,7 @@ class TruckSimulation {
 				}
 				if (e.code === 'KeyX') {
 					// this.toggleCam = !this.toggleCam;
-					console.log(players[playerNumber])
+					//console.log(players[playerNumber])
 					// playerNumber = playerNumber === 0 ? 1 : 0;
 				}
 			}, true);
@@ -970,7 +970,7 @@ function onWindowResize() {
 // } 
 
 export function removePlayer(playerIdToRemove) {
-	console.log("Removing player");
+	//console.log("Removing player");
 	let player = players.find(p => p.id === playerIdToRemove);
 	removeMeshFromScene(player.mesh, scene);
 	players = players.filter(player => player.id !== playerIdToRemove);
@@ -986,7 +986,7 @@ export function removePlayer(playerIdToRemove) {
 // 				player.mesh.position.z += movementData.z;
 // 		}
 // 	} else {
-// 		console.log("Player doesnt exist, creating one");
+// 		//console.log("Player doesnt exist, creating one");
 // 		if (!movementData.x)
 // 			movementData.x = 0;
 // 		players.push(new Player(id, movementData.x, movementData.z));

@@ -19,6 +19,11 @@ export function setPingId(){
     ping_id++;
 }
 
+export function setPingIdI(i){
+    i++;
+}
+
+
 export function setID(value){
     localPlayerId = value;
 }
@@ -76,7 +81,7 @@ export function removeAllPlayers(scene) {
 }
 
 export function removePlayer(playerIdToRemove) {
-    console.log("Removing player");
+    //console.log("Removing player");
     let player = players.find(p => p.id === playerIdToRemove);
     if (player){
         removeMeshFromScene(player.mesh, scene);

@@ -110,9 +110,6 @@
         });
 
         const winLossChart = document.getElementById('winLossChart').getContext('2d');
-        console.log("wins: " + {{ gamesWon }});
-        console.log("losses: " + {{ gamesLost }});
-
         new Chart(winLossChart, 
 		{
             type: 'pie', // Chart type

@@ -110,6 +110,6 @@ export function updateTournamentUI(tournamentId, players) {
     //     playerList.appendChild(li);
     // });
 
-    // console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
+    // //console.log(`Mise à jour du tournoi ID ${tournamentId} avec les joueurs :`, players);
 }
 

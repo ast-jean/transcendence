@@ -37,25 +37,25 @@ function setupWebSocket() {
     socket = new WebSocket(ws_path);
 
     socket.onopen = function() {
-        console.log('WebSocket connection established');
+        //console.log('WebSocket connection established');
     };
 
     socket.onclose = function() {
-        console.log('WebSocket connection closed');
+        //console.log('WebSocket connection closed');
         setTimeout(setupWebSocket, 5000); // Try to reconnect after 5 seconds
     };
 
     socket.onmessage = function(event) {
-        console.log("Event.data" + event.data);
+        //console.log("Event.data" + event.data);
         var data = JSON.parse(event.data);
-        console.log("data " + data);
-        console.log("data.cmd " + data.cmd);
+        //console.log("data " + data);
+        //console.log("data.cmd " + data.cmd);
         if (data.cmd === "roomNotFound") {
-            console.log("In roomNotFound");
+            //console.log("In roomNotFound");
             alert("Room not found");
         }
         if (data.cmd === "joinRoom") {
-            console.log("joined room " + data.roomId);
+            //console.log("joined room " + data.roomId);
             getRoomCreateCmd(data.roomId);
             room_id = data.roomId;
             setPlayerNumber(data.clientId)
@@ -63,7 +63,7 @@ function setupWebSocket() {
             sendCmd("resetLocations", data.roomId);
         }
         if (data.cmd === "sync") {
-            console.log("event.data", event.data);
+            //console.log("event.data", event.data);
             receiveSync(data.index, data.movementData);
         }
         if (data.cmd === "connect") {
@@ -95,7 +95,7 @@ function handleSubmit(event) {
         alert("Please fill in all required fields.");
     } else {
         sendCmd("roomSearch", roomId);
-        console.log("Searching for Room #"+ roomId);
+        //console.log("Searching for Room #"+ roomId);
     }
 }
 

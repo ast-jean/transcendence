@@ -93,7 +93,7 @@ class CannonDebugRenderer {
                 break;
 
             default:
-                console.log("Warning: Shape type not recognized.");
+                //console.log("Warning: Shape type not recognized.");
                 return null;
         }
 

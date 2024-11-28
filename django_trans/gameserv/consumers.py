@@ -52,7 +52,7 @@ class Room:
         return room_id
 
     def find_client_by_ident(self, ident):
-        for client in self.connected_clients:
+        for client in self.clients:
             if client.ident == ident:
                 return client
         return None
@@ -575,12 +575,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             "scoreTeam2": score_data["scoreTeam2"]
         }
         for client in room.clients:
-            await client.websocket.send(json.dumps(data))
-
-    # async def broadcast_ball_sync(self, data):
-    #     for client in self.connected_clients:
-    #         if client.ident != self.ident:
-    #             await client.send(json.dumps(data))
+            if client.ident != self.ident:
+                if hasattr(client, 'websocket') and hasattr(client.websocket, 'send') and callable(client.websocket.send):
+                    await client.websocket.send(json.dumps(data))
+                elif hasattr(client, 'send') and callable(client.send):
+                    await client.send(json.dumps(data))
+                else:
+                    print(f"Client {client} does not support sending messages.")
 
     async def broadcast_chat(self, data):
         print(f"{data}")

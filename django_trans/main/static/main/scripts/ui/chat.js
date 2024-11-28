@@ -30,7 +30,7 @@ function pageLoaded() {
 
    if (sendButton !== null) {
        sendButton.addEventListener('click', () => {
-           console.log("Button is pressed");
+           //console.log("Button is pressed");
            sendMessage();
        });
    } else {
@@ -39,7 +39,7 @@ function pageLoaded() {
    chatInput.addEventListener('keydown', (event) => {
        shouldPreventDefault = false;
        if (event.key == 'Enter') {
-           console.log("Enter pressed");
+           //console.log("Enter pressed");
            // event.preventDefault();
            sendMessage();
        }
@@ -82,9 +82,9 @@ export function addChatProfile(name, msg, textColor = 'black') {
     var link = document.createElement('a');
     var baseUrl = window.location.origin; // Dynamically fetch base URL
     link.href = baseUrl + msg;            // Concatenate base URL with the provided message (e.g., /profile/username)
-    console.log("BaseUrl = >"+baseUrl+"<");
-    console.log("Msg = >"+msg+"<");
-    console.log("link = >"+link.href+"<");
+    //console.log("BaseUrl = >"+baseUrl+"<");
+    //console.log("Msg = >"+msg+"<");
+    //console.log("link = >"+link.href+"<");
 
     link.textContent = msg;               // Display the msg as the link text
     link.style.color = 'blue';         // Apply the text color to the hyperlink
@@ -124,13 +124,13 @@ export function addChatProfile(name, msg, textColor = 'black') {
 // }
 
 function sendMessage() {
-   console.log("in sendMessage()")
+   //console.log("in sendMessage()")
    var input = document.getElementById('chat-input');
    var msg = input.value.trim();
    var name = "Me";
 
     if (msg !== "") {
-        console.log("sendMsg(): ",socketState.socket.readyState);
+        //console.log("sendMsg(): ",socketState.socket.readyState);
         var chatBox = document.getElementById('chat-messages');
         var li = document.createElement('li');
         li.textContent = name + ": " + msg;

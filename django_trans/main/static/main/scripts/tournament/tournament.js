@@ -18,7 +18,7 @@ export class Tournament {
     addPlayer(player) {
         if (this.players.length < this.maxPlayers) {
             this.players.push(player);
-            console.log(`Joueur ${player.name} ajouté au tournoi`);
+            //console.log(`Joueur ${player.name} ajouté au tournoi`);
         } else {
             console.warn('Le tournoi est plein');
         }
@@ -27,7 +27,7 @@ export class Tournament {
 
     // Méthode pour initialiser les matchs
     createMatches() {
-        console.log('Création des matchs');
+        //console.log('Création des matchs');
         this.matches = [];
         for (let i = 0; i < this.players.length; i += 2) {
             let match = new Match(this.players[i], this.players[i + 1]);
@@ -49,7 +49,7 @@ export class Tournament {
         const winners = this.matches.map(match => match.winner);
         if (winners.length === 1) {
             this.winner = winners[0];
-            console.log(`Tournoi terminé ! Le gagnant est ${this.winner.id}`);
+            //console.log(`Tournoi terminé ! Le gagnant est ${this.winner.id}`);
         } else {
             this.players = winners;
             this.createMatches();
@@ -116,20 +116,20 @@ export class Tournament {
                     index: player.index
                 });
             } else {
-                console.log(`Cannot add ${player.name}: Tournament is full.`);
+                //console.log(`Cannot add ${player.name}: Tournament is full.`);
             }
         });
     
-        console.log(`${this.players.length} players added to the tournament.`);
-        console.log(this.players); 
+        //console.log(`${this.players.length} players added to the tournament.`);
+        //console.log(this.players); 
     }
 
     // Recevoir les données du backend et mettre à jour la liste des joueurs
     handleBackendUpdate(data) {
         if (data.cmd === "updateLobbyPlayers") {
-            // console.log(data.players);
+            // //console.log(data.players);
             this.players = data.players;
-            // console.log(this.players);
+            // //console.log(this.players);
         }
         if (data.success === true) {
             modal.show();
@@ -170,7 +170,7 @@ class Match {
 export async function createTournamentLobby(tournamentId, maxPlayers) {
     try {
         await setupWebSocket();
-        console.log("WebSocket prêt.");
+        //console.log("WebSocket prêt.");
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
         return;
@@ -188,7 +188,7 @@ function addPlayerToTournament() {
     const player = { id: socketState.socket.id, websocket: socketState.socket };
     if (!players.find(p => p.ident === player.ident)) {
         players.push(player);
-        console.log(`%c[Debug] Joueur ajouté: ID ${player.ident}`, "color: #00ff00;");
+        //console.log(`%c[Debug] Joueur ajouté: ID ${player.ident}`, "color: #00ff00;");
     } else {
         console.warn(`%c[Debug] Joueur déjà présent: ID ${player.ident}`, "color: #ffff00;");
     }
@@ -203,13 +203,13 @@ export function goLobby(players, room_id) {
             players: players.map(player => player.ident)
         };
         socketState.socket.send(JSON.stringify(data));
-        console.log(`Signal envoyé au backend pour déplacer les joueurs dans le lobby pour la salle ID : ${room_id}`);
+        //console.log(`Signal envoyé au backend pour déplacer les joueurs dans le lobby pour la salle ID : ${room_id}`);
         setRoomId(room_id);
-        console.log("room Id set: ", room_id);
+        //console.log("room Id set: ", room_id);
         setPlayers(players);
-        console.log("players set: ", players);
+        //console.log("players set: ", players);
         setIsTournament(true);
-        console.log("set tournament: ", isTournament);
+        //console.log("set tournament: ", isTournament);
     } else {
         console.error("Le WebSocket n'est pas prêt. Impossible d'envoyer la commande `goLobby`.");
     }
@@ -228,7 +228,7 @@ export function sendMatchWinner(winnerId, winnerName, winnerAlias, roomId) {
         };
         // Envoyer la commande via le WebSocket
         socketState.socket.send(JSON.stringify(data));
-        console.log(`Signal envoyé au backend : Gagnant du match pour la salle ${roomId} est ${winnerId} du tournoi ${tournament.tournamentId}`);
+        //console.log(`Signal envoyé au backend : Gagnant du match pour la salle ${roomId} est ${winnerId} du tournoi ${tournament.tournamentId}`);
     } else {
         console.error("WebSocket n'est pas prêt ou vous n'êtes pas l'hôte. Impossible d'envoyer les informations du gagnant.");
     } 

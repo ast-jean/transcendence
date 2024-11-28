@@ -76,7 +76,7 @@ export function initializePlayers(scene, useAI, isOnline ) {
     if (!isOnline)
     {
         if (useAI) {
-            console.log('PLAY AGAINST AI');
+            //console.log('PLAY AGAINST AI');
             // Ajoute un joueur IA
             addPlayerToGame(2, 0, wallLength / 2 - 0.5, 0, 0xff0000, scene, true, "AI🤖"); // IA (rouge)
             players[0].name = "Player 1"
@@ -251,7 +251,7 @@ document.addEventListener('keyup', function (e) {
 
 export class AIPlayer extends Player {
     constructor(ident, x, y, z, color, vertical, name) {
-        console.log('AIPlayer is being initialized');
+        //console.log('AIPlayer is being initialized');
         super(ident, x, y, z, color, vertical, name);
         this.targetX = 0;
         this.aiInterval = setInterval(() => this.calculateMovement(), 1000);

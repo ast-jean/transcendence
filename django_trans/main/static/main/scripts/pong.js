@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function localPlay4Players() {
-    console.log("Initialisation du mode Local Play à 4 joueurs");
+    ////console.log("Initialisation du mode Local Play à 4 joueurs");
     initializePlayers4()
     setPlayerMode(true);
     setLocalMode(true);
@@ -111,12 +111,12 @@ export function startGame_online() {
 async function playOnline(maxPlayers) {
     // Si le WebSocket est prêt, continuer avec la création de la room
     if (socketState.isSocketReady) {
-        console.log(`Création de la room pour ${maxPlayers} joueurs.`);
+        //console.log(`Création de la room pour ${maxPlayers} joueurs.`);
         sendCmd(`roomCreate${maxPlayers}`);
         try {
             // Attend la confirmation de la création de la room (par exemple, room ID)
             await waitForRoomId();
-            console.log("Room créée avec succès.");
+            //console.log("Room créée avec succès.");
         } catch {
             console.error("Échec de la récupération de l'ID de la room.");
             location.reload();  // Recharge la page en cas d'échec
@@ -131,7 +131,7 @@ async function playOnline(maxPlayers) {
         try {
             // Vérifie que tous les joueurs sont connectés avant de commencer la partie
             await checkAllPlayersConnected(maxPlayers);
-            console.log("Tous les joueurs sont connectés.");
+            //console.log("Tous les joueurs sont connectés.");
         } catch (error) {
             console.error("Erreur lors de la connexion des joueurs :", error);
             location.reload();  // Recharge la page si un problème survient
@@ -148,7 +148,7 @@ async function playOnline(maxPlayers) {
 
 export function initTournament(tournamentId, maxPlayers) {
     tournament = new Tournament(tournamentId, maxPlayers);
-    console.log(`Tournament ${tournamentId} initialized with max ${maxPlayers} players`);
+    ////console.log(`Tournament ${tournamentId} initialized with max ${maxPlayers} players`);
 }
 
 // Function to wait until room_id changes from null
@@ -169,20 +169,31 @@ function waitForRoomId() {
     });
 }
 
+var focused = true;
+
+window.onfocus = function() {
+    focused = true;
+};
+window.onblur = function() {
+    focused = false;
+};
+
 // Animation principale
 function animate() {
-    requestAnimationFrame(animate);
-    delta = clock.getDelta();
-    movePlayer(delta, scene);
-    moveBall(delta, walls, players);
-    //controls.update();
-    resizeRendererToDisplaySize(renderer);
-    renderer.render(scene, camera);
-    const player2 = players[1];
-    if (player2 instanceof AIPlayer) {
-        console.log("Updating AI Player...");
-        player2.update(delta);
-    }
+    // if (focused) {
+        requestAnimationFrame(animate);
+        delta = clock.getDelta();
+        movePlayer(delta, scene);
+        moveBall(delta, walls, players);
+        //controls.update();
+        resizeRendererToDisplaySize(renderer);
+        renderer.render(scene, camera);
+        const player2 = players[1];
+        if (player2 instanceof AIPlayer) {
+            ////console.log("Updating AI Player...");
+            player2.update(delta);
+        }
+    // }
 }
 
 // Redimensionnement du canvas
@@ -204,18 +215,18 @@ animate();
 // Fonction de gestion du submit
 function handleSubmit(event) {
     event.preventDefault(); // Prevent the default form submission
-    console.log('handleSubmit called'); // Vérifie si la fonction est appelée
+    ////console.log('handleSubmit called'); // Vérifie si la fonction est appelée
 
     let input = document.querySelector('input[name="searchRoom"]');
     const roomId = input.value;
-    console.log('Room ID:', roomId); // Vérifie la valeur du champ
+    ////console.log('Room ID:', roomId); // Vérifie la valeur du champ
     if (!roomId) {
         alert("Please fill in all required fields.");
     } else {
         hideBtn('layer2Btns_online');
         hideBtn('layer2Btns_tournament');
         sendCmd("roomSearch", roomId);
-        console.log("Searching for Room #" + roomId);
+        ////console.log("Searching for Room #" + roomId);
     }
 }
 
@@ -229,7 +240,7 @@ function joinTournament(tournamentId) {
     // Vérifier si le WebSocket est prêt
     if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
         sendCmd('joinTournament', tournamentId);
-        console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
+        ////console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
         setIsTournament(true);
     } else {
         console.error("WebSocket n'est pas prêt.");
@@ -241,13 +252,13 @@ const tournamentOptions = document.getElementById('tournamentOptions');
 
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
-    console.log("Création d'un nouveau tournoi");
+    ////console.log("Création d'un nouveau tournoi");
     // Envoyer la commande au serveur pour créer un tournoi
     try {
         await setupWebSocket();
-        console.log("WebSocket prêt.");
+        ////console.log("WebSocket prêt.");
         sendCmd("createTournamentLobby");
-        console.log(`Commande envoyée pour créer le tournoi`);
+        ////console.log(`Commande envoyée pour créer le tournoi`);
         setIsTournament(true);
     } catch (error) {
         console.error("Erreur lors de l'établissement du WebSocket :", error);
@@ -257,10 +268,10 @@ document.getElementById('createTournamentBtn').addEventListener('click', async (
 
 // Gestionnaire d'événements pour le bouton Rejoindre un tournoi
 document.getElementById('joinTournamentBtn').addEventListener('click', async () => {
-    console.log("Rejoindre un tournoi existant");
+    ////console.log("Rejoindre un tournoi existant");
     try {
         await setupWebSocket();
-        console.log("WebSocket prêt.");
+        ////console.log("WebSocket prêt.");
         //socketState.socket.send(JSON.stringify(cmd));
         document.getElementById('tournamentJoinForm').classList.remove('hidden');
         // Logique pour rejoindre un tournoi ici...
@@ -274,7 +285,7 @@ document.getElementById('submitJoinTournament').addEventListener('click', () => 
     const tournamentId = document.getElementById('tournamentIdInput').value.trim();
 
     if (tournamentId) {
-        console.log("Tentative de rejoindre le tournoi avec l'ID :", tournamentId);
+        //console.log("Tentative de rejoindre le tournoi avec l'ID :", tournamentId);
         joinTournament(tournamentId);
     } else {
         alert("Veuillez entrer un ID de tournoi valide.");
@@ -291,15 +302,15 @@ document.getElementById('startFinalBtn').addEventListener('click', () => {
         }
         // Envoie la commande au serveur via le WebSocket
         socketState.socket.send(JSON.stringify(data));
-        console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
+        ////console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
     } else {
-        console.log("Aucun tournoi actif à démarrer.");
+        ////console.log("Aucun tournoi actif à démarrer.");
     }
 });
 
 
 document.getElementById('startTournamentBtn').addEventListener('click', () => {
-    console.log("Début du tournoi !");
+    ////console.log("Début du tournoi !");
     // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
     if (tournament && tournament.tournamentId) {
         const cmd = {
@@ -309,9 +320,9 @@ document.getElementById('startTournamentBtn').addEventListener('click', () => {
 
         // Envoie la commande au serveur via le WebSocket
         socketState.socket.send(JSON.stringify(cmd));
-        console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
+        ////console.log(`Commande envoyée pour démarrer le tournoi ID ${tournament.tournamentId}`);
     } else {
-        console.log("Aucun tournoi actif à démarrer.");
+        ////console.log("Aucun tournoi actif à démarrer.");
     }
 });
 
@@ -327,7 +338,7 @@ document.getElementById('startGameButton').addEventListener('click', () => {
     if (!local_game) {
         sendCmd("startGame", room_id);
     }
-    console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
+    ////console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
 
 document.getElementById('return_btn_1').addEventListener('click', () => {
@@ -368,10 +379,10 @@ document.getElementById('online_2v2_btn').addEventListener('click', () => {
 });
 
 document.getElementById('onlineplay_btn').addEventListener('click', async () => {
-    console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
+    ////console.log("Bouton onlineplay cliqué, initialisation du WebSocket...");
     try {
         await setupWebSocket();
-        console.log("WebSocket prêt.");
+        ////console.log("WebSocket prêt.");
         showChat();
         showBtn('layer2Btns_online')
         hideBtn('play_btns');
