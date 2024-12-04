@@ -1,4 +1,4 @@
-all:
+all: stop_dockers
 	@docker compose up --build
 up:
 	@docker compose up --build
@@ -14,7 +14,7 @@ out:
 re: stop_dockers all
 
 stop_dockers:
-	@docker stop $$(docker ps -qa);\
+	@docker stop $$(docker ps -qa) || true
 
 clean: stop_dockers
 	docker rm $$(docker ps -qa);\

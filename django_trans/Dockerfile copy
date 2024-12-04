@@ -21,7 +21,7 @@ RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -
 # Copy the rest of the application
 COPY . .
 
-COPY ../media/avatars/default.jpg /usr/src/app/media/avatars/default.jpg
+COPY /media/avatars/default.jpg /usr/src/app/media/avatars/default.jpg
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 

@@ -7,12 +7,10 @@ if [ -f .env ]; then
     set +a
 fi
 
-
 # Run collectstatic
 python manage.py makemigrations
 python manage.py migrate
 python manage.py collectstatic --noinput
-
 
 export DJANGO_SETTINGS_MODULE=django_trans.settings
 
