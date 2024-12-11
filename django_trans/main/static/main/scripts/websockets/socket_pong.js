@@ -121,6 +121,9 @@ export function setupWebSocket() {
             if (data.cmd === "sync") {
                 receiveSync(data.ident, data.movementData);
             }
+            if (data.cmd === "info") {
+                addChat('Server', ": " + data.data, 'warning')
+            }
             if (data.cmd === "ballSync") {
                 receiveBallSync(data.ballData);
             }

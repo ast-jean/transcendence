@@ -644,9 +644,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             return 'Invalid /dm command. Usage: /dm recipient_name message'
         recipient_name = parts[1]
         dm_message = parts[2]
-        print(f"Recipient = >{recipient_name }<\n Message= >{dm_message}<")
         recipient_client = await self.find_client_by_name(recipient_name)
-        print(f"recipient_client =>{recipient_client}<")
         if recipient_client:
             # Check if the recipient has blocked the sender
             if self.name in recipient_client.block_list:
@@ -670,19 +668,23 @@ class GameConsumer(AsyncWebsocketConsumer):
         if len(parts) < 2:
             return 'Invalid /block command. Usage: /block user_name'
         user_to_toggle = parts[1]
+        confirmation_msg = None
+        recipient_client = await self.find_client_by_name(user_to_toggle)
         # Initialize block_list if it doesn't exist
         if not hasattr(self, 'block_list'):
             self.block_list = set()
         if user_to_toggle in self.block_list:
             # User is already blocked; unblock them
             self.block_list.remove(user_to_toggle)
-            confirmation_msg = {'info': f'User {user_to_toggle} has been unblocked.'}
-        else:
+            confirmation_msg = f'User {user_to_toggle} has been unblocked.'
+        elif recipient_client in self.connected_clients:
             # User is not blocked; block them
             self.block_list.add(user_to_toggle)
-            confirmation_msg = {'info': f'User {user_to_toggle} has been blocked.'}
+            confirmation_msg = f'User {user_to_toggle} has been blocked.'
         # Send confirmation back to the client
-        await self.send(json.dumps(confirmation_msg))
+        if confirmation_msg is None:
+            confirmation_msg = f'User {user_to_toggle} is not connected'
+        await self.send(json.dumps({'cmd':'info', 'name':'Server', 'data':confirmation_msg}))
         return None  # No error
 
     async def handle_invite(self, message, data):

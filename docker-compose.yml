@@ -13,7 +13,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
     networks:
       - transcendence_net
     ports:
@@ -54,8 +54,6 @@ services:
       - ./nginx/certs:/etc/nginx/certs:ro
       - static_volume:/usr/src/app/static/
       - media_volume:/usr/src/app/media/
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
     ports:
       - "443:443"
       - "80:80"

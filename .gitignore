@@ -1,11 +1,4 @@
-
-django_trans/django_trans/settings.py
 node_modules/
-
-docker-compose.yml
-nginx/Dockerfile
-nginx/nginx.conf
-certbot
 
 logs/
 *.log
