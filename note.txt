@@ -1,0 +1,7 @@
+view data:
+    profile_data:
+
+
+
+1 | Load all templates + fetch profile_data
+    1.1 | spa.js -> load_template

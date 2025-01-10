@@ -1,0 +1,167 @@
+{% load static %}
+<h1 style="max-width: 1000px;" id="headers strokeme" class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">Profile</h1>
+
+<div class="card mx-auto m-2" style="max-width: 1000px;">
+    <div class="row g-0">
+        <div class="col-md-4">
+
+            {% if user.avatar and user.avatar.url %}
+                <img src="{{ user.avatar.url }}" alt=" {{ user.username }}" class="d-flex mt-5 m-auto rounded" style="max-width: 200px;">
+            {% elif profile.image %}
+                <img src="{{ profile.image.versions.medium }}" alt="{{ profile.login }}">
+            {% else %}
+                <img src="{{ MEDIA_URL }}avatars/default.jpg" alt=" {{ user.username }}" class="d-flex m-auto" style="max-width: 200px;">
+
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <div class="profilecard-body">
+                {% if is_online is True %}
+                    <h4 class="profilecard-text">
+                        Status: <span class="text-success">Online</span>
+                    </h4>
+                {% else %}
+                    <h4 class="profilecard-text">
+                        Status: <span class="text-danger">Offline</div>
+                    </h4>
+                {% endif %}
+                <p class="profilecard-text">Username: {{ user.username }}</p>
+                {% if user.alias %}
+                    <p class="profilecard-text">Alias: {{ user.alias }}</p>
+                {% endif %}
+                <p class="profilecard-text">Email: {{ user.email }}</p>
+
+                {% if games %}
+                <p class="profilecard-text"> Games won: {{ gamesWon }} out of {{ games|length }}</p>
+                {% else %}
+                    <p class="profilecard-text">Games won: 0</p>
+                {% endif %}
+                
+                <p class="profilecard-text">Friends:</p>
+                {% if user.friends.exists %}
+                <div class="profilecard-text mb-3 mx-auto">
+                    {% for friend in friends %}
+                        <!-- This will print the entire friend object (for debugging purposes) -->
+                        {% if friend.friend.username %}
+                            <a class="pb-2" style="text-decoration: none;" href="{% url 'userProfile' playername=friend.friend.username %}">
+                                <div class="btn btn-primary position-relative mx-2 rounded">
+                                    <img src="{{ friend.friend.avatar.url }}" alt="{{ friend.friend.username }} avatar" class="img-thumbnail d-flex mx-auto my-auto" style="width: 100px; height: 100px;">
+                                    <span class="position-absolute border border-dark bg-white top-100 start-50 translate-middle text-dark rounded px-1" style=" white-space: nowrap;">
+                                        {{ friend.friend.username }}
+                                    </span>
+            
+                                    {% if friend.is_online %}
+                                        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle">
+                                            <span class="visually-hidden">Online</span>
+                                        </span>
+                                    {% else %}
+                                        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+                                            <span class="visually-hidden">Offline</span>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        {% else %}
+                            <p>Unknown friend</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="profilecard-text">You have no friends :( </p>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card mx-auto mb-1" style="max-width: 1000px;">
+    <button class="btn btn-primary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProfileForm" aria-expanded="false" aria-controls="collapseProfileForm">Edit Profile</button>
+    <button class="btn btn-secondary m-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePasswordForm" aria-expanded="false" aria-controls="collapsePasswordForm">Change Password</button>
+
+    <!-- Display Messages -->
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Profile Form Collapse -->
+    <div class="collapse" id="collapseProfileForm">
+        <div class="card card-body">
+            <form id="profileForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ profile_form.as_p }}
+                <p id="errorAvatar" class="text-danger"></p>
+                <button type="submit" class="btn btn-primary mt-3">Save Profile Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const fileInput = document.querySelector('input[name="avatar"]');
+        const maxSize = 2 * 1024 * 1024;  // 2 MB in bytes
+        let fileTooLarge = false;  // Flag to track oversized file
+    
+        // Check file size and preview image when a file is selected
+        fileInput.onchange = function(event) {
+            const file = fileInput.files[0];
+            const avatarViewer = document.getElementById('avatar_viewer');
+            const errorAvatar = document.getElementById('errorAvatar');
+    
+            if (file && file.size > maxSize) {
+                errorAvatar.innerHTML = "The file size exceeds the 2 MB limit. Please upload a smaller file.";
+                //console.log("Error: File size exceeds limit");
+                avatarViewer.src = "";  // Clear the preview if the file is too large
+                avatarViewer.style.display = 'none';  // Hide the preview
+                fileTooLarge = true;  // Set flag to indicate file is too large
+                return;  // Exit function to prevent further processing
+            } else {
+                errorAvatar.innerHTML = "";  // Clear any previous error message
+                fileTooLarge = false;  // Reset flag if file size is acceptable
+            }
+    
+            // Preview the selected image
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarViewer.src = e.target.result;  // Set src to the file's Data URL
+                    avatarViewer.style.display = 'block';  // Make sure the preview is visible
+                };
+                reader.readAsDataURL(file);  // Read the file as a Data URL
+            }
+        };
+    
+        // Prevent form submission if file is too large
+        document.getElementById('profileForm').onsubmit = function(event) {
+            if (fileTooLarge) {
+                //console.log("Form submission prevented due to file size");
+                event.preventDefault();  // Prevent form submission
+            }
+        };
+    </script>
+
+    <!-- Password Form Collapse -->
+    <div class="collapse" id="collapsePasswordForm">
+        <div class="card card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ password_form.as_p }}
+                <button type="submit" class="btn btn-primary mt-3">Save Password Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<hr class="mx-auto border border-dark border-2" style="max-width: 1000px;">
+
+{% include 'stats.html' %}
+
+{% include 'match_results.html' %}
+
+

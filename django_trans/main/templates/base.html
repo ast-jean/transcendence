@@ -31,27 +31,27 @@
 <body>
 
     <nav class="navbar navbar-expand navbar-dark bg-dark">
-        <a class="navbar-brand strokeme ms-2" href="/">Transcendence</a>
+        <a class="navbar-brand strokeme ms-2" href="#">Transcendence</a>
         <div class="navbar-collapse" id="navbarColor01">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item {% if current_path == '/Pong/' %}active{% endif %}">
-                    <a class="nav-link" href="/Pong/" {% if current_path == '/Pong/' %}aria-current="page"{% endif %}>Pong</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="#pong" data-template="pong">Pong</a>
                 </li>
-                <li class="nav-item {% if current_path == '/truckleague/' %}active{% endif %}">
-                    <a class="nav-link" href="/truckleague/" {% if current_path == '/truckleague/' %}aria-current="page"{% endif %}>Trucks(🛠️WIP⚠️)</a>
+                <!--
+                <li class="nav-item">
+                    <a class="nav-link" href="#truckleague" data-template="truckleague">Trucks (🛠️WIP⚠️)</a>
                 </li>
-                <!-- <li class="nav-item {% if current_path == '/about/' %}active{% endif %}">
-                    <a class="nav-link" href="/about/" {% if current_path == '/about/' %}aria-current="page"{% endif %}>About</a>
-                </li> -->
-                <li class="nav-item {% if current_path == '/games/' %}active{% endif %}">
-                    <a class="nav-link" href="/games/" {% if current_path == '/games/' %}aria-current="page"{% endif %}>Pong Game history</a>
+                -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#games" data-template="games">Pong Game History</a>
                 </li>
                 {% if profile.login or user.is_authenticated %}
-                <li class="nav-item {% if current_path == '/profile/' %}active{% endif %}">
-                    <a class="nav-link" href="/profile/{{profile.username}}" {% if current_path == '/profile/' %}aria-current="page"{% endif %}>Profile</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="#profile" data-template="profile">Profile</a>
                 </li>
                 {% endif %}
             </ul>
+            
             <ul class='mx-auto'></ul>
             <ul class="navbar-nav">
                 {% if profile.login %}
@@ -89,26 +89,47 @@
             </ul>
         </div>
     </nav>
-<main>
-    {% block content %}
-    {% endblock %}
-</main>
+    <main>
+        <script src="{% static 'main/scripts/spa.js' %}" type="module"></script>
+        
+        <main id="main-content">
+        {% block content %}
+        {% endblock content %}
+            <!-- Default content or fallback -->
+        </main>
+        
+        
+        <div id="template-cache" style="display: none;">
+            <div id="template-home">
+                {% include 'partials/home.html' %}
+            </div>
+            <div id="template-pong">
+            {% include 'partials/pong.html' %}
+            </div>
+            <div id="template-profile">
+                {% include 'partials/profile.html' %}
+            </div>
+            <div id="template-games" style="display: none;">
+                {% include 'partials/games.html' %}
+            </div>
+        </div>
+    </main>
 
-<script>
-    function fitBackgroundOnScroll() {
-        document.body.style.height = `${Math.max(window.innerHeight, document.documentElement.scrollHeight)}px`;
-    }
-    window.addEventListener('scroll', fitBackgroundOnScroll);
-    window.addEventListener('resize', fitBackgroundOnScroll);
-    fitBackgroundOnScroll();
-</script>
+    <script>
+        function fitBackgroundOnScroll() {
+            document.body.style.height = `${Math.max(window.innerHeight, document.documentElement.scrollHeight)}px`;
+        }
+        window.addEventListener('scroll', fitBackgroundOnScroll);
+        window.addEventListener('resize', fitBackgroundOnScroll);
+        fitBackgroundOnScroll();
+    </script>
 
 
-<div class="py-3 my-4">
-    <footer class="justify-content-center border-top">
-        <p class=" text-center text-light"> 2024 Transcendence</p>
-    </footer>
-</div>
+    <div class="py-3 my-4">
+        <footer class="justify-content-center border-top">
+            <p class=" text-center text-light"> 2024 Transcendence</p>
+        </footer>
+    </div>
 
 </body>
 </html>

@@ -1,0 +1,346 @@
+{% load static %}
+<!-- SERVER STATUS DEBUG 
+    <h4 id="ServerStatus">Server Status : <span style="color: red;">Disconnected</span></h4>
+<button id="sendBtn">Send Message to Server</button>
+<button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
+
+<!-- ThreeJs -->
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/" 
+      }
+    }
+</script>
+<script src="{% static 'main/scripts/ui/camera.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/collision.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/ball.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/wall.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/score.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/ui_tournament.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/chat.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/ui/ui_updates.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/utils/setter.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/websockets/socket_pong.js' %}" type="module"></script>
+<script src="{% static 'main/scripts/gameplay/AIplayer.js' %}" type="module"></script>
+<div id="editor">
+	<div id="view" class="container">
+		<!-- <script src="{% static 'main/scripts/split.min.js' %}" type="module"></script> -->
+		<!-- <script src="{% static 'main/scripts/controls.js' %}" type="module"></script> -->
+		<div class="row">
+			<div class="col">
+				<div class="row">
+					<div class="gamediv">
+						<button id="menu-btn" class="d-flex flex-column hud btn btn-danger visually-hidden">Exit</button>
+						<div id="scoreboard" class="pongScoreboard mt-3 visually-hidden" style="z-index: 6969;">
+							<div>
+									<div id="p1Name" class="pongScoreP1 ">Player 1: </div>
+									<div id="player1Score" class="strokemeP1 pongScoreP1"></div>
+							</div>
+							<div>
+								<div id="p2Name" class="pongScoreP2">Player 2: </div>
+								<div id="player2Score" class="strokemeP2 pongScoreP2"></div>
+							</div>
+						</div>
+						<div id="ui-btns" class="ui-btns">
+							<div class="position-absolute top-50 start-50 translate-middle">
+								<div id="play_btns" class="position-relative container hud">
+									<div class="row" style="width: 300px;">
+										<div class="col d-block">
+											<div id="onlineplay_btn" class="row  d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<b class="strokeme">Play Online</b> <br>
+												<small  class="strokeme">(2 players)</small>
+											</div>
+											<div id="localplay_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<b  class="strokeme">Play Local</b> <br>
+												<small  class="strokeme">(2 players / 4 players)</small>
+											</div>
+											<div id="versusai_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient">
+												<div class="">
+													<b  class="strokeme">Versus AI</b>
+													<br>
+													🤖
+												</div>
+											</div>
+											<div id="tournament_btn" class="row d-flex m-1 btn btn-primary bg-primary bg-gradient" >
+												<b  class="strokeme">Tournament</b><br>
+												<small  class="strokeme">(4 players)</small>
+											</div>
+										</div>
+									</div>
+								</div>
+	
+							<!---------------------------------------------- SECOND LAYERS-------------------------------------------------- -->
+							<div id="layer2Btns_online" class="position-relative container visually-hidden">
+								<div class="row" style="width: 300px;">
+											<h1 class="strokeme text-center">ONLINE</h1>
+											<hr class="border border-info border-1">
+											
+											<div id="online_1v1_btn" class="row ms-1 hud-btn btn btn-info ">
+												<b class="strokeme">2 Players</b>
+											</div>
+											<div id="online_2v2_btn" class="row ms-1 hud-btn btn btn-info visually-hidden">
+												<b class="strokeme">4 Players</b>
+										</div>
+										<div class='ms-1'>
+											<form id="online_join_btn" class="">
+												<div class="row bg-info py-1 my-3 rounded">
+													<div class="col">
+														<input class="form-control" type="number" placeholder="0000" name="searchRoom">
+													</div>
+													<div class="col">
+														<button type="submit " class="border border-dark btn btn-secondary text-white strokeme" style="width:120px" >Search</button>
+													</div>
+												</div>
+											</form>
+										</div>
+										<hr class="border border-info border-1">
+										
+										<div id="return_btn_1" class="row hud-btn game-button btn btn-info ms-1">
+											<h2 class="strokeme">←</h2>
+										</div>
+								</div>
+							</div>
+	
+							<div id="layer2Btns_local" class="position-relative container visually-hidden">
+								<div class="row" style="width: 300px;">
+									<div class='ms-1'>
+										<h1 class="strokeme text-center">LOCALPLAY</h1>
+										<hr class="border border-info border-1">
+										<div id="local_1v1_btn" class="row mb-2 d-flex btn btn-info">
+											<b class="strokeme">2 Players</b>
+										</div>
+										<div id="local_2v2_btn" class="row d-flex  btn btn-info">
+											<b class="strokeme">4 Players</b>
+										</div>
+										<hr class="border border-info border-1">
+										<div id="return_btn_2" class="row d-flex btn btn-info">
+											<h2 class="strokeme">←</h2>
+										</div>
+									</div>
+								</div>
+							</div>
+	
+							<div id="layer2Btns_tournament" class=" col visually-hidden">
+								<div class="row" style="width: 300px;">
+	
+									<h1 class="strokeme text-center">TOURNAMENT</h1>
+									<hr class="border border-info border-1">
+									<!-- Add tournament boutons -->
+									<div id="tournamentOptions" class="hidden"></div>
+									<button id="createTournamentBtn" class="btn btn-info d-flex strokeme text-white m-1" data-bs-toggle="modal" data-bs-target="#exampleModal"><b class="strokeme mx-auto">Host</b> </button>
+									<button id="joinTournamentBtn" class="btn btn-info d-flex m-1 mb-2"><b class="strokeme mx-auto">Join</b></button>
+									
+									<div id="tournamentJoinForm" class="hidden">
+										<span class="d-flex">
+											<input type="text" id="tournamentIdInput" class='form-control' placeholder="Enter the Room ID #">
+											<button id="submitJoinTournament" class="btn btn-primary ms-2"  ><b>Join</b></button>
+										</span>
+									</div>
+									<hr class="border border-info border-1">
+									<div id="return_btn_3" class="row hud-btn game-button btn btn-info m-2">
+										<h2 class="strokeme">←</h2>
+									</div>
+								</div>
+							</div>
+							<div id="start_btn" class=" col flex-column hud visually-hidden">
+								<button id="startGameButton" class="btn btn-secondary game-button mt-5 ms-5">Start Game</button>
+							</div>
+							<div id="playerCount" class="visually-hidden strokeme">
+								<div id="joining" class="row d-flex">
+									<div class='col'>
+										<div class="d-inline">
+											Waiting for players: 
+										</div>
+											<div id="playerIn" class="d-inline">0/0</div>
+											<div class="d-inline">
+												: [
+											</div>
+											<div id="timeElapse" class="d-inline">0</div>
+											<div class="d-inline">
+												]
+											</div>
+										</div>
+								</div>
+								<div id="joined" class="visually-hidden row">
+									<div class="col-12">
+										Waiting for host to start game...
+										<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>
+									</div>
+								</div>
+							</div>
+							<div id="end-game-buttons" class="col position-relative visually-hidden">
+								<div  class="row" style="width:300px;">
+									<div  class="col">
+										<h1 id="endGameMessage" class="strokeme text-center"
+										style="  text-shadow: 2px 2px 0 black, -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 0 0 black,-2px 0 0 black, 0 2px 0 black,0 -2px 0 black;">
+										GAME OVER
+									</h1>
+										<h2 id='winner' class="strokeme text-center"></h2>
+										<button id="menu-btn-quit" class="btn btn-primary mt-5 d-flex mx-auto">Menu</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="gameCont" class="three-js-canvas">
+							<div id='loading' class="bg-dark opacity-75 d-flex justify-content-center" style='height:600px; z-index: 9999;'>
+								<div class="spinner-border text-white my-auto" role="status" style="width: 3rem; height: 3rem;">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+							</div>
+						</div> <!-- d-flex justify-content-center align-items-center -->	
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div id="cameraControls setting-btns" class="btn-group mt-2 mx-auto" >
+						<button id="randomize-colors-btn" class="btn btn-secondary play-button randomize-colors-btn">Randomize Colors</button>
+						<!-- CAMERA CONTROL -->
+						<input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+						<label class="btn btn-secondary" id="player1CameraBtn" for="btnradio1">Player 1 Camera</label>
+						<input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+						<label class="btn btn-secondary" id="player2CameraBtn" for="btnradio2">Player 2 Camera</label>
+						<input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+						<label class="btn btn-secondary" id="topViewCameraBtn"  for="btnradio3">Top View Camera</label>
+					</div>
+				</div>
+			</div>
+			<div class="col">
+				<div id="chat-container" class="col mt-3">
+					<div id="chat-box">
+						<ul id="chat-messages"></ul>
+					</div>
+					<input type="text" id="chat-input" placeholder="Type a message..." disabled/>
+					<button id="chat-btn" class="btn btn-dark" disabled>
+						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="20px" height="30px" viewBox="0 0 220.682 220.682" xml:space="preserve">
+							<g>
+								<polygon points="92.695,38.924 164.113,110.341 92.695,181.758 120.979,210.043 220.682,110.341 120.979,10.639" />
+								<polygon points="28.284,210.043 127.986,110.341 28.284,10.639 0,38.924 71.417,110.341 0,181.758" />
+							</g>
+						</svg>
+					</button>
+				</div>
+			</div>
+		
+		</div>
+				<!-- Bouton pour démarrer la partie  STEVEN -->
+				<!-- <div id="startGameDiv" class="game-controls">
+					<button id="startGameButton" class="game-button">Start Game</button>
+				</div> -->
+
+				<!-- Placeholder pour entrer l'ID du tournoi pour rejoindre -->
+				<div id="tournamentRoomSearch" class="hidden tournament-section">
+					<form id="roomSearchForm">
+						<input type="text" id="roomIdInput" placeholder="Enter Tournament Room ID"/>
+						<button type="submit">Join Tournament</button>
+					</form>
+				</div>
+
+				<!-- Placeholder pour afficher les scores -->
+				<div id="tournament-scores" class="tournament-section hidden">
+					<h3>Tournament Scores</h3>
+					<div id="scoreboard1"> <!-- Changed to scoreboard1 cause scoreboard was already in use -->
+						<!-- Les scores et résultats seront affichés ici -->
+					</div>
+				</div>
+				<!-- !!!!!! -->
+				
+					
+				<div class="modal fade" id="exampleModal" tabindex="-1" data-bs-backdrop="static"  data-bs-keyboard="false"  aria-labelledby="exampleModalLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="exampleModalLabel">Waiting for players...
+									<div class="spinner-grow text-secondary" role="status">
+										<span class="visually-hidden">Loading...</span>
+									  </div>
+									<div id="tournamentRoomLabel"></div>
+								</h5>
+							</div>
+							<div class="modal-body row">
+								<!-- <div class="container-fluid"></div> -->
+								<div class="col" id="first-col"> 
+									<div class="row"> 
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded overflow-hidden" id="p1-row">
+												<p id="player1Element" class="my-auto mx-2  mb-1">  waiting... </p>
+											</div>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded overflow-hidden" id="p2-row">
+												<p id="player2Element" class="my-auto mx-2 mb-1">waiting... </p>
+											</div>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded overflow-hidden" id="p3-row">
+												<p id="player3Element" class="my-auto mx-2 mb-1">waiting... </p>
+											</div>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded overflow-hidden" id="p4-row">
+												<p  id="player4Element"  class="my-auto mx-2 mb-1">waiting...  </p>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- Second column: 2 winners -->
+								<div class="col-3 align-self-center" id="second-col"> 
+									<div class="row ">
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black overflow-hidden rounded" id="W1-row">
+												<p id="winner1Element"  class="my-auto mx-2 mb-1"> pending... </p>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded overflow-hidden" id="W2-row">
+												<p  id="winner2Element" class="my-auto mx-2  mb-1"> pending.. </p>
+											</div>
+										</div>
+									</div>
+								</div>
+						
+								<!-- Third column: winner final -->
+								<div class="col-3 align-self-center" id="third-col">
+									<div class="row">
+										<div class="m-2">
+											<div class="bracket mx-auto border border-black rounded d-flex position-relative" id="WF-row">
+												<div class="position-absolute top-0 start-50 translate-middle">👑</div>
+												<p  id="tournamentWinnerElement" class="my-auto text-break mx-2 mb-1"> pending</p>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<!-- FOOTER BUTTON NECESSARY ?? -->
+									<button id="startTournamentBtn" class="btn btn-info strokeme hud-btn visually-hidden">Begin Tournament</button>
+									<button id="startFinalBtn" class="btn btn-info strokeme hud-btn visually-hidden">Start Final</button>
+
+									<button type="button" class="btn btn-danger" onclick="if (confirm('Are you sure you want to exit?')) { location.reload(); }">
+										Exit
+									  </button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- </div> -->
+
+				<div id="playersList"></div>
+				
+				
+				<!-- <button id="randomize-colors-btn" class="play-button randomize-colors-btn">Randomize Colors</button> -->
+
+
+	</div>
+</div>

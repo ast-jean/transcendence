@@ -12,7 +12,7 @@ from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
 from django.db.models import Count, Q
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from .models import CustomUser, Game
 from oauthlib.oauth2 import OAuth2Error
 import jwt
@@ -21,7 +21,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
 import os
-
 
 load_dotenv()
 CLIENT_ID = os.environ.get('CLIENT_ID')
@@ -32,8 +31,6 @@ TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 def token_saver(token, user):
     user.oauth_token = token
     user.save()
- 
-
 
 def get_oauth_session(request):
     """Create or refresh an OAuth2 session with the access token from the session."""
@@ -73,28 +70,50 @@ def get_oauth_session(request):
         print(f"\033[91m[DEBUG]NO Auth info\033[0m")
         return False
 
+
+def load_partial(request, partial_name):
+    valid_partials = ["home", "pong", "profile"] 
+    if partial_name not in valid_partials:
+        raise Http404(f"No partial named '{partial_name}'")
+
+    #Fetch databases data depending on partial name
+    context = {}
+    if partial_name == "home":
+        context = home_context(request)
+    elif partial_name == "pong":
+        context = home_context(request)
+    elif partial_name == "games":
+        context = games_context(request)
+    elif partial_name == "profile":
+        context = profile_context(request)
+
+    # Return the partial template
+    return render(request, f"partials/{partial_name}.html", context)
+
+
+def home_context(request):
+     # Use locally stored profile data if it exists
+    if request.user.is_authenticated and request.user.profile_data:
+        profile_data = request.user.profile_data
+        print(f"\033[94m[DEBUG]User.is_online = {request.user.is_online}\033[0m")
+    else:
+        # Attempt to fetch profile data using OAuth session helper
+        oauth_result = get_oauth_session(request)
+        if oauth_result is False:
+            return render(request, "home.html")
+        if hasattr(oauth_result, 'url'):
+            return oauth_result  # Redirect to login or error page
+
+        oauth, profile_data = oauth_result
+        if profile_data:
+            request.user.profile_data = profile_data
+            request.user.save()
+    return {'profile': profile_data}
+
 def home(request):
     try:
-        # Use locally stored profile data if it exists
-        if request.user.is_authenticated and request.user.profile_data:
-            profile_data = request.user.profile_data
-            print(f"\033[94m[DEBUG]User.is_online = {request.user.is_online}\033[0m")
-        else:
-            # Attempt to fetch profile data using OAuth session helper
-            oauth_result = get_oauth_session(request)
-            if oauth_result is False:
-                return render(request, "home.html")
-            if hasattr(oauth_result, 'url'):
-                return oauth_result  # Redirect to login or error page
-
-            oauth, profile_data = oauth_result
-            if profile_data:
-                request.user.profile_data = profile_data
-                request.user.save()
-
-        print(f"\033[91m[DEBUG]NO ERROR\033[0m")
-        return render(request, "home.html", {'profile': profile_data})
-
+        context = home_context(request)
+        return render(request, "home.html", context)
     except TokenExpiredError:
         request.session.pop('oauth_token', None)
         print("\033[91m[DEBUG] Token expired. Please log in again.\033[0m")
@@ -111,21 +130,8 @@ def home(request):
     
 def pong(request):
     try:
-        if request.user.is_authenticated and request.user.profile_data:
-            profile_data = request.user.profile_data
-        else:
-            oauth_result = get_oauth_session(request)
-            if oauth_result is False:
-                return render(request, "pong.html")
-            if hasattr(oauth_result, 'url'):
-                return oauth_result
-
-            oauth, profile_data = oauth_result
-            if profile_data:
-                request.user.profile_data = profile_data
-                request.user.save()
-
-        return render(request, "pong.html", {'profile': profile_data})
+        context = home_context(request)
+        return render(request, "pong.html", context)
 
     except TokenExpiredError:
         request.session.pop('oauth_token', None)
@@ -276,24 +282,32 @@ def signup_view(request):
 
 
 def games_view(request):
+    return render(request, 'games.html', games_context)
+
+def games_context():
+    # Fetch all games and related players
     games = Game.objects.all().order_by('-id')
- # Fetch all games and related players
-    context = {
-        'games': games,
-    }
-    return render(request, 'games.html', context)
+    return { 'games': games }
 
 
-def profile(request):
+def profile_context(request):
     try:
         user = request.user
         if not user.is_authenticated:
             # Redirect unauthenticated users to the home page or login page
             return redirect('home')
-
         # Use locally stored profile data
         profile_data = user.profile_data if hasattr(user, 'profile_data') else {}
-
+        # Fetch user's games
+        games = Game.objects.filter(players__user=user).distinct().order_by('-id')
+        user = CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True))).get(pk=user.pk)
+        games_won = user.games_won_count
+        games_lost =   games.count() - user.games_won_count
+        # Build a list of friends with online status
+        friends_data = [
+            {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
+        ]
+        # PLayer info form
         if request.method == 'POST':
             # Process both profile and password forms
             profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
@@ -317,17 +331,8 @@ def profile(request):
             # Initialize empty profile and password forms if GET request
             profile_form = CustomUserChangeForm(instance=user)
             password_form = CustomUserChangeFormPassword(user=user)
-
-        # Fetch user's games
-        games = Game.objects.filter(players__user=user).distinct().order_by('-id')
-        user = CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True))).get(pk=user.pk)
-        games_won = user.games_won_count
-        games_lost =   games.count() - user.games_won_count
-        # Build a list of friends with online status
-        friends_data = [
-            {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
-        ]
-
+        
+        
         cumulative_scores = [0]
         current_score = 0
 
@@ -343,20 +348,25 @@ def profile(request):
         # Generate game indices for the graph
         game_indices = list(range(0, len(cumulative_scores) + 1))
         
-        return render(request, 'profile.html', {
-            'user': user,
-            'profile': profile_data,
-            'games': games,
-            'gamesWon': games_won,
-            'gamesLost': games_lost,
-            'profile_form': profile_form,
-            'password_form': password_form,
-            'cumulative_scores': cumulative_scores,
-            'game_indices': game_indices,
-            'is_online': True,  # User's own online status
-            'friends': friends_data  # Pass the list of friends with their online statuses
-        })
-
+        return {
+                'user': user,
+                'profile': profile_data,
+                'games': games,
+                'gamesWon': games_won,
+                'gamesLost': games_lost,
+                'profile_form': profile_form,
+                'password_form': password_form,
+                'cumulative_scores': cumulative_scores,
+                'game_indices': game_indices,
+                'is_online': True,  # User's own online status
+                'friends': friends_data  # Pass the list of friends with their online statuses
+            }
+    except:
+        raise Exception("Context Error")
+    
+def profile(request):
+    try:
+        return render(request, 'profile.html', profile_context(request))
     except TokenExpiredError:
         request.session.pop('oauth_token', None)
         print("\033[91m[DEBUG] Token expired. Redirecting to home.\033[0m")
