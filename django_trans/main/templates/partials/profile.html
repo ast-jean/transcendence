@@ -107,36 +107,36 @@
         const fileInput = document.querySelector('input[name="avatar"]');
         const maxSize = 2 * 1024 * 1024;  // 2 MB in bytes
         let fileTooLarge = false;  // Flag to track oversized file
-    
+        if (fileInput){
         // Check file size and preview image when a file is selected
-        fileInput.onchange = function(event) {
-            const file = fileInput.files[0];
-            const avatarViewer = document.getElementById('avatar_viewer');
-            const errorAvatar = document.getElementById('errorAvatar');
-    
-            if (file && file.size > maxSize) {
-                errorAvatar.innerHTML = "The file size exceeds the 2 MB limit. Please upload a smaller file.";
-                //console.log("Error: File size exceeds limit");
-                avatarViewer.src = "";  // Clear the preview if the file is too large
-                avatarViewer.style.display = 'none';  // Hide the preview
-                fileTooLarge = true;  // Set flag to indicate file is too large
-                return;  // Exit function to prevent further processing
-            } else {
-                errorAvatar.innerHTML = "";  // Clear any previous error message
-                fileTooLarge = false;  // Reset flag if file size is acceptable
-            }
-    
-            // Preview the selected image
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    avatarViewer.src = e.target.result;  // Set src to the file's Data URL
-                    avatarViewer.style.display = 'block';  // Make sure the preview is visible
-                };
-                reader.readAsDataURL(file);  // Read the file as a Data URL
-            }
-        };
-    
+            fileInput.onchange = function(event) {
+                const file = fileInput.files[0];
+                const avatarViewer = document.getElementById('avatar_viewer');
+                const errorAvatar = document.getElementById('errorAvatar');
+        
+                if (file && file.size > maxSize) {
+                    errorAvatar.innerHTML = "The file size exceeds the 2 MB limit. Please upload a smaller file.";
+                    //console.log("Error: File size exceeds limit");
+                    avatarViewer.src = "";  // Clear the preview if the file is too large
+                    avatarViewer.style.display = 'none';  // Hide the preview
+                    fileTooLarge = true;  // Set flag to indicate file is too large
+                    return;  // Exit function to prevent further processing
+                } else {
+                    errorAvatar.innerHTML = "";  // Clear any previous error message
+                    fileTooLarge = false;  // Reset flag if file size is acceptable
+                }
+        
+                // Preview the selected image
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarViewer.src = e.target.result;  // Set src to the file's Data URL
+                        avatarViewer.style.display = 'block';  // Make sure the preview is visible
+                    };
+                    reader.readAsDataURL(file);  // Read the file as a Data URL
+                }
+            };
+        }
         // Prevent form submission if file is too large
         document.getElementById('profileForm').onsubmit = function(event) {
             if (fileTooLarge) {

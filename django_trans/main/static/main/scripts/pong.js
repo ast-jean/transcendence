@@ -1,6 +1,7 @@
 // Import des modules nécessaires
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
 import { AIPlayer, initializePlayers, initializePlayers4, movePlayer } from './gameplay/player.js';
 import { moveBall, addBallToScene } from './gameplay/ball.js';
 import { setupWalls, setWallColor, walls } from './gameplay/wall.js';
@@ -18,24 +19,150 @@ import { displayDebugInfo } from './utils/utils.js';
 import { showTournamentOptions } from './ui/ui_tournament.js';
 
 // Variables globales du jeu
-var clock = new THREE.Clock();
+var clock;
 export var delta;
 export let local_game = false;
 export let useAIForPlayer2 = false;
 
-// Configuration Three.js
-const container = document.getElementById('gameCont');
-const width = container.clientWidth;
-const height = container.clientWidth * 0.666;
-export const scene = new THREE.Scene();
-export const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+// Configuration variables Three.js
+export let container;
+export let width;
+export let height;
+export let scene;
+export let camera;
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(width, height);
-renderer.setClearColor(0x000001);
-let winGame = renderer.domElement;
-winGame.classList.add("rounded");
-container.appendChild(winGame);
+//window variables
+let renderer;
+let winGame;
+
+//lighting
+let directionalLight;
+let ambientLight
+var focused = true;
+let pageIsPong = false;
+export let controls;
+let tournamentOptions;
+
+export function init_pong() {
+    console.log("Initializing Pong...");
+    clock = new THREE.Clock();
+    container = document.getElementById('gameCont');
+    width = container.clientWidth;
+    height = container.clientWidth * 0.666;
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(width, height);
+    renderer.setClearColor(0x000001)
+    winGame = renderer.domElement;
+    winGame.classList.add("rounded")
+    container.appendChild(winGame);
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    resizeBackground();
+
+    // Configuration des murs
+    setupWalls(scene);
+    setWallColor(0x808080);
+
+    // Contrôles de caméra
+    controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.set(0, -15, 10);  // Position initiale de la caméra
+    camera.lookAt(0, 0, 0);           // Assure qu'elle regarde le centre de la scène
+
+    // Lumières
+    directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(0, 20, 10);
+    scene.add(directionalLight);
+
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    tournamentOptions = document.getElementById('tournamentOptions');
+    init_eventListener();
+    // Lancement de l'animation
+    pageIsPong = true;
+    animate();
+    console.log("Done init Pong...");
+}
+export function unload_pong() {
+    console.log("Unloading Pong...");
+
+    // Stop any active game loop or animations
+    if (clock) {
+        clock = null; // Reset the clock
+    }
+
+    if (renderer) {
+        // Remove the renderer's canvas element from the DOM
+        const canvas = renderer.domElement;
+        if (canvas && canvas.parentNode) {
+            canvas.parentNode.removeChild(canvas);
+        }
+
+        // Dispose of the renderer to release GPU resources
+        renderer.dispose();
+        renderer = null;
+    }
+
+    // Dispose of the scene
+    if (scene) {
+        scene.traverse((object) => {
+            if (object.geometry) {
+                object.geometry.dispose();
+            }
+            if (object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach((material) => material.dispose());
+                } else {
+                    object.material.dispose();
+                }
+            }
+        });
+
+        // Remove all children from the scene
+        while (scene.children.length > 0) {
+            scene.remove(scene.children[0]);
+        }
+
+        scene = null; // Reset the scene
+    }
+
+    // Dispose of the camera
+    if (camera) {
+        camera = null;
+    }
+
+    // Dispose of controls
+    if (controls) {
+        controls.dispose();
+        controls = null;
+    }
+
+    // Dispose of lighting
+    if (directionalLight) {
+        directionalLight = null;
+    }
+    if (ambientLight) {
+        ambientLight = null;
+    }
+
+    // Reset container variables
+    if (container) {
+        container.innerHTML = ''; // Clear the container
+        container = null;
+    }
+
+    // Reset global variables
+    delta = null;
+    local_game = false;
+    useAIForPlayer2 = false;
+    pageIsPong = false;
+    console.log("Pong successfully unloaded.");
+}
+
 
 function resizeBackground() {
     const loader = document.querySelector('.loader');
@@ -43,6 +170,15 @@ function resizeBackground() {
         loader.style.backgroundSize = `${window.innerWidth}px ${window.innerHeight}px`;
     }
 }
+
+window.onfocus = function() {
+    focused = true;
+};
+window.onblur = function() {
+    focused = false;
+};
+
+
 function handleScroll() {
     resizeBackground(); // Adjust background on scroll
 }
@@ -50,27 +186,6 @@ function handleResize() {
     resizeBackground(); // Adjust background on resize
 }
 
-window.addEventListener('scroll', handleScroll);
-window.addEventListener('resize', handleResize);
-resizeBackground();
-
-// Configuration des murs
-setupWalls(scene);
-setWallColor(0x808080);
-
-// Contrôles de caméra
-export const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(0, -15, 10);  // Position initiale de la caméra
-camera.lookAt(0, 0, 0);           // Assure qu'elle regarde le centre de la scène
-
-// Lumières
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(0, 20, 10);
-scene.add(directionalLight);
-
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-
-scene.add(ambientLight);
 document.addEventListener('DOMContentLoaded', function() {
     hideBtn('loading');
     
@@ -169,18 +284,11 @@ function waitForRoomId() {
     });
 }
 
-var focused = true;
 
-window.onfocus = function() {
-    focused = true;
-};
-window.onblur = function() {
-    focused = false;
-};
 
 // Animation principale
 function animate() {
-    // if (focused) {
+    if (pageIsPong) {
         requestAnimationFrame(animate);
         delta = clock.getDelta();
         movePlayer(delta, scene);
@@ -193,7 +301,7 @@ function animate() {
             ////console.log("Updating AI Player...");
             player2.update(delta);
         }
-    // }
+    }
 }
 
 // Redimensionnement du canvas
@@ -208,9 +316,6 @@ function resizeRendererToDisplaySize(renderer) {
         camera.updateProjectionMatrix();
     }
 }
-
-// Lancement de l'animation
-animate();
 
 // Fonction de gestion du submit
 function handleSubmit(event) {
@@ -230,26 +335,14 @@ function handleSubmit(event) {
     }
 }
 
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'i') {
-        displayDebugInfo();
-    }
-});
 
-function joinTournament(tournamentId) {
-    // Vérifier si le WebSocket est prêt
-    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
-        sendCmd('joinTournament', tournamentId);
-        ////console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
-        setIsTournament(true);
-    } else {
-        console.error("WebSocket n'est pas prêt.");
-        alert("Connexion WebSocket non établie.");
-    }
-}
-
-const tournamentOptions = document.getElementById('tournamentOptions');
-
+function init_eventListener() {
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'i') {
+            displayDebugInfo();
+        }
+    });
+    
 // Gestionnaire d'événements pour le bouton Créer un tournoi
 document.getElementById('createTournamentBtn').addEventListener('click', async () => {
     ////console.log("Création d'un nouveau tournoi");
@@ -292,7 +385,6 @@ document.getElementById('submitJoinTournament').addEventListener('click', () => 
     }
 });
 
-
 document.getElementById('startFinalBtn').addEventListener('click', () => {
     // Vérifie si un tournoi est en cours et récupère l'ID du tournoi
     if (tournament && tournament.tournamentId) {
@@ -307,7 +399,6 @@ document.getElementById('startFinalBtn').addEventListener('click', () => {
         ////console.log("Aucun tournoi actif à démarrer.");
     }
 });
-
 
 document.getElementById('startTournamentBtn').addEventListener('click', () => {
     ////console.log("Début du tournoi !");
@@ -326,19 +417,12 @@ document.getElementById('startTournamentBtn').addEventListener('click', () => {
     }
 });
 
-// Ajout d'événements pour les boutons
-document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
-document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
-document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
-// document.getElementById('localplay_4players_btn').addEventListener('click', localPlay4Players);
-
 document.getElementById('startGameButton').addEventListener('click', () => {
     hideBtn('start_btn');
     showBtn('scoreboard');
     if (!local_game) {
         sendCmd("startGame", room_id);
     }
-    ////console.log("La partie a commencé, joueurs ajoutés à la scène", room_id);
 });
 
 document.getElementById('return_btn_1').addEventListener('click', () => {
@@ -362,6 +446,11 @@ document.getElementById('return_btn_3').addEventListener('click', () => {
     hideBtn('layer2Btns_tournament');
     showBtn('play_btns');
 });
+
+// Ajout d'événements pour les boutons
+document.getElementById('player1CameraBtn').addEventListener('click', setCameraPlayer1);
+document.getElementById('player2CameraBtn').addEventListener('click', setCameraPlayer2);
+document.getElementById('topViewCameraBtn').addEventListener('click', setCameraTopView);
 
 document.getElementById('tournament_btn').addEventListener('click', () => { showBtn('layer2Btns_tournament'); hideBtn('play_btns'); });
 document.getElementById('localplay_btn').addEventListener('click', () => { showBtn('layer2Btns_local'); hideBtn('play_btns'); });
@@ -407,6 +496,22 @@ document.getElementById('menu-btn-quit').addEventListener('click', () => {
 });
 
 document.getElementById('randomize-colors-btn').addEventListener('click', randomizeColors);
+
+}
+
+
+function joinTournament(tournamentId) {
+    // Vérifier si le WebSocket est prêt
+    if (socketState.socket && socketState.socket.readyState === WebSocket.OPEN) {
+        sendCmd('joinTournament', tournamentId);
+        ////console.log("Requête envoyée pour rejoindre le tournoi :", tournamentId);
+        setIsTournament(true);
+    } else {
+        console.error("WebSocket n'est pas prêt.");
+        alert("Connexion WebSocket non établie.");
+    }
+}
+
 
 
 export function deleteBall(sphere){

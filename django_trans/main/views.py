@@ -346,8 +346,10 @@ def profile_context(request):
             cumulative_scores.append(current_score)  # Append the score after each game
 
         # Generate game indices for the graph
-        game_indices = list(range(0, len(cumulative_scores) + 1))
-        
+        if games:
+            game_indices = list(range(0, len(cumulative_scores) + 1))
+        else: 
+            game_indices = None
         return {
                 'user': user,
                 'profile': profile_data,

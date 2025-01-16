@@ -8,14 +8,14 @@
 <button id="connectBtn" type="button"><span id="btnText">Connect</span></button> -->
 
 <!-- ThreeJs -->
-<script type="importmap">
+{% comment %} <script type="importmap">
     {
         "imports": {
             "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/" 
       }
     }
-</script>
+</script> {% endcomment %}
 <script src="{% static 'main/scripts/ui/camera.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/pong.js' %}" type="module"></script>
 <script src="{% static 'main/scripts/gameplay/player.js' %}" type="module"></script>

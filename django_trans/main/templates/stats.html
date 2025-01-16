@@ -27,12 +27,23 @@
     // Wait for the DOM to fully load
     document.addEventListener("DOMContentLoaded", function () {
         const cumulativeChart = document.getElementById('cumulativeChart').getContext('2d');
-		
-        // Data passed from the Django view
-        const gameIndices = {{ game_indices|safe }};
-        const cumulativeScores = {{ cumulative_scores|safe }};
+		let gameIndices = 0;
 
-        new Chart(cumulativeChart, {
+        // Data passed from the Django view
+        {% if game_indices %}
+            gameIndices = {{ game_indices|safe }};
+        {% else %}
+            gameIndices = [];
+        {% endif %}
+
+        {% if cumulative_scores %}
+            cumulativeScores = {{ cumulative_scores|safe }};
+        {% else %}
+            cumulativeScores = [];
+        {% endif %}
+
+
+       new Chart(cumulativeChart, {
             type: 'line',
             data: {
                 labels: gameIndices,
