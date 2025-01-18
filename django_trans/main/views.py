@@ -11,6 +11,7 @@ from requests_oauthlib import OAuth2Session
 from django.conf import settings
 from django.db import models
 from dotenv import load_dotenv
+from django.template.loader import render_to_string
 from django.db.models import Count, Q
 from django.http import HttpResponse, JsonResponse, Http404
 from .models import CustomUser, Game
@@ -92,7 +93,6 @@ def get_context(request, template_name, playername = None):
             context = some_profile_context(request, playername)
     else:
         context = {"error": f"No data available for {template_name}"}
-        
     print(f"\033[94m[DEBUG] {context}\033[0m")    
     return JsonResponse(context, safe=False) 
 
@@ -168,6 +168,14 @@ def your_profile_context(request):
             profile_form = CustomUserChangeForm(instance=user)
             password_form = CustomUserChangeFormPassword(user=user)
         
+
+                # Generate forms for the profile
+        profile_form = CustomUserChangeForm(instance=user)
+        password_form = CustomUserChangeFormPassword(user=user)
+
+        # Render the forms as HTML
+        profile_form_html = render_to_string('widgets/profile_form.html', {'form': profile_form})
+        password_form_html = render_to_string('widgets/password_form.html', {'form': password_form})
         
         cumulative_scores = [0]
         current_score = 0
@@ -187,13 +195,13 @@ def your_profile_context(request):
         else: 
             game_indices = None
         return {
-                'user': user,
+                'user': user.to_dict(),
                 'profile': profile_data,
-                'games': games,
+                'games': [game.to_dict() for game in games],
                 'gamesWon': games_won,
                 'gamesLost': games_lost,
-                'profile_form': profile_form,
-                'password_form': password_form,
+                'profile_form': profile_form_html,
+                'password_form': password_form_html,
                 'cumulative_scores': cumulative_scores,
                 'game_indices': game_indices,
                 'is_online': True,  # User's own online status
@@ -203,12 +211,12 @@ def your_profile_context(request):
         raise Exception("Context Error")
 
 
-def some_profile_context(request, playername):
+def some_profile_context(request, playername): 
     you = request.user
     if you.is_anonymous:
         return redirect('home')
     if you.username == playername:
-        return redirect('profile')
+        return redirect('home')
     them = get_object_or_404(
         CustomUser.objects.annotate(
             games_won_count=Count('player', filter=Q(player__winner=True))
@@ -221,7 +229,6 @@ def some_profile_context(request, playername):
     cumulative_scores = [0]
     current_score = 0
     for game in theirgames:
-        # Check if the user is the winner in this game
         is_winner = game.players.filter(user=them, winner=True).exists()
         if is_winner:
             current_score += 1 
@@ -468,7 +475,7 @@ def userProfile(request, playername):
 
     context = {
         'them': them,
-        'user': you,
+        'user': you.to_dict(),
         'profile': getattr(you, 'profile_data', {}),
         'theirprofile': getattr(them, 'profile_data', {}),
         'games': theirgames,

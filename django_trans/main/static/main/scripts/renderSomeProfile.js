@@ -1,4 +1,3 @@
-
 export function renderSomeProfile(context) {
   // We assume "user" is an object within the context
   const user = context.user || {};

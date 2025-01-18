@@ -1,95 +1,85 @@
-
-export function renderProfile(context) {
-  // We assume "user" is an object within the context
-  const user = context.user || {};
-  const isOnline = context.is_online || false;
-  const games = context.games || [];
-  const gamesWon = context.gamesWon || 0;
-  const friends = context.friends || [];
-
-  // The container where we'll inject the profile card
-  const container = document.getElementById("profile-container");
+export function renderProfile(profileContext) {
+  const container = document.getElementById("template-profile");
   if (!container) {
-    console.error("No #profile-container element found in the DOM.");
+    console.error("No template-profile found in the DOM.");
     return;
   }
 
   // Clear any existing content
   container.innerHTML = "";
 
-  // === Create the top-level card ===
+  // 1. Create the top-level .card
   const cardDiv = document.createElement("div");
-  cardDiv.classList.add("card", "m-2");
+  cardDiv.classList.add("card", "mx-auto", "m-2");
+  cardDiv.style.maxWidth = "1000px";
 
-  // Outer row
-  const row = document.createElement("div");
-  row.classList.add("row", "g-0");
+  // 2. Outer row
+  const rowDiv = document.createElement("div");
+  rowDiv.classList.add("row", "g-0");
 
-  // ====== Left Column (Avatar) ======
-  const colMd4 = document.createElement("div");
-  colMd4.classList.add("col-md-4");
+  // ============= Left Column (Avatar) =============
+  const colLeft = document.createElement("div");
+  colLeft.classList.add("col-md-4");
 
-  // Create img element for avatar
-  const avatarImg = document.createElement("img");
-  if (user.avatar) {
-    avatarImg.src = user.avatar;
-    avatarImg.alt = user.username ? ` ${user.username}` : "User Avatar";
-  } else {
-    // fallback if no avatar URL
-    avatarImg.src = "/media/avatars/default.jpg"; 
-    avatarImg.alt = "Default avatar";
+  const userObj = profileContext.user || {};
+  let avatarUrl = "/media/avatars/default.jpg"; // fallback
+  if (userObj.avatar) {
+    avatarUrl = userObj.avatar;
   }
+
+  const avatarImg = document.createElement("img");
+  avatarImg.src = avatarUrl;
+  avatarImg.alt = userObj.username ? userObj.username : "User avatar";
   avatarImg.classList.add("d-flex", "mt-5", "m-auto", "rounded");
   avatarImg.style.maxWidth = "200px";
 
-  colMd4.appendChild(avatarImg);
+  colLeft.appendChild(avatarImg);
 
-  // ====== Right Column (Details) ======
-  const colMd8 = document.createElement("div");
-  colMd8.classList.add("col-md-8");
+  // ============= Right Column (Details) =============
+  const colRight = document.createElement("div");
+  colRight.classList.add("col-md-8");
 
   const profileCardBody = document.createElement("div");
   profileCardBody.classList.add("profilecard-body");
 
-  // Online/Offline status
-  const statusEl = document.createElement("h4");
-  statusEl.classList.add("profilecard-text");
-  const statusSpan = document.createElement("span");
-  statusSpan.textContent = isOnline ? "Online" : "Offline";
-  statusSpan.classList.add(isOnline ? "text-success" : "text-danger");
-
-  statusEl.innerHTML = `Status: `;
-  statusEl.appendChild(statusSpan);
-  profileCardBody.appendChild(statusEl);
+  // Online/Offline Status
+  const isOnline = profileContext.is_online;
+  const statusH4 = document.createElement("h4");
+  statusH4.classList.add("profilecard-text");
+  statusH4.innerHTML = `Status: <span class="${isOnline ? 'text-success' : 'text-danger'}">
+                        ${isOnline ? 'Online' : 'Offline'}</span>`;
+  profileCardBody.appendChild(statusH4);
 
   // Username
   const usernameP = document.createElement("p");
   usernameP.classList.add("profilecard-text");
-  usernameP.textContent = `Username: ${user.username || "Unknown"}`;
+  usernameP.textContent = `Username: ${userObj.username || 'N/A'}`;
   profileCardBody.appendChild(usernameP);
 
-  // Alias (if present)
-  if (user.alias) {
+  // Alias (if any)
+  if (userObj.alias) {
     const aliasP = document.createElement("p");
     aliasP.classList.add("profilecard-text");
-    aliasP.textContent = `Alias: ${user.alias}`;
+    aliasP.textContent = `Alias: ${userObj.alias}`;
     profileCardBody.appendChild(aliasP);
   }
 
   // Email
-  if (user.email) {
+  if (userObj.email) {
     const emailP = document.createElement("p");
     emailP.classList.add("profilecard-text");
-    emailP.textContent = `Email: ${user.email}`;
+    emailP.textContent = `Email: ${userObj.email}`;
     profileCardBody.appendChild(emailP);
   }
 
-  // Games
-  if (games.length > 0) {
-    const gamesStats = document.createElement("p");
-    gamesStats.classList.add("profilecard-text");
-    gamesStats.textContent = `Games won: ${gamesWon} out of ${games.length}`;
-    profileCardBody.appendChild(gamesStats);
+  // Games Info
+  const gamesArr = profileContext.games || [];
+  const gamesWon = profileContext.gamesWon || 0;
+  if (gamesArr.length > 0) {
+    const gamesP = document.createElement("p");
+    gamesP.classList.add("profilecard-text");
+    gamesP.textContent = `Games won: ${gamesWon} out of ${gamesArr.length}`;
+    profileCardBody.appendChild(gamesP);
   } else {
     const noGamesP = document.createElement("p");
     noGamesP.classList.add("profilecard-text");
@@ -98,59 +88,59 @@ export function renderProfile(context) {
   }
 
   // Friends
-  const friendsP = document.createElement("p");
-  friendsP.classList.add("profilecard-text");
-  friendsP.textContent = "Friends:";
-  profileCardBody.appendChild(friendsP);
+  const friendsLabel = document.createElement("p");
+  friendsLabel.classList.add("profilecard-text");
+  friendsLabel.textContent = "Friends:";
+  profileCardBody.appendChild(friendsLabel);
 
+  const friends = profileContext.friends || [];
   if (friends.length > 0) {
-    // Create a container for friend thumbnails
     const friendsContainer = document.createElement("div");
     friendsContainer.classList.add("profilecard-text", "mb-3", "mx-auto");
 
     friends.forEach(friendObj => {
-      const friend = friendObj.friend || {};
-      const isFriendOnline = friendObj.is_online;
-
-      if (friend.username) {
-        // Create a friend button
+      const f = friendObj.friend || {};
+      if (f.username) {
+        // Create link
         const friendLink = document.createElement("a");
+        friendLink.classList.add("pb-2");
         friendLink.style.textDecoration = "none";
-        friendLink.href = `/profile/${friend.username}`;
+        friendLink.href = `#/profile-${f.username}`; // or your old route
 
-        // Outer div
+        // Outer DIV
         const friendDiv = document.createElement("div");
         friendDiv.classList.add("btn", "btn-primary", "position-relative", "mx-2", "rounded");
 
-        // Avatar
+        // Friend avatar
         const friendImg = document.createElement("img");
-        friendImg.src = friend.avatar || "/media/avatars/default.jpg";
-        friendImg.alt = `${friend.username} avatar`;
+        friendImg.src = f.avatar || "/media/avatars/default.jpg";
+        friendImg.alt = `${f.username} avatar`;
         friendImg.classList.add("img-thumbnail", "d-flex", "mx-auto", "my-auto");
         friendImg.style.width = "100px";
         friendImg.style.height = "100px";
         friendDiv.appendChild(friendImg);
 
-        // Username label
+        // Friend username label
         const userSpan = document.createElement("span");
         userSpan.classList.add("position-absolute", "border", "border-dark", "bg-white", "top-100", "start-50", "translate-middle", "text-dark", "rounded", "px-1");
         userSpan.style.whiteSpace = "nowrap";
-        userSpan.textContent = friend.username;
+        userSpan.textContent = f.username;
         friendDiv.appendChild(userSpan);
 
         // Online/Offline indicator
+        const isFriendOnline = friendObj.is_online;
         const statusSpan = document.createElement("span");
         statusSpan.classList.add("position-absolute", "top-0", "start-100", "translate-middle", "p-2", "border", "border-light", "rounded-circle");
         statusSpan.style.backgroundColor = isFriendOnline ? "green" : "red";
         friendDiv.appendChild(statusSpan);
 
-        // Append friendDiv to link
+        // Put friendDiv inside the <a> link
         friendLink.appendChild(friendDiv);
         friendsContainer.appendChild(friendLink);
       } else {
-        const unknownP = document.createElement("p");
-        unknownP.textContent = "Unknown friend";
-        friendsContainer.appendChild(unknownP);
+        const unknownFriend = document.createElement("p");
+        unknownFriend.textContent = "Unknown friend";
+        friendsContainer.appendChild(unknownFriend);
       }
     });
 
@@ -162,15 +152,18 @@ export function renderProfile(context) {
     profileCardBody.appendChild(noFriendsP);
   }
 
-  colMd8.appendChild(profileCardBody);
+  colRight.appendChild(profileCardBody);
 
-  // Append left and right columns
-  row.appendChild(colMd4);
-  row.appendChild(colMd8);
+  // Put colLeft and colRight into rowDiv
+  rowDiv.appendChild(colLeft);
+  rowDiv.appendChild(colRight);
 
-  // Add row to the card
-  cardDiv.appendChild(row);
+  // Put rowDiv into cardDiv
+  cardDiv.appendChild(rowDiv);
 
-  // Finally, append the entire card to the container
+  // Add the card to the container
   container.appendChild(cardDiv);
+
+  // (Optional) Create a second .card for "Edit Profile", "Change Password", etc.
+  // if you want to replicate the forms or collapsibles.
 }

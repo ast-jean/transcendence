@@ -13,7 +13,7 @@ urlpatterns = [
     # path('profile/<str:playername>/', views.userProfile, name='userProfile'),
 
     #AJAX request
-    path('context/<str:template_name>/<str:playername>', views.get_context, name='get_context_profile'),
+    path('context/profile/<str:playername>', views.get_context, name='get_context_profile'),
     path('context/<str:template_name>/', views.get_context, name='get_context'),
 
     # # Template 

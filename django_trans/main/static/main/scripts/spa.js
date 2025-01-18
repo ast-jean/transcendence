@@ -2,6 +2,7 @@
 import { init_pong, unload_pong } from '/static/main/scripts/pong.js';
 import { renderGames } from '/static/main/scripts/renderGames.js';
 import { renderProfile } from '/static/main/scripts/renderProfile.js';
+import { renderSomeProfile } from '/static/main/scripts/renderSomeProfile.js';
 
 console.log("SPA with Hashing Loaded");
 
@@ -63,30 +64,20 @@ function loadTemplate(templateName) {
           return;
         // Insert the partial's HTML into the main content
           mainContent.innerHTML = cacheDiv.innerHTML;
-          if (context.games) {
-            console.log("Games data:", context.games); 
-          }
-          else if (context.err) {
-            console.log("Error data:", context.err); 
-          }
-          else if (context.profile) {
-            renderProfile(profileContext);
-          }
-          else if (context.someProfile) {
-            renderProfile(profileSomeContext);
-          }
-          else {
-            console.log("FAILED", context);
-          }
           // Load any logic specific to this new page
           loadPageLogic(templateName);
-
+          
           // Update navbar highlight
           updateActiveNav(templateName);
-          if (context.games)
+          if (context.games) {
+            console.log("Games data:", context.games); 
             renderGames(context.games);
-          if (context.profile)
+          }
+          if (context.profile) {
             renderProfile(context.profile);
+          } else if (context.someProfile) {
+            renderSomeProfile(profileSomeContext);
+          }
           // Record the new template as current
           currentTemplate = templateName;
       })

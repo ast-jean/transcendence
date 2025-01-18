@@ -31,7 +31,6 @@ class CustomUser(AbstractUser):
             "is_online": self.is_online(),
             "last_active": self.last_active.isoformat() if self.last_active else None,
             "last_connected": self.last_connected.isoformat() if self.last_connected else None,
-            "games_won_count": self.games_won_count(),
         }
 
     @property
