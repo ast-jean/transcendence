@@ -93,7 +93,7 @@ def get_context(request, template_name, playername = None):
             context = some_profile_context(request, playername)
     else:
         context = {"error": f"No data available for {template_name}"}
-    print(f"\033[94m[DEBUG] {context}\033[0m")    
+    # print(f"\033[94m[DEBUG] {context}\033[0m")
     return JsonResponse(context, safe=False) 
 
 def home_context(request):
@@ -109,12 +109,10 @@ def home_context(request):
             return render(request, "home.html")
         if hasattr(oauth_result, 'url'):
             return oauth_result  # Redirect to login or error page
-
         oauth, profile_data = oauth_result
         if profile_data:
             request.user.profile_data = profile_data
             request.user.save()
-            
     return {'profile': request.user.to_dict()}
 
 def games_context(request):
@@ -129,10 +127,7 @@ def your_profile_context(request):
     try:
         user = request.user
         if not user.is_authenticated:
-            # Redirect unauthenticated users to the home page or login page
-            return redirect('home')
-        # Use locally stored profile data
-        # profile_data = user.profile_data if hasattr(user, 'profile_data') else {}
+            return {"err", "Not authenticated"}
         profile_data = user.to_dict()
         # Fetch user's games
         games = Game.objects.filter(players__user=user).distinct().order_by('-id')

@@ -60,43 +60,41 @@ function loadTemplate(templateName) {
         return response.json(); // Parse JSON response
     })
       .then(context => {
-        if (!context)
+        if (!context){
+          console.error(`Error fetching in context for ${templateName}:`, err);
           return;
-        // Insert the partial's HTML into the main content
+        }
+          currentTemplate = templateName;
           mainContent.innerHTML = cacheDiv.innerHTML;
-          // Load any logic specific to this new page
           loadPageLogic(templateName);
-          
-          // Update navbar highlight
           updateActiveNav(templateName);
-          if (context.games) {
+          if (templateName === "games") {
             console.log("Games data:", context.games); 
             renderGames(context.games);
+            return;
           }
-          if (context.profile) {
-            renderProfile(context.profile);
+          if (templateName === "profile") {
+            console.log("Rendering Profile");
+            renderProfile(context);
+            console.log("Rendering Profile done");
+            return;
           } else if (context.someProfile) {
+            console.log("Profile some data:", context.someProfile); 
             renderSomeProfile(profileSomeContext);
+            return;
           }
-          // Record the new template as current
-          currentTemplate = templateName;
       })
       .catch(err => { //Still renders template without context
           console.error(`Error fetching context for ${templateName}:`, err);
-
-          // Render the cached HTML without context
           const cacheDiv = document.getElementById(`template-${templateName}`);
           if (cacheDiv) {
               mainContent.innerHTML = cacheDiv.innerHTML;
           } else {
               mainContent.innerHTML = `<p>Error loading content for "${templateName}". Please try again later.</p>`;
           }
-
-          // Update navbar highlight
           updateActiveNav(templateName);
-
-          // Record the new template as current
           currentTemplate = templateName;
+
       });
 
 }
@@ -126,10 +124,6 @@ function loadPageLogic(templateName) {
   if (templateName === 'pong') {
     init_pong();
   }
-  if (templateName === 'profile') { //#templateName#username
-
-  }
-  // Add other pages' init logic as needed
 }
 
 /**

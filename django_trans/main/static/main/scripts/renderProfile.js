@@ -1,4 +1,5 @@
 export function renderProfile(profileContext) {
+  console.log("Context in renderProfile",profileContext);
   const container = document.getElementById("template-profile");
   if (!container) {
     console.error("No template-profile found in the DOM.");
@@ -45,8 +46,10 @@ export function renderProfile(profileContext) {
   // Online/Offline Status
   const isOnline = profileContext.is_online;
   const statusH4 = document.createElement("h4");
-  statusH4.classList.add("profilecard-text");
-  statusH4.innerHTML = `Status: <span class="${isOnline ? 'text-success' : 'text-danger'}">
+  statusH4.classList.add("profilecard-text"); 
+  statusH4.classList.add("onlineStatus");
+  console.log("IsOnline " + isOnline);
+  statusH4.innerHTML = `Stautus: <span class="${isOnline ? 'text-success' : 'text-danger'}">
                         ${isOnline ? 'Online' : 'Offline'}</span>`;
   profileCardBody.appendChild(statusH4);
 
@@ -167,3 +170,21 @@ export function renderProfile(profileContext) {
   // (Optional) Create a second .card for "Edit Profile", "Change Password", etc.
   // if you want to replicate the forms or collapsibles.
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+  fetch(`/context/profile/`)
+  .then(response => {
+    if (!response.ok)
+      return;
+    return response.json(); // Parse JSON response
+})
+  .then(context => {
+        console.log("Rendering on DOM Profile");
+        renderProfile(context);
+        console.log("Rendering Profile done");
+  })
+  .catch(err => { //Still renders template without context
+      console.error(`Error fetching context for profile DOM:`, err);
+
+  });
+});
