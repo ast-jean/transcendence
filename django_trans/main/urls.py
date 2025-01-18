@@ -12,21 +12,22 @@ urlpatterns = [
     # path('games/', views.games_view, name='games'),
     # path('profile/<str:playername>/', views.userProfile, name='userProfile'),
 
-    
-    path('partials/<str:partial_name>', views.load_partial, name='load_partial'),
-    
-    # Template 
-    path('Pong/', views.pong, name='Pong'),
-    path('truckleague/', views.truckleague, name='Truck'),
-    path('about/', views.about, name='About'),
+    #AJAX request
+    path('context/<str:template_name>/<str:playername>', views.get_context, name='get_context_profile'),
+    path('context/<str:template_name>/', views.get_context, name='get_context'),
+
+    # # Template 
+    # path('Pong/', views.pong, name='Pong'),
+    # path('truckleague/', views.truckleague, name='Truck'),
+    # path('about/', views.about, name='About'),
     
     # API
     path('callback/', views.callback, name='callback'),
     path('loginAPI/', views.oauth_login, name='oauth_login'),
     
     # Auth
-    path('login/', views.login_view, name='login'),
-    path('signup/', views.signup_view, name='signup'),
+    path('login', views.login_view, name='login'),
+    path('signup', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
     
     # Profile data fetch

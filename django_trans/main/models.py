@@ -18,6 +18,22 @@ class CustomUser(AbstractUser):
         self.profile_data = api_data
         self.save()
     
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "alias": self.alias,
+            "avatar": self.avatar.url if self.avatar else None,
+            "oauth_token": self.oauth_token,
+            "profile_data": self.profile_data,
+            "friends": [friend.id for friend in self.friends.all()],
+            "is_online": self.is_online(),
+            "last_active": self.last_active.isoformat() if self.last_active else None,
+            "last_connected": self.last_connected.isoformat() if self.last_connected else None,
+            "games_won_count": self.games_won_count(),
+        }
+
     @property
     def login(self):
         return self.profile_data.get('login') if self.profile_data else None
@@ -61,6 +77,13 @@ class Game(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Game N°{self.id} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "date": self.date.isoformat() if self.date else None,
+            "players": [player.to_dict() for player in self.players.all()],
+        }
 
 class Player(models.Model):
     user = models.ForeignKey("CustomUser", verbose_name=_("Player"), on_delete=models.CASCADE)
@@ -71,3 +94,11 @@ class Player(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.game.id}"
+    
+    def to_dict(self):
+            return {
+                "user": self.user.to_dict() if self.user else None,
+                "score": self.score,
+                "winner": self.winner,
+                "team": self.team,
+            }

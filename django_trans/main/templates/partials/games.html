@@ -1,3 +1,17 @@
-{% block content %}
-    {% include '../match_results.html' %}
-{% endblock %}
+{% load static %}
+
+<h2 style="max-width: 1000px;" 
+        id="headers" 
+        class="mx-auto mt-3 ps-2 strokeme bg-dark rounded">
+        Match Results
+    </h2>
+
+    <!-- Container for the game list -->
+    <ul class="list-group mx-auto" style="max-width: 1000px;" id="games-list">
+        <!-- JS will insert <li> items here -->
+    </ul>
+
+    <!--  Fallback if no games are found -->
+    <p id="no-games" style="display: none;">No games available.</p>
+
+    <script src="{% static 'main/scripts/renderGames.js' %}" type="module"></script>

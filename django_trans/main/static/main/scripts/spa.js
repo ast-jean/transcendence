@@ -1,5 +1,7 @@
 // spa.js
 import { init_pong, unload_pong } from '/static/main/scripts/pong.js';
+import { renderGames } from '/static/main/scripts/renderGames.js';
+import { renderProfile } from '/static/main/scripts/renderProfile.js';
 
 console.log("SPA with Hashing Loaded");
 
@@ -41,7 +43,6 @@ function loadTemplate(templateName) {
   // 2. Get the cached partial from #template-cache
   const cacheDiv = document.getElementById(`template-${templateName}`);
   const mainContent = document.getElementById("main-content");
-
   if (!cacheDiv) {
     console.warn(`No cached template found for: ${templateName}`);
     mainContent.innerHTML = `<p>Template "${templateName}" not found.</p>`;
@@ -49,17 +50,64 @@ function loadTemplate(templateName) {
     return;
   }
 
-  // 3. Insert the partial's HTML into the main content
-  mainContent.innerHTML = cacheDiv.innerHTML;
 
-  // 4. Load any logic specific to this new page
-  loadPageLogic(templateName);
+  // Fetching new context
+  fetch(`/context/${templateName}/`)
+      .then(response => {
+        if (!response.ok)
+          return;
+        return response.json(); // Parse JSON response
+    })
+      .then(context => {
+        if (!context)
+          return;
+        // Insert the partial's HTML into the main content
+          mainContent.innerHTML = cacheDiv.innerHTML;
+          if (context.games) {
+            console.log("Games data:", context.games); 
+          }
+          else if (context.err) {
+            console.log("Error data:", context.err); 
+          }
+          else if (context.profile) {
+            renderProfile(profileContext);
+          }
+          else if (context.someProfile) {
+            renderProfile(profileSomeContext);
+          }
+          else {
+            console.log("FAILED", context);
+          }
+          // Load any logic specific to this new page
+          loadPageLogic(templateName);
 
-  // 5. Update navbar highlight
-  updateActiveNav(templateName);
+          // Update navbar highlight
+          updateActiveNav(templateName);
+          if (context.games)
+            renderGames(context.games);
+          if (context.profile)
+            renderProfile(context.profile);
+          // Record the new template as current
+          currentTemplate = templateName;
+      })
+      .catch(err => { //Still renders template without context
+          console.error(`Error fetching context for ${templateName}:`, err);
 
-  // 6. Record the new template as current
-  currentTemplate = templateName;
+          // Render the cached HTML without context
+          const cacheDiv = document.getElementById(`template-${templateName}`);
+          if (cacheDiv) {
+              mainContent.innerHTML = cacheDiv.innerHTML;
+          } else {
+              mainContent.innerHTML = `<p>Error loading content for "${templateName}". Please try again later.</p>`;
+          }
+
+          // Update navbar highlight
+          updateActiveNav(templateName);
+
+          // Record the new template as current
+          currentTemplate = templateName;
+      });
+
 }
 
 /**
@@ -86,6 +134,9 @@ function updateActiveNav(templateName) {
 function loadPageLogic(templateName) {
   if (templateName === 'pong') {
     init_pong();
+  }
+  if (templateName === 'profile') { //#templateName#username
+
   }
   // Add other pages' init logic as needed
 }

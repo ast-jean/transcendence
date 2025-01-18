@@ -70,28 +70,34 @@ def get_oauth_session(request):
         print(f"\033[91m[DEBUG]NO Auth info\033[0m")
         return False
 
+import logging
+logger = logging.getLogger(__name__)
 
-def load_partial(request, partial_name):
-    valid_partials = ["home", "pong", "profile"] 
-    if partial_name not in valid_partials:
-        raise Http404(f"No partial named '{partial_name}'")
-
-    #Fetch databases data depending on partial name
+def get_context(request, template_name, playername = None):
+    print(f"\033[96mGet Context <{template_name}> \033[0m")
+    valid_partials = ["home", "pong", "profile", "games"] 
+    if template_name not in valid_partials:
+        raise JsonResponse({'err':"Not a valid partial name"})
     context = {}
-    if partial_name == "home":
-        context = home_context(request)
-    elif partial_name == "pong":
-        context = home_context(request)
-    elif partial_name == "games":
+    if template_name == "home":
+        context = {}#home_context(request)
+    elif template_name == "pong":
+        context = {}#home_context(request)
+    elif template_name == "games":
         context = games_context(request)
-    elif partial_name == "profile":
-        context = profile_context(request)
-
-    # Return the partial template
-    return render(request, f"partials/{partial_name}.html", context)
-
+    elif template_name == "profile":
+        if playername is None:
+            context = your_profile_context(request)
+        else:
+            context = some_profile_context(request, playername)
+    else:
+        context = {"error": f"No data available for {template_name}"}
+        
+    print(f"\033[94m[DEBUG] {context}\033[0m")    
+    return JsonResponse(context, safe=False) 
 
 def home_context(request):
+    print(f"\033[96m[Home] Context  \033[0m")
      # Use locally stored profile data if it exists
     if request.user.is_authenticated and request.user.profile_data:
         profile_data = request.user.profile_data
@@ -108,7 +114,137 @@ def home_context(request):
         if profile_data:
             request.user.profile_data = profile_data
             request.user.save()
-    return {'profile': profile_data}
+            
+    return {'profile': request.user.to_dict()}
+
+def games_context(request):
+    print(f"\033[94m[Games] Context  \033[0m")
+    games = Game.objects.all().order_by('-id')
+    games_data = [game.to_dict() for game in games]
+    return {"games": games_data}
+
+
+def your_profile_context(request):
+    print(f"\033[96m[Profile] Context  \033[0m")
+    try:
+        user = request.user
+        if not user.is_authenticated:
+            # Redirect unauthenticated users to the home page or login page
+            return redirect('home')
+        # Use locally stored profile data
+        # profile_data = user.profile_data if hasattr(user, 'profile_data') else {}
+        profile_data = user.to_dict()
+        # Fetch user's games
+        games = Game.objects.filter(players__user=user).distinct().order_by('-id')
+        user = CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True))).get(pk=user.pk)
+        games_won = user.games_won_count
+        games_lost =   games.count() - user.games_won_count
+        # Build a list of friends with online status
+        friends_data = [
+            {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
+        ]
+        # PLayer info form
+        if request.method == 'POST':
+            # Process both profile and password forms
+            profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
+            password_form = CustomUserChangeFormPassword(request.POST, user=user)
+
+            # Process profile form independently
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Your profile information has been updated!")
+
+            # Process password form independently
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, user)  # Keep the user logged in after password change
+                messages.success(request, "Your password has been updated!")
+
+            # If either form is valid, redirect to profile
+            if profile_form.is_valid() or password_form.is_valid():
+                return redirect('profile')
+        else:
+            # Initialize empty profile and password forms if GET request
+            profile_form = CustomUserChangeForm(instance=user)
+            password_form = CustomUserChangeFormPassword(user=user)
+        
+        
+        cumulative_scores = [0]
+        current_score = 0
+
+        for game in games.order_by('id'):  # Ensure games are ordered chronologically
+            # Check if the user is the winner in this game
+            is_winner = game.players.filter(user=user, winner=True).exists()
+            if is_winner:
+                current_score += 1  # Win
+            else:
+                current_score -= 1  # Loss
+            cumulative_scores.append(current_score)  # Append the score after each game
+
+        # Generate game indices for the graph
+        if games:
+            game_indices = list(range(0, len(cumulative_scores) + 1))
+        else: 
+            game_indices = None
+        return {
+                'user': user,
+                'profile': profile_data,
+                'games': games,
+                'gamesWon': games_won,
+                'gamesLost': games_lost,
+                'profile_form': profile_form,
+                'password_form': password_form,
+                'cumulative_scores': cumulative_scores,
+                'game_indices': game_indices,
+                'is_online': True,  # User's own online status
+                'friends': friends_data  # Pass the list of friends with their online statuses
+            }
+    except:
+        raise Exception("Context Error")
+
+
+def some_profile_context(request, playername):
+    you = request.user
+    if you.is_anonymous:
+        return redirect('home')
+    if you.username == playername:
+        return redirect('profile')
+    them = get_object_or_404(
+        CustomUser.objects.annotate(
+            games_won_count=Count('player', filter=Q(player__winner=True))
+        ),
+        username=playername
+    )
+    theirgames = Game.objects.filter(players__user=them).distinct().order_by('id')  # Ascending order for cumulative scores
+    gamesWon = them.games_won_count
+    gamesLost = theirgames.count() - gamesWon
+    cumulative_scores = [0]
+    current_score = 0
+    for game in theirgames:
+        # Check if the user is the winner in this game
+        is_winner = game.players.filter(user=them, winner=True).exists()
+        if is_winner:
+            current_score += 1 
+        else:
+            current_score -= 1 
+        cumulative_scores.append(current_score) 
+    game_indices = list(range(0, len(cumulative_scores)+ 1))
+    is_friend = you.is_friend(them) if hasattr(you, 'is_friend') else False
+    is_online = them.is_online() if hasattr(them, 'is_online') else False
+
+    return {
+        'them': them,
+        'user': you,
+        'profile': getattr(you, 'profile_data', {}),
+        'theirprofile': getattr(them, 'profile_data', {}),
+        'games': theirgames,
+        'gamesWon': gamesWon,
+        'cumulative_scores': cumulative_scores,
+        'game_indices': game_indices,
+        'gamesLost': gamesLost,
+        'is_friend': is_friend,
+        'is_online': is_online,
+    }
 
 def home(request):
     try:
@@ -284,87 +420,6 @@ def signup_view(request):
 def games_view(request):
     return render(request, 'games.html', games_context)
 
-def games_context():
-    # Fetch all games and related players
-    games = Game.objects.all().order_by('-id')
-    return { 'games': games }
-
-
-def profile_context(request):
-    try:
-        user = request.user
-        if not user.is_authenticated:
-            # Redirect unauthenticated users to the home page or login page
-            return redirect('home')
-        # Use locally stored profile data
-        profile_data = user.profile_data if hasattr(user, 'profile_data') else {}
-        # Fetch user's games
-        games = Game.objects.filter(players__user=user).distinct().order_by('-id')
-        user = CustomUser.objects.annotate(games_won_count=Count('player', filter=Q(player__winner=True))).get(pk=user.pk)
-        games_won = user.games_won_count
-        games_lost =   games.count() - user.games_won_count
-        # Build a list of friends with online status
-        friends_data = [
-            {'friend': friend, 'is_online': friend.is_online()} for friend in user.friends.all()
-        ]
-        # PLayer info form
-        if request.method == 'POST':
-            # Process both profile and password forms
-            profile_form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
-            password_form = CustomUserChangeFormPassword(request.POST, user=user)
-
-            # Process profile form independently
-            if profile_form.is_valid():
-                profile_form.save()
-                messages.success(request, "Your profile information has been updated!")
-
-            # Process password form independently
-            if password_form.is_valid():
-                password_form.save()
-                update_session_auth_hash(request, user)  # Keep the user logged in after password change
-                messages.success(request, "Your password has been updated!")
-
-            # If either form is valid, redirect to profile
-            if profile_form.is_valid() or password_form.is_valid():
-                return redirect('profile')
-        else:
-            # Initialize empty profile and password forms if GET request
-            profile_form = CustomUserChangeForm(instance=user)
-            password_form = CustomUserChangeFormPassword(user=user)
-        
-        
-        cumulative_scores = [0]
-        current_score = 0
-
-        for game in games.order_by('id'):  # Ensure games are ordered chronologically
-            # Check if the user is the winner in this game
-            is_winner = game.players.filter(user=user, winner=True).exists()
-            if is_winner:
-                current_score += 1  # Win
-            else:
-                current_score -= 1  # Loss
-            cumulative_scores.append(current_score)  # Append the score after each game
-
-        # Generate game indices for the graph
-        if games:
-            game_indices = list(range(0, len(cumulative_scores) + 1))
-        else: 
-            game_indices = None
-        return {
-                'user': user,
-                'profile': profile_data,
-                'games': games,
-                'gamesWon': games_won,
-                'gamesLost': games_lost,
-                'profile_form': profile_form,
-                'password_form': password_form,
-                'cumulative_scores': cumulative_scores,
-                'game_indices': game_indices,
-                'is_online': True,  # User's own online status
-                'friends': friends_data  # Pass the list of friends with their online statuses
-            }
-    except:
-        raise Exception("Context Error")
     
 def profile(request):
     try:
